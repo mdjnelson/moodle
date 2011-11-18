@@ -292,6 +292,7 @@ WHERE
      * @param int $groupid the ID of the group
      */
     public function add_group_condition($groupid, $groupname) {
+        echo $groupid . $groupname . "<br />";
         // Add to DB
         global $DB;
         $DB->insert_record('course_modules_availability_group',
@@ -380,17 +381,10 @@ WHERE
 
         // Group conditions
         if (count($this->cm->conditionsgroup)>0) {
-            $groupinformation = '';
             foreach ($this->cm->conditionsgroup as $group=>$name) {
-                // If the group is 0, then set group information string
-                // to blank, as every group can access. Exit foreach
-                // as no point checking other group restrictions
-                if ($group === 0) {
-                    $groupinformation = '';
-                    continue;
-                }
+                // Check if the member is allowed
+                $information .= get_string('requires_group', 'condition', $name).' ';
             }
-            $information .= $groupinformation;
         }
 
         // The date logic is complicated. The intention of this logic is:
@@ -583,6 +577,24 @@ WHERE
             }
         }
 
+        // Group conditions
+        if (count($this->cm->conditionsgroup)>0) {
+            $groupavailable = false;
+            $groupinformation = '';
+            $usergroups = $this->get_cached_groups($userid);
+            foreach ($this->cm->conditionsgroup as $group=>$name) {
+                if (in_array($group, $usergroups)) {
+                    $groupavailable = true;
+                }
+                // Check if the member is allowed
+                $groupinformation .= get_string('requires_group', 'condition', $name).' ';
+            }
+            if (!$groupavailable) {
+                $available = false;
+                $information .= $groupinformation;
+            }
+        }
+
         // Test dates
         if ($this->cm->availablefrom) {
             if (time() < $this->cm->availablefrom) {
@@ -733,6 +745,38 @@ WHERE
             return $score;
         }
     }
+    
+    /**
+     * Obtains the groups a user belongs to
+     *
+     * @global object
+     * @global object
+     * @global object
+     * @param int $userid Set if requesting grade for a different user (does
+     *   not use cache)
+     * @return array an array of groups
+     */
+    private function get_cached_groups($userid=0) {
+        global $USER, $DB, $SESSION;
+        if ($userid==0 || $userid==$USER->id) {
+            // For current user, go via cache in session
+            if (empty($SESSION->groupcache)) {
+                $SESSION->groupcache = array();
+                // Get all grades for the current course
+                $sql = "SELECT *
+                        FROM {groups_members} g
+                        WHERE g.userid=?";
+                $SESSION->groupcache = $DB->get_records_sql_menu($sql, array($USER->id));
+            }
+            return $SESSION->groupcache;
+        } else {
+            // Not the current user, so request the score individually
+            $sql = "SELECT *
+                    FROM {groups_members} g
+                    WHERE g.userid=?";
+            return $DB->get_records_sql_menu($sql, array($USER->id));
+        }
+    }
 
     /**
      * For testing only. Wipes information cached in user session.
@@ -743,7 +787,7 @@ WHERE
         global $SESSION;
         unset($SESSION->gradescorecache);
         unset($SESSION->gradescorecacheuserid);
-        unset($SESSION->grouprestrictioncache);
+        unset($SESSION->groupcache);
     }
 
     /**
@@ -767,7 +811,7 @@ WHERE
         }
         foreach ($fromform->conditiongroupgroup as $record) {
             if($record['conditiongroup']) {
-                $ci->add_group_condition($record['conditiongroup']);
+                $ci->add_group_condition($record['conditiongroup'], $fromform->grouplist[$record['conditiongroup']]);
             }
         }
         if(isset ($fromform->conditioncompletiongroup)) {

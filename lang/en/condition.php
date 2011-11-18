@@ -69,6 +69,7 @@ $string['requires_grade_any'] = 'Not available until you have a grade in <strong
 $string['requires_grade_max'] = 'Not available unless you get an appropriate score in <strong>{$a}</strong>.';
 $string['requires_grade_min'] = 'Not available until you achieve a required score in <strong>{$a}</strong>.';
 $string['requires_grade_range'] = 'Not available unless you get a particular score in <strong>{$a}</strong>.';
+$string['requires_group'] = 'Not available unless you are a member of the group <strong>{$a}</strong>';
 $string['showavailability'] = 'Before activity can be accessed';
 $string['showavailability_hide'] = 'Hide activity entirely';
 $string['showavailability_show'] = 'Show activity greyed-out, with restriction information';

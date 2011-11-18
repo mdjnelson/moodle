@@ -541,6 +541,10 @@ abstract class moodleform_mod extends moodleform {
 
             // Conditions based on groups
             $groups = $DB->get_records_menu('groups', array('courseid'=>$COURSE->id), '', 'id, name');
+            // Hide the groups listing in a hidden element
+            foreach ($groups as $id=>$name) {
+                $mform->addElement('hidden', "grouplist[$id]", $name);
+            }
             $groupoptions = array(0=>$strnone)+$groups;
             $grouparray = array();
             $grouparray[] =& $mform->createElement('select','conditiongroup','',$groupoptions);
