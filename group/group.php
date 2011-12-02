@@ -95,6 +95,8 @@ if ($editform->is_cancelled()) {
 
     if ($data->id) {
         groups_update_group($data, $editform, $editoroptions);
+        // Need to rebuild course cache to update the info
+        rebuild_course_cache($courseid);
     } else {
         $id = groups_create_group($data, $editform, $editoroptions);
         $returnurl = $CFG->wwwroot.'/group/index.php?id='.$course->id.'&group='.$id;

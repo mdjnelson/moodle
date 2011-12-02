@@ -67,7 +67,12 @@ if ($confirm && data_submitted()) {
 
     foreach($groupidarray as $groupid) {
         groups_delete_group($groupid);
+        // Delete any module dependencies for this field
+        $DB->delete_records('course_modules_availability_group', array('groupid'=>$groupid));
     }
+
+    // Need to rebuild course cache to update the availability info
+    rebuild_course_cache($courseid);
 
     redirect($returnurl);
 } else {
