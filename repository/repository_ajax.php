@@ -340,4 +340,13 @@ switch ($action) {
         echo json_encode(repository::delete_tempfile_from_draft($itemid, $newfilepath, $newfilename));
 
         break;
+
+    case 'additionalinformaton':
+        // process the information on the page
+        if ($plugin = repository_get_additional_information_plugin()) {
+            $functionname = "local_".$plugin."_get_additional_file_upload_info";
+            echo json_encode($functionname(data_submitted()));
+        }
+
+        break;
 }

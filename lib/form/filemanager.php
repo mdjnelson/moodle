@@ -363,6 +363,7 @@ class form_filemanager implements renderable {
         $params->context = $options->context;
         $params->env = 'filemanager';
         $params->disable_types = !empty($options->disable_types)?$options->disable_types:array();
+        $params->additional_information = repository_get_additional_information();
         $filepicker_options = initialise_filepicker($params);
         $this->options->filepicker = $filepicker_options;
     }

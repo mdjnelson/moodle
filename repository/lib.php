@@ -2681,6 +2681,10 @@ function initialise_filepicker($args) {
         $PAGE->requires->js_init_call('M.core_filepicker.set_templates', array($templates), true);
         $templatesinitialized = true;
     }
+    // Check if there is any additional information to show
+    if (!empty($args->additional_information)) {
+        $return->additional_information = $args->additional_information;
+    }
     return $return;
 }
 /**
@@ -2692,4 +2696,50 @@ function initialise_filepicker($args) {
  */
 function repository_attach_id(&$value, $key, $id){
     $value['repo_id'] = $id;
+}
+
+/**
+ * Checks to see if there is any additional information
+ * to be displayed in the filepicker popup after uploading
+ * a file.
+ *
+ * @global $CFG
+ * @return array|boolean
+ */
+function repository_get_additional_information_plugin() {
+    global $CFG;
+
+    if ($plugins = get_list_of_plugins('local')) {
+        foreach ($plugins as $p) {
+            if (file_exists("$CFG->dirroot/local/$p/lib.php")) {
+                include_once("$CFG->dirroot/local/$p/lib.php");
+                $functionname = "local_".$p."_get_additional_file_upload_info";
+                if (function_exists($functionname)) {
+                    return $p;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Checks to see if there is any additional information
+ * to be displayed in the filepicker popup after uploading
+ * a file.
+ *
+ * @global $CFG
+ * @param $page the page number
+ * @return array|boolean
+ */
+function repository_get_additional_information() {
+    global $CFG;
+
+    if ($plugin = repository_get_additional_information_plugin()) {
+        $functionname = "local_".$plugin."_get_additional_file_upload_info";
+        return $functionname();
+    }
+
+    return false;
 }

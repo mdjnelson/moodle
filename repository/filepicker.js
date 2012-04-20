@@ -1669,10 +1669,50 @@ M.core_filepicker.init = function(Y, options) {
                                 scope.options.editor_target.value=o.url;
                                 scope.options.editor_target.onchange();
                             }
-                            scope.hide();
+                            if (!scope.options.additional_information) {
+                                scope.hide();
+                            }
                             o.client_id = client_id;
                             var formcallback_scope = args.scope.options.magicscope ? args.scope.options.magicscope : args.scope;
                             scope.options.formcallback.apply(formcallback_scope, [o]);
+                            if (scope.options.additional_information) {
+                                scope.options.additional_page = 1;
+                                scope.create_additional_page(data);
+                            }
+                        }
+                }, true);
+            }, this);
+        },
+        create_additional_page: function (data) {
+            var client_id = this.options.client_id;
+            Y.one('#panel-'+client_id).set('innerHTML', '');
+            var types = this.options.accepted_types;
+
+            this.print_header();
+            var id = data.upload.id+'_'+client_id;
+            var str = '<div id="'+id+'_div" class="fp-upload-form mdl-align">';
+            str += '<form id="'+id+'" enctype="multipart/form-data" method="POST">';
+            str += this.options.additional_information;
+            str += '</form>';
+            str += '<div class="fp-next-btn"><button id="'+id+'_action">'+M.str.moodle.next+'</button></div>';
+            str += '</div>';
+            var additional_page = Y.Node.create(str);
+            Y.one('#panel-'+client_id).appendChild(additional_page);
+            var scope = this;
+            Y.one('#'+id+'_action').on('click', function(e) {
+                scope.request({
+                        scope: scope,
+                        action:'additionalinformaton',
+                        client_id: client_id,
+                        params: {'savepath':scope.options.savepath},
+                        repository_id: scope.active_repo.id,
+                        form: {id: id, upload:true},
+                        onerror: function(id, o, args) {
+                            scope.create_additional_page(data);
+                        },
+                        callback: function(id, o, args) {
+                            scope.options.additional_information = o;
+                            scope.create_additional_page(data);
                         }
                 }, true);
             }, this);
