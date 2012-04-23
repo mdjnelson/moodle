@@ -1676,7 +1676,7 @@ M.core_filepicker.init = function(Y, options) {
                             var formcallback_scope = args.scope.options.magicscope ? args.scope.options.magicscope : args.scope;
                             scope.options.formcallback.apply(formcallback_scope, [o]);
                             if (scope.options.additional_information) {
-                                scope.options.additional_page = 1;
+                                scope.options.additional_variables = o;
                                 scope.create_additional_page(data);
                             }
                         }
@@ -1691,8 +1691,14 @@ M.core_filepicker.init = function(Y, options) {
             this.print_header();
             var id = data.upload.id+'_'+client_id;
             var str = '<div id="'+id+'_div" class="fp-upload-form mdl-align">';
+            var additional_variables = this.options.additional_variables['additional_variables'];
             str += '<form id="'+id+'" enctype="multipart/form-data" method="POST">';
             str += this.options.additional_information;
+            if (additional_variables) {
+                for (property in additional_variables) {
+                    str += '<input type="hidden" name="'+property+'" value="'+additional_variables[property]+'" />';
+                }
+            }
             str += '</form>';
             str += '<div class="fp-next-btn"><button id="'+id+'_action">'+M.str.moodle.next+'</button></div>';
             str += '</div>';

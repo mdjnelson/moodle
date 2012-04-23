@@ -318,6 +318,13 @@ switch ($action) {
         break;
     case 'upload':
         $result = $repo->upload($saveas_filename, $maxbytes);
+        // if a plugin needs the information for a file we are uploading, then pass it
+        if ($plugin = repository_get_additional_information_plugin()) {
+            $functionname = "local_".$plugin."_process_file_upload_info";
+            if (function_exists($functionname)) {
+                $result = $functionname($result);
+            }
+        }
         echo json_encode($result);
         break;
 
@@ -345,7 +352,7 @@ switch ($action) {
         // process the information on the page
         if ($plugin = repository_get_additional_information_plugin()) {
             $functionname = "local_".$plugin."_get_additional_file_upload_info";
-            echo json_encode($functionname(data_submitted()));
+            echo json_encode($functionname(data_submitted()), JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
         }
 
         break;
