@@ -1717,7 +1717,11 @@ M.core_filepicker.init = function(Y, options) {
                         },
                         callback: function(id, o, args) {
                             scope.options.additional_information = o;
-                            scope.create_additional_page(data);
+                            if (o) {
+                                scope.create_additional_page(data);
+                            } else { // if nothing returned then hide
+                                scope.hide();
+                            }
                         }
                 }, true);
             }, this);
