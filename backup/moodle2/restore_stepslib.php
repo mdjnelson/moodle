@@ -548,7 +548,7 @@ class restore_process_course_modules_availability extends restore_execution_step
         $rs = $DB->get_recordset('backup_ids_temp', $params, '', 'itemid');
         foreach($rs as $availrec) {
             $availability = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'module_availability_group', $availrec->itemid)->info;
-            $DB->insert_record('course_modules_availability_group', $availability);
+            $DB->insert_record('course_modules_avail_group', $availability);
         }
         $rs->close();
     }
@@ -2535,7 +2535,7 @@ class restore_module_structure_step extends restore_structure_step {
         $data->coursemoduleid = $this->task->get_moduleid(); // Let add the availability cmid
         restore_dbops::set_backup_ids_record($this->get_restoreid(), 'module_availability', $data->id, 0, null, $data);
     }
-    
+
     protected function process_availability_groups($data) {
         $data = (object)$data;
         // Simply going to store the whole availability record now, we'll process
