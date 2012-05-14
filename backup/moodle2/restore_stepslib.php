@@ -543,13 +543,17 @@ class restore_process_course_modules_availability extends restore_execution_step
             }
         }
 
-        // Now we need to do it for conditional field availability
+        // Now we need to do it for conditional group availability
         $params = array('backupid' => $this->get_restoreid(), 'itemname' => 'module_availability_group');
         $rs = $DB->get_recordset('backup_ids_temp', $params, '', 'itemid');
         foreach($rs as $availrec) {
             $availability = restore_dbops::get_backup_ids_record($this->get_restoreid(),
                 'module_availability_group', $availrec->itemid)->info;
-            $DB->insert_record('course_modules_avail_group', $availability);
+            // Need to get the new groups id
+            if ($newgi = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'group', $availability->groupid)) {
+                $availability->groupid = $newgi->newitemid;
+                $DB->insert_record('course_modules_avail_groups', $availability);
+            }
         }
         $rs->close();
     }
@@ -2538,16 +2542,12 @@ class restore_module_structure_step extends restore_structure_step {
     }
 
     protected function process_availability_groups($data) {
-        global $DB;
-
         $data = (object) $data;
-        // Create the object to insert into the database
-        $avail_field = new stdClass();
-        $avail_field->coursemoduleid = $this->task->get_moduleid(); // Lets add the availability cmid
-        $avail_field->groupid = $data->groupid;
-        print_object($avail_field);
-        // Insert into the database
-        $DB->insert_record('course_modules_avail_group', $avail_field);
+        // Simply going to store the whole availability record now, we'll process
+        // all them later in the final task (once all groups have been restored)
+        // Let's call the low level one to be able to store the whole object
+        $data->coursemoduleid = $this->task->get_moduleid(); // Let add the availability cmid
+        restore_dbops::set_backup_ids_record($this->get_restoreid(), 'module_availability_group', $data->id, 0, null, $data);
     }
 }
 
