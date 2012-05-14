@@ -4533,7 +4533,7 @@ function remove_course_contents($courseid, $showfeedback = true, array $options 
            'coursemoduleid IN (SELECT id from {course_modules} WHERE course=?)',
            array($courseid));
     $DB->delete_records_select('course_modules_avail_group',
-           'coursemoduleid IN (SELECT id from {course_modules} WHERE course=?)',
+           'coursemoduleid IN (SELECT id from {course_modules} WHERE course = ?)',
            array($courseid));
 
     if ($showfeedback) {

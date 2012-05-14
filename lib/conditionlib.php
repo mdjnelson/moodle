@@ -161,7 +161,7 @@ class condition_info {
             !isset($cm->conditionsgroup)) {
             $cm->conditionsgrade=array();
             $cm->conditionscompletion=array();
-            $cm->conditionsgroup=array();
+            $cm->conditionsgroup = array();
 
             global $DB, $CFG;
             $conditions = $DB->get_records_sql($sql="
@@ -286,17 +286,17 @@ WHERE
     }
 
     /**
-     * Adds to the database a condition based on completion of another module.
+     * Adds to the database a condition based on the groups restricted to this module.
      *
      * @global object
      * @param int $groupid the ID of the group
      */
     public function add_group_condition($groupid, $groupname) {
-        echo $groupid . $groupname . "<br />";
         // Add to DB
         global $DB;
+
         $DB->insert_record('course_modules_avail_group',
-            (object)array('coursemoduleid'=>$this->cm->id, 'groupid'=>$groupid),
+            (object) array('coursemoduleid' => $this->cm->id, 'groupid' => $groupid),
             false);
 
         // Store in memory too
@@ -314,7 +314,7 @@ WHERE
         $DB->delete_records('course_modules_availability',
             array('coursemoduleid'=>$this->cm->id));
         $DB->delete_records('course_modules_avail_group',
-            array('coursemoduleid'=>$this->cm->id));
+            array('coursemoduleid' => $this->cm->id));
 
         // And from memory
         $this->cm->conditionsgrade = array();
@@ -380,10 +380,10 @@ WHERE
         }
 
         // Group conditions
-        if (count($this->cm->conditionsgroup)>0) {
-            foreach ($this->cm->conditionsgroup as $group=>$name) {
+        if (count($this->cm->conditionsgroup) > 0) {
+            foreach ($this->cm->conditionsgroup as $group => $name) {
                 // Check if the member is allowed
-                $information .= get_string('requires_group', 'condition', $name).' ';
+                $information .= get_string('requires_group', 'condition', $name) . ' ';
             }
         }
 
@@ -578,16 +578,16 @@ WHERE
         }
 
         // Group conditions
-        if (count($this->cm->conditionsgroup)>0) {
+        if (count($this->cm->conditionsgroup) > 0) {
             $groupavailable = false;
             $groupinformation = '';
             $usergroups = $this->get_cached_groups($userid);
-            foreach ($this->cm->conditionsgroup as $group=>$name) {
+            foreach ($this->cm->conditionsgroup as $group => $name) {
                 if (in_array($group, $usergroups)) {
                     $groupavailable = true;
                 }
                 // Check if the member is allowed
-                $groupinformation .= get_string('requires_group', 'condition', $name).' ';
+                $groupinformation .= get_string('requires_group', 'condition', $name) . ' ';
             }
             if (!$groupavailable) {
                 $available = false;
@@ -756,9 +756,10 @@ WHERE
      *   not use cache)
      * @return array an array of groups
      */
-    private function get_cached_groups($userid=0) {
+    private function get_cached_groups($userid = 0) {
         global $USER, $DB, $SESSION;
-        if ($userid==0 || $userid==$USER->id) {
+
+        if ($userid == 0 || $userid == $USER->id) {
             // For current user, go via cache in session
             if (empty($SESSION->groupcache)) {
                 $SESSION->groupcache = array();
@@ -770,7 +771,7 @@ WHERE
             }
             return $SESSION->groupcache;
         } else {
-            // Not the current user, so request the score individually
+            // Not the current user, so request the group individually
             $sql = "SELECT *
                     FROM {groups_members} g
                     WHERE g.userid=?";
