@@ -129,7 +129,8 @@ class condition_info {
         $this->gotdata = true;
 
         // Missing extra data
-        if (!isset($cm->conditionsgrade) || !isset($cm->conditionscompletion)) {
+        if (!isset($cm->conditionsgrade) || !isset($cm->conditionscompletion)
+                || !isset($cm->conditionsgroup)) {
             if ($expectingmissing<CONDITION_MISSING_EXTRATABLE) {
                 debugging('Performance warning: condition_info constructor is
                     faster if you pass in a $cm from get_fast_modinfo.
@@ -156,9 +157,11 @@ class condition_info {
 
         // Does nothing if the variables are already present
         if (!isset($cm->conditionsgrade) ||
-            !isset($cm->conditionscompletion)) {
+            !isset($cm->conditionscompletion) ||
+            !isset($cm->conditionsgroup)) {
             $cm->conditionsgrade=array();
             $cm->conditionscompletion=array();
+            $cm->conditionsgroup=array();
 
             global $DB, $CFG;
             $conditions = $DB->get_records_sql($sql="
@@ -181,6 +184,16 @@ WHERE
                     $minmax->name = self::get_grade_name($condition);
                     $cm->conditionsgrade[$condition->gradeitemid] = $minmax;
                 }
+            }
+            // For groups
+            $sql = "SELECT cma.*, g.name
+                    FROM {course_modules_availability_group} cma
+                    INNER JOIN {groups} g
+                    ON cma.groupid = g.id
+                    WHERE coursemoduleid = ?";
+            $conditions = $DB->get_records_sql($sql, array($cm->id));
+            foreach ($conditions as $condition) {
+                $cm->conditionsgroup[$condition->groupid] = $condition->name;
             }
         }
     }
@@ -273,6 +286,23 @@ WHERE
     }
 
     /**
+     * Adds to the database a condition based on completion of another module.
+     *
+     * @global object
+     * @param int $groupid the ID of the group
+     */
+    public function add_group_condition($groupid, $groupname) {
+        // Add to DB
+        global $DB;
+        $DB->insert_record('course_modules_availability_group',
+            (object)array('coursemoduleid'=>$this->cm->id, 'groupid'=>$groupid),
+            false);
+
+        // Store in memory too
+        $this->cm->conditionsgroup[$groupid] = $groupname;
+    }
+
+    /**
      * Erases from the database all conditions for this activity.
      *
      * @global moodle_database $DB
@@ -282,9 +312,12 @@ WHERE
         global $DB;
         $DB->delete_records('course_modules_availability',
             array('coursemoduleid'=>$this->cm->id));
+        $DB->delete_records('course_modules_availability_group',
+            array('coursemoduleid'=>$this->cm->id));
 
         // And from memory
         $this->cm->conditionsgrade = array();
+        $this->cm->conditionsgroup = array();
         $this->cm->conditionscompletion = array();
     }
 
@@ -343,6 +376,21 @@ WHERE
                 }
                 $information .= get_string('requires_grade_'.$string, 'condition', $minmax->name).' ';
             }
+        }
+
+        // Group conditions
+        if (count($this->cm->conditionsgroup)>0) {
+            $groupinformation = '';
+            foreach ($this->cm->conditionsgroup as $group=>$name) {
+                // If the group is 0, then set group information string
+                // to blank, as every group can access. Exit foreach
+                // as no point checking other group restrictions
+                if ($group === 0) {
+                    $groupinformation = '';
+                    continue;
+                }
+            }
+            $information .= $groupinformation;
         }
 
         // The date logic is complicated. The intention of this logic is:
@@ -695,6 +743,7 @@ WHERE
         global $SESSION;
         unset($SESSION->gradescorecache);
         unset($SESSION->gradescorecacheuserid);
+        unset($SESSION->grouprestrictioncache);
     }
 
     /**
@@ -714,6 +763,11 @@ WHERE
             if($record['conditiongradeitemid']) {
                 $ci->add_grade_condition($record['conditiongradeitemid'],
                     $record['conditiongrademin'],$record['conditiongrademax']);
+            }
+        }
+        foreach ($fromform->conditiongroupgroup as $record) {
+            if($record['conditiongroup']) {
+                $ci->add_group_condition($record['conditiongroup']);
             }
         }
         if(isset ($fromform->conditioncompletiongroup)) {

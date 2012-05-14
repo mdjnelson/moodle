@@ -422,5 +422,26 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2012042300.02);
     }
 
-    return true;
+    if ($oldversion < 2011070102.08) {
+        // Define table course_modules_availability_group to be created
+        $table = new xmldb_table('course_modules_availability_group');
+
+        // Adding fields to table course_modules_availability_group
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('coursemoduleid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('groupid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table course_modules_availability_group
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('coursemoduleid', XMLDB_KEY_FOREIGN, array('coursemoduleid'), 'course_modules', array('id'));
+
+        // Conditionally launch create table for course_modules_availability_group
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_main_savepoint(true, 2011070102.08);
+   }
+
+   return true;
 }

@@ -25,6 +25,7 @@
 
 $string['addcompletions'] = 'Add {no} activity conditions to form';
 $string['addgrades'] = 'Add {no} grade conditions to form';
+$string['addgroup'] = 'Add {no} more group restriction to form';
 $string['availabilityconditions'] = 'Restrict access';
 $string['availablefrom'] = 'Allow access from';
 $string['availablefrom_help'] = 'Access from/to dates determine when students can access the activity via a link on the course page.
@@ -52,6 +53,8 @@ $string['grade_upto'] = 'and less than';
 $string['gradeitembutnolimits'] = 'You must enter an upper or lower limit, or both.';
 $string['gradelimitsbutnoitem'] = 'You must choose a grade item.';
 $string['gradesmustbenumeric'] = 'The minimum and maximum grades must be numeric (or blank).';
+$string['grouprestrictions'] = 'Group restriction';
+$string['grouprestrictions_help'] = 'Select which groups are allowed to access this activity';
 $string['none'] = '(none)';
 $string['notavailableyet'] = 'Not available yet';
 $string['requires_completion_0'] = 'Not available unless the activity <strong>{$a}</strong> is incomplete.';
