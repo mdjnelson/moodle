@@ -53,6 +53,7 @@ $string['grade_upto'] = 'and less than';
 $string['gradeitembutnolimits'] = 'You must enter an upper or lower limit, or both.';
 $string['gradelimitsbutnoitem'] = 'You must choose a grade item.';
 $string['gradesmustbenumeric'] = 'The minimum and maximum grades must be numeric (or blank).';
+$string['groupdeclaredmultipletimes'] = 'You can not declare the same group more than once per activity.';
 $string['grouprestrictions'] = 'Group restriction';
 $string['grouprestrictions_help'] = 'If you wish to restrict this activity to certain groups then select them from the drop down menu to the right. If you leave this empty then no restrictions are applied.';
 $string['none'] = '(none)';

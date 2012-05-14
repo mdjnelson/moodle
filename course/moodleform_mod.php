@@ -354,6 +354,24 @@ abstract class moodleform_mod extends moodleform {
             }
         }
 
+        // Conditions: Verify that the group has not been declared more than once
+        if (array_key_exists('conditiongroupgroup', $data)) {
+            // Array to store the existing groups
+            $arrcurrentgroups = array();
+            // Error message displayed if any condition is declared more than once
+            $stralreadydeclaredwarning = get_string('groupdeclaredmultipletimes', 'condition');
+            foreach ($data['conditiongroupgroup'] as $i => $fielddata) {
+                if ($fielddata['conditiongroup'] == 0) { // Don't need to bother if none is selected
+                    continue;
+                }
+                if (in_array($fielddata['conditiongroup'], $arrcurrentfields)) {
+                    $errors["conditiongroupgroup[{$i}]"] = $stralreadydeclaredwarning;
+                }
+                // Add the field to the array
+                $arrcurrentfields[] = $fielddata['conditiongroup'];
+            }
+        }
+
         return $errors;
     }
 
