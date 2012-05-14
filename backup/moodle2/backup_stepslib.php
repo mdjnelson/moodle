@@ -323,7 +323,7 @@ class backup_module_structure_step extends backup_structure_step {
         $availability = new backup_nested_element('availability', array('id'), array(
             'sourcecmid', 'requiredcompletion', 'gradeitemid', 'grademin', 'grademax'));
         $availability_group = new backup_nested_element('availability_group', array('id'), array(
-            'field', 'operator', 'value'));
+            'groupid'));
 
         // attach format plugin structure to $module element, only one allowed
         $this->add_plugin_structure('format', $module, false);
