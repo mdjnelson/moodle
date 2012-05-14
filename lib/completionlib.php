@@ -431,19 +431,6 @@ class completion_info {
         $DB->delete_records('course_completion_criteria', array('course' => $this->course_id));
         $DB->delete_records('course_completion_aggr_methd', array('course' => $this->course_id));
 
-        // Remove all data from availability and completion tables that is associated
-        // with course-modules belonging to this course. Note this is done even if the
-        // features are not enabled now, in case they were enabled previously
-        $DB->delete_records_select('course_modules_completion',
-            'coursemoduleid IN (SELECT id from {course_modules} WHERE course=?)',
-            array($this->course_id));
-        $DB->delete_records_select('course_modules_availability',
-            'coursemoduleid IN (SELECT id from {course_modules} WHERE course=?)',
-            array($this->course_id));
-        $DB->delete_records_select('course_modules_avail_groups',
-            'coursemoduleid IN (SELECT id from {course_modules} WHERE course = ?)',
-            array($this->course_id));
-
         $this->delete_course_completion_data();
     }
 
