@@ -2545,8 +2545,9 @@ class restore_module_structure_step extends restore_structure_step {
         $avail_field = new stdClass();
         $avail_field->coursemoduleid = $this->task->get_moduleid(); // Lets add the availability cmid
         $avail_field->groupid = $data->groupid;
+        print_object($avail_field);
         // Insert into the database
-        $DB->insert_record('course_modules_avail_groups', $avail_field);
+        $DB->insert_record('course_modules_avail_group', $avail_field);
     }
 }
 

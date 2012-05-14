@@ -423,19 +423,19 @@ function xmldb_main_upgrade($oldversion) {
     }
 
     if ($oldversion < 2012051400.00) {
-        // Define table course_modules_avail_group to be created
-        $table = new xmldb_table('course_modules_avail_group');
+        // Define table course_modules_avail_groups to be created
+        $table = new xmldb_table('course_modules_avail_groups');
 
-        // Adding fields to table course_modules_avail_group
+        // Adding fields to table course_modules_avail_groups
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('coursemoduleid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
         $table->add_field('groupid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
 
-        // Adding keys to table course_modules_avail_group
+        // Adding keys to table course_modules_avail_groups
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->add_key('coursemoduleid', XMLDB_KEY_FOREIGN, array('coursemoduleid'), 'course_modules', array('id'));
 
-        // Conditionally launch create table for course_modules_avail_group
+        // Conditionally launch create table for course_modules_avail_groups
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }

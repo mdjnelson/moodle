@@ -187,7 +187,7 @@ WHERE
             }
             // For groups
             $sql = "SELECT cma.*, g.name
-                    FROM {course_modules_avail_group} cma
+                    FROM {course_modules_avail_groups} cma
                     INNER JOIN {groups} g
                     ON cma.groupid = g.id
                     WHERE coursemoduleid = ?";
@@ -295,7 +295,7 @@ WHERE
         // Add to DB
         global $DB;
 
-        $DB->insert_record('course_modules_avail_group',
+        $DB->insert_record('course_modules_avail_groups',
             (object) array('coursemoduleid' => $this->cm->id, 'groupid' => $groupid),
             false);
 
@@ -313,7 +313,7 @@ WHERE
         global $DB;
         $DB->delete_records('course_modules_availability',
             array('coursemoduleid'=>$this->cm->id));
-        $DB->delete_records('course_modules_avail_group',
+        $DB->delete_records('course_modules_avail_groups',
             array('coursemoduleid' => $this->cm->id));
 
         // And from memory

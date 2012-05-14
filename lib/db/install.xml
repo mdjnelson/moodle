@@ -338,7 +338,7 @@
         <INDEX NAME="idnumber-course" UNIQUE="false" FIELDS="idnumber, course" COMMENT="non unique index (although programatically we are guarantying some sort of uniqueness both under this table and the grade_items one). TODO: We need a central store of module idnumbers in the future." PREVIOUS="instance"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="course_modules_availability" COMMENT="Table stores conditions that affect whether a module/activity is currently available to students or not." PREVIOUS="course_modules" NEXT="course_modules_avail_group">
+    <TABLE NAME="course_modules_availability" COMMENT="Table stores conditions that affect whether a module/activity is currently available to students or not." PREVIOUS="course_modules" NEXT="course_modules_avail_groups">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="coursemoduleid"/>
         <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the module whose availability is being restricted by this condition." PREVIOUS="id" NEXT="sourcecmid"/>
@@ -355,7 +355,7 @@
         <KEY NAME="gradeitemid" TYPE="foreign" FIELDS="gradeitemid" REFTABLE="grade_items" REFFIELDS="id" PREVIOUS="sourcecmid"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="course_modules_avail_group" COMMENT="Table stores conditions that affect whether a module/activity is currently available to a group." PREVIOUS="course_modules_availability" NEXT="course_modules_completion">
+    <TABLE NAME="course_modules_avail_groups" COMMENT="Table stores conditions that affect whether a module/activity is currently available to a group." PREVIOUS="course_modules_availability" NEXT="course_modules_completion">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="coursemoduleid"/>
         <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="ID of the module whose availability is being restricted to this group." PREVIOUS="id" NEXT="groupid"/>
@@ -367,7 +367,7 @@
         <KEY NAME="groupid" TYPE="foreign" FIELDS="groupid" REFTABLE="groups" REFFIELDS="id" PREVIOUS="coursemoduleid"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="course_modules_completion" COMMENT="Stores the completion state (completed or not completed, etc) of each user on each activity." PREVIOUS="course_modules_avail_group" NEXT="course_sections">
+    <TABLE NAME="course_modules_completion" COMMENT="Stores the completion state (completed or not completed, etc) of each user on each activity." PREVIOUS="course_modules_avail_groups" NEXT="course_sections">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="coursemoduleid"/>
         <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Activity that has been completed (or not)." PREVIOUS="id" NEXT="userid"/>
