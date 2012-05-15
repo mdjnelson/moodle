@@ -766,7 +766,7 @@ WHERE
                 // Get all grades for the current course
                 $sql = "SELECT *
                         FROM {groups_members} g
-                        WHERE g.userid=?";
+                        WHERE g.userid = ?";
                 $SESSION->groupcache = $DB->get_records_sql_menu($sql, array($USER->id));
             }
             return $SESSION->groupcache;
@@ -774,7 +774,7 @@ WHERE
             // Not the current user, so request the group individually
             $sql = "SELECT *
                     FROM {groups_members} g
-                    WHERE g.userid=?";
+                    WHERE g.userid = ?";
             return $DB->get_records_sql_menu($sql, array($USER->id));
         }
     }
@@ -811,7 +811,7 @@ WHERE
             }
         }
         foreach ($fromform->conditiongroupgroup as $record) {
-            if($record['conditiongroup']) {
+            if ($record['conditiongroup']) {
                 $ci->add_group_condition($record['conditiongroup'], $fromform->grouplist[$record['conditiongroup']]);
             }
         }
