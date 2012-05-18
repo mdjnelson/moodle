@@ -1619,7 +1619,6 @@ M.core_filepicker.init = function(Y, options) {
             var id = data.upload.id+'_'+client_id;
             var content = this.fpnode.one('.fp-content');
             content.setContent(M.core_filepicker.templates.uploadform);
-
             content.all('.fp-file,.fp-saveas,.fp-setauthor,.fp-setlicense').each(function (node) {
                 node.all('label').set('for', node.one('input,select').generateID());
             });
@@ -1685,10 +1684,8 @@ M.core_filepicker.init = function(Y, options) {
         },
         create_additional_page: function (data) {
             var client_id = this.options.client_id;
-            Y.one('#panel-'+client_id).set('innerHTML', '');
-
-            this.print_header();
             var id = data.upload.id+'_'+client_id;
+            var content = this.fpnode.one('.fp-content');
             var str = '<div id="'+id+'_div" class="fp-upload-form mdl-align">';
             var additional_variables = this.options.additional_variables['additional_variables'];
             str += '<form id="'+id+'" enctype="multipart/form-data" method="POST">';
@@ -1701,10 +1698,9 @@ M.core_filepicker.init = function(Y, options) {
             str += '</form>';
             str += '<div class="fp-next-btn"><button id="'+id+'_action">'+M.str.moodle.next+'</button></div>';
             str += '</div>';
-            var additional_page = Y.Node.create(str);
-            Y.one('#panel-'+client_id).appendChild(additional_page);
+            content.setContent(str);
             var scope = this;
-            Y.one('#'+id+'_action').on('click', function(e) {
+            content.one('#'+id+'_action').on('click', function(e) {
                 scope.request({
                         scope: scope,
                         action:'additionalinformaton',
