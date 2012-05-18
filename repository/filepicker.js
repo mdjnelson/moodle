@@ -1716,8 +1716,8 @@ M.core_filepicker.init = function(Y, options) {
                             scope.create_additional_page(data);
                         },
                         callback: function(id, o, args) {
-                            scope.options.additional_information = o;
                             if (o) {
+                                scope.options.additional_information = o;
                                 scope.create_additional_page(data);
                             } else { // if nothing returned then hide
                                 scope.hide();
