@@ -1686,7 +1686,6 @@ M.core_filepicker.init = function(Y, options) {
         create_additional_page: function (data) {
             var client_id = this.options.client_id;
             Y.one('#panel-'+client_id).set('innerHTML', '');
-            var types = this.options.accepted_types;
 
             this.print_header();
             var id = data.upload.id+'_'+client_id;
