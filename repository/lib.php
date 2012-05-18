@@ -2699,9 +2699,9 @@ function repository_attach_id(&$value, $key, $id){
 }
 
 /**
- * Checks to see if there is any additional information
- * to be displayed in the filepicker popup after uploading
- * a file.
+ * Returns the local plugin (if it exists) responsible
+ * for collecting additional information after Moodle's file
+ * upload form has been submitted, false otherwise.
  *
  * @global $CFG
  * @return array|boolean
@@ -2725,12 +2725,11 @@ function repository_get_additional_information_plugin() {
 }
 
 /**
- * Checks to see if there is any additional information
- * to be displayed in the filepicker popup after uploading
- * a file.
+ * Returns the additional information to display
+ * after Moodle's file upload form has been submitted,
+ * false otherwise.
  *
  * @global $CFG
- * @param $page the page number
  * @return array|boolean
  */
 function repository_get_additional_information() {
