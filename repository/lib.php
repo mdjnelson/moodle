@@ -2709,15 +2709,18 @@ function repository_attach_id(&$value, $key, $id){
 function repository_get_additional_information_plugin() {
     global $CFG;
 
-    if ($plugins = get_list_of_plugins('local')) {
-        foreach ($plugins as $p) {
-            if (file_exists("$CFG->dirroot/local/$p/lib.php")) {
-                include_once("$CFG->dirroot/local/$p/lib.php");
-                $functionname = "local_".$p."_get_additional_file_upload_info";
-                if (function_exists($functionname)) {
-                    return $p;
-                }
-            }
+    // Check if it has been specified in config, else return false
+    if (!isset($CFG->extra_file_data)) {
+        return false;
+    }
+
+    // If it has been defined then we need to ensure it actually
+    // contains the necessary functionality to work
+    if (file_exists("$CFG->dirroot/local/$CFG->extra_file_data/lib.php")) {
+        include_once("$CFG->dirroot/local/$CFG->extra_file_data/lib.php");
+        $functionname = "local_".$CFG->extra_file_data."_get_additional_file_upload_info";
+        if (function_exists($functionname)) {
+            return $CFG->extra_file_data;
         }
     }
 
