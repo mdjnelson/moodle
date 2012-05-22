@@ -109,7 +109,7 @@ class core_files_renderer extends plugin_renderer_base {
             'fullpath'=>'/lib/form/filemanager.js',
             'requires' => array('core_filepicker', 'base', 'io-base', 'node', 'json', 'core_dndupload', 'panel', 'resize-plugin', 'dd-plugin'),
             'strings' => array(
-                array('error', 'moodle'), array('info', 'moodle'), array('next', 'moodle'), array('confirmdeletefile', 'repository'),
+                array('error', 'moodle'), array('info', 'moodle'), array('confirmdeletefile', 'repository'),
                 array('draftareanofiles', 'repository'), array('entername', 'repository'), array('enternewname', 'repository'),
                 array('invalidjson', 'repository'), array('popupblockeddownload', 'repository'),
                 array('unknownoriginal', 'repository'), array('confirmdeletefolder', 'repository'),
@@ -905,6 +905,24 @@ class core_files_renderer extends plugin_renderer_base {
             <p><button class="{!}fp-login-submit">'.get_string('submit', 'repository').'</button></p>
         </form>
     </div>
+</div>';
+        return preg_replace('/\{\!\}/', '', $rv);
+    }
+
+    /**
+     * FilePicker JS template for after a file has been uploaded
+     *
+     * Content to display when user chooses 'Upload file' repository with the
+     * $CFG->extra_file_data set to a valid local plugin that contains
+     * the necessary functions.
+     *
+     * @return string
+     */
+    public function fp_js_template_additionalinformation() {
+        $rv = '
+<div class="fp-upload-form mdl-align">
+    <form enctype="multipart/form-data" method="POST"></form>
+    <div class="fp-next-btn"><button>'.get_string('next').'</button></div>
 </div>';
         return preg_replace('/\{\!\}/', '', $rv);
     }

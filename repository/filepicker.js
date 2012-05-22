@@ -1686,19 +1686,18 @@ M.core_filepicker.init = function(Y, options) {
             var client_id = this.options.client_id;
             var id = data.upload.id+'_'+client_id;
             var content = this.fpnode.one('.fp-content');
-            var str = '<div id="'+id+'_div" class="fp-upload-form mdl-align">';
+            var additional_information = this.options.additional_information;
             var additional_variables = this.options.additional_variables['additional_variables'];
-            str += '<form id="'+id+'" enctype="multipart/form-data" method="POST">';
-            str += this.options.additional_information;
+            content.setContent(M.core_filepicker.templates.additionalinformation);
+            content.one('form').set('id', id);
+            content.one('form').appendChild(this.options.additional_information);
             if (additional_variables) {
                 for (property in additional_variables) {
-                    str += '<input type="hidden" name="'+property+'" value="'+additional_variables[property]+'" />';
+                    content.one('form').appendChild(Y.Node.create('<input/>').
+                        setAttrs({type:'hidden',name:property,value:additional_variables[property]}));
                 }
             }
-            str += '</form>';
-            str += '<div class="fp-next-btn"><button id="'+id+'_action">'+M.str.moodle.next+'</button></div>';
-            str += '</div>';
-            content.setContent(str);
+            content.one('button').set('id', id+'_action');
             var scope = this;
             content.one('#'+id+'_action').on('click', function(e) {
                 scope.request({
