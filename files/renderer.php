@@ -913,7 +913,7 @@ class core_files_renderer extends plugin_renderer_base {
      * FilePicker JS template for after a file has been uploaded
      *
      * Content to display when user chooses 'Upload file' repository with the
-     * $CFG->extra_file_data set to a valid local plugin that contains
+     * $CFG->extrafiledata set to a valid local plugin that contains
      * the necessary functions.
      *
      * @return string
