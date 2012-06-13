@@ -2683,6 +2683,10 @@ function initialise_filepicker($args) {
     }
     // Check if there is any additional information to show
     if (!empty($args->additional_information)) {
+        // The additional_information variable changes, depending on what the information
+        // to show next is, if we are uploading multiple files we want to keep a track
+        // of what the original information sent was as well
+        $return->initial_add_info = $args->additional_information;
         $return->additional_information = $args->additional_information;
     }
     return $return;

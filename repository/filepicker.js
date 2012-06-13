@@ -1619,6 +1619,7 @@ M.core_filepicker.init = function(Y, options) {
             var id = data.upload.id+'_'+client_id;
             var content = this.fpnode.one('.fp-content');
             content.setContent(M.core_filepicker.templates.uploadform);
+
             content.all('.fp-file,.fp-saveas,.fp-setauthor,.fp-setlicense').each(function (node) {
                 node.all('label').set('for', node.one('input,select').generateID());
             });
@@ -1686,9 +1687,9 @@ M.core_filepicker.init = function(Y, options) {
             var client_id = this.options.client_id;
             var id = data.upload.id+'_'+client_id;
             var content = this.fpnode.one('.fp-content');
-            var additional_information = this.options.additional_information;
             var additional_variables = this.options.additional_variables['additional_variables'];
             content.setContent(M.core_filepicker.templates.additionalinformation);
+
             content.one('form').set('id', id);
             content.one('form').appendChild(this.options.additional_information);
             if (additional_variables) {
@@ -1714,7 +1715,8 @@ M.core_filepicker.init = function(Y, options) {
                             if (o) {
                                 scope.options.additional_information = o;
                                 scope.create_additional_page(data);
-                            } else { // if nothing returned then hide
+                            } else { // if nothing returned then set information to original state and hide
+                                scope.options.additional_information = scope.options.initial_add_info;
                                 scope.hide();
                             }
                         }
