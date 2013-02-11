@@ -102,7 +102,6 @@ class auth_plugin_base {
     );
 
     /**
-
      * This is the primary method that is used by the authenticate_user_login()
      * function in moodlelib.php.
      *
@@ -493,5 +492,4 @@ class auth_plugin_base {
     function loginpage_idp_list($wantsurl) {
         return array();
     }
-
 }
