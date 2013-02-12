@@ -418,6 +418,34 @@ class auth_plugin_db extends auth_plugin_base {
         return 0;
     }
 
+    /**
+     * Confirm the new user as registered. This should normally not be used,
+     * but it may be necessary if the user auth_method is changed to external
+     * db before the user is confirmed.
+     *
+     * @param string $username
+     * @param string $confirmsecret
+     */
+    function user_confirm($username, $confirmsecret = null) {
+        global $DB;
+
+        // Check if the user is in local moodle user table.
+        $user = get_complete_user_data('username', $username);
+
+        if (!empty($user)) {
+            if ($user->confirmed) {
+                return AUTH_CONFIRM_ALREADY;
+            } else {
+                // Update local moodle user table.
+                $DB->set_field('user', 'confirmed', 1, array('id' => $user->id));
+                $DB->set_field('user', 'firstaccess', time(), array('id' => $user->id));
+                return AUTH_CONFIRM_OK;
+            }
+        } else  {
+            return AUTH_CONFIRM_ERROR;
+        }
+    }
+
     function user_exists($username) {
 
         // Init result value.
