@@ -2531,43 +2531,53 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
      * @param bool $required if input is required field
      * @param string $error error message to display
      */
-    function startGroup(&$group, $required, $error){
+    function startGroup(&$group, $required, $error) {
+        // Check if this group contains an element of type date_selector or date_time_selector, if it
+        // does we need to add the CSS class so that the dateselector JS is loaded - see MDL-39187.
+        $dateselectorcss = '';
+        foreach ($group->getElements() as $element) {
+            $type = $element->getType();
+            if (($type == 'date_selector') || ($type == 'date_time_selector')) {
+                $dateselectorcss = ' fdate_selector_in_group';
+                break;
+            }
+        }
+
         // Make sure the element has an id.
         $group->_generateId();
 
-        if (method_exists($group, 'getElementTemplateType')){
+        if (method_exists($group, 'getElementTemplateType')) {
             $html = $this->_elementTemplates[$group->getElementTemplateType()];
-        }else{
+        } else{
             $html = $this->_elementTemplates['default'];
-
         }
 
-        if (isset($this->_advancedElements[$group->getName()])){
-            $html =str_replace(' {advanced}', ' advanced', $html);
-            $html =str_replace('{advancedimg}', $this->_advancedHTML, $html);
+        if (isset($this->_advancedElements[$group->getName()])) {
+            $html = str_replace(' {advanced}', ' advanced', $html);
+            $html = str_replace('{advancedimg}', $this->_advancedHTML, $html);
         } else {
-            $html =str_replace(' {advanced}', '', $html);
-            $html =str_replace('{advancedimg}', '', $html);
+            $html = str_replace(' {advanced}', '', $html);
+            $html = str_replace('{advancedimg}', '', $html);
         }
-        if (method_exists($group, 'getHelpButton')){
-            $html =str_replace('{help}', $group->getHelpButton(), $html);
-        }else{
-            $html =str_replace('{help}', '', $html);
+        if (method_exists($group, 'getHelpButton')) {
+            $html = str_replace('{help}', $group->getHelpButton(), $html);
+        } else{
+            $html = str_replace('{help}', '', $html);
         }
-        $html =str_replace('{id}', 'fgroup_' . $group->getAttribute('id'), $html);
-        $html =str_replace('{name}', $group->getName(), $html);
-        $html =str_replace('{type}', 'fgroup', $html);
+
+        $html = str_replace('{id}', 'fgroup_' . $group->getAttribute('id'), $html);
+        $html = str_replace('{name}', $group->getName(), $html);
+        $html = str_replace('{type}', 'fgroup' . $dateselectorcss, $html);
 
         $this->_templates[$group->getName()]=$html;
-        // Fix for bug in tableless quickforms that didn't allow you to stop a
-        // fieldset before a group of elements.
-        // if the element name indicates the end of a fieldset, close the fieldset
-        if (   in_array($group->getName(), $this->_stopFieldsetElements)
-            && $this->_fieldsetsOpen > 0
-           ) {
+
+        // Fix for bug in tableless quickforms that didn't allow you to stop a fieldset before a group
+        // of elements. If the element name indicates the end of a fieldset, close the fieldset.
+        if (in_array($group->getName(), $this->_stopFieldsetElements) && ($this->_fieldsetsOpen > 0)) {
             $this->_html .= $this->_closeFieldsetTemplate;
             $this->_fieldsetsOpen--;
         }
+
         parent::startGroup($group, $required, $error);
     }
 
