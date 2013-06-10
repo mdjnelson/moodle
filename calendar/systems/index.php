@@ -2,7 +2,7 @@
 
 define('NO_OUTPUT_BUFFERING', true);
 
-require('../config.php');
+require('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');    // various admin-only functions
 require_once($CFG->libdir.'/upgradelib.php');  // general upgrade/install related functions
 require_once($CFG->libdir.'/pluginlib.php');   // available updates notifications
@@ -12,11 +12,11 @@ $fetchupdates = optional_param('fetchupdates', 0, PARAM_BOOL);
 
 // Check some PHP server settings
 
-$PAGE->set_url('/calendarsystem/index.php');
+$PAGE->set_url('/calendar/systems/index.php');
 $PAGE->set_pagelayout('admin'); // Set a default pagelayout
 
 $version = null;
-require("$CFG->dirroot/calendarsystem/version.php");
+require("$CFG->dirroot/calendar/systems/version.php");
 // Check version of calendarsystem code on disk
 
 $PAGE->set_context(context_system::instance());
@@ -68,7 +68,7 @@ if ($fetchupdates) {
     redirect($PAGE->url);
 }
 
-$strupdatecheck = get_string('updatecheck', 'calendarsystem');
+$strupdatecheck = get_string('updatecheck', 'calendar');
 $PAGE->navbar->add($strupdatecheck);
 
 echo $OUTPUT->header();
@@ -96,7 +96,7 @@ echo $OUTPUT->footer();
         if (is_array($updates)) {
             if (is_array($updates['core'])) {
                 $someupdateavailable = true;
-                $updateinfo .= $OUTPUT->heading(get_string('updateavailable', 'calendarsystem'), 3);
+                $updateinfo .= $OUTPUT->heading(get_string('updateavailable', 'calendar'), 3);
                 foreach ($updates['core'] as $update) {
                     $updateinfo .= moodle_available_update_info($update);
                 }
@@ -107,7 +107,7 @@ echo $OUTPUT->footer();
                 foreach ($updates as $pluginname=>$pluginupdates) {
                     if (is_array($pluginupdates)) {
                         $someupdateavailable = true;
-                        $updateinfo .= $OUTPUT->heading(get_string('updateavailableforplugin', 'calendarsystem', get_string('name', 'calendarsystem_'.$pluginname)), 3);
+                        $updateinfo .= $OUTPUT->heading(get_string('updateavailableforplugin', 'calendar', get_string('name', 'calendarsystem_'.$pluginname)), 3);
 
                         foreach ($pluginupdates as $update) {
                             $updateinfo .= moodle_available_update_info($update);
@@ -120,12 +120,12 @@ echo $OUTPUT->footer();
         if (!$someupdateavailable) {
             $now = time();
             if ($fetch and ($fetch <= $now) and ($now - $fetch < HOURSECS)) {
-                $updateinfo .= $OUTPUT->heading(get_string('updateavailablenot', 'calendarsystem'), 3);
+                $updateinfo .= $OUTPUT->heading(get_string('updateavailablenot', 'calendar'), 3);
             }
         }
 
         $updateinfo .= $OUTPUT->container_start('checkforupdates');
-        $updateinfo .= $OUTPUT->single_button(new moodle_url('', array('fetchupdates' => 1)), get_string('checkforupdates', 'calendarsystem'));
+        $updateinfo .= $OUTPUT->single_button(new moodle_url('', array('fetchupdates' => 1)), get_string('checkforupdates', 'calendar'));
         if ($fetch) {
             $updateinfo .= $OUTPUT->container(get_string('checkforupdateslast', 'core_plugin',
                 userdate($fetch, get_string('strftimedatetime', 'core_langconfig'))));
@@ -136,8 +136,8 @@ echo $OUTPUT->footer();
 
         return $updateinfo;
     }
-    
-    
+
+
     /**
      * Helper method to render the information about the available Moodle update
      *
@@ -150,7 +150,7 @@ echo $OUTPUT->footer();
         $info = array();
 
         if (isset($updateinfo->version)) {
-            $info[] = html_writer::tag('span', get_string('updateavailable_version', 'calendarsystem', $updateinfo->version),
+            $info[] = html_writer::tag('span', get_string('updateavailable_version', 'calendar', $updateinfo->version),
                 array('class' => 'info version'));
         }
 
@@ -159,7 +159,7 @@ echo $OUTPUT->footer();
         }
 
         if (isset($updateinfo->url)) {
-            $info[] = html_writer::link($updateinfo->url, get_string('updateavailable_moreinfo', 'calendarsystem'),
+            $info[] = html_writer::link($updateinfo->url, get_string('updateavailable_moreinfo', 'calendar'),
                 array('class' => 'info more'));
         }
 

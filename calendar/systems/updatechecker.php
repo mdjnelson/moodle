@@ -258,7 +258,7 @@ class calendarsystem_update_checker {
         $version = null;
         $plugin  = new stdClass();
 
-        include($CFG->dirroot.'/calendarsystem/version.php');
+        include($CFG->dirroot.'/calendar/systems/version.php');
         $this->currentversion = $version;
 
         $calendars = get_plugin_list('calendarsystem');

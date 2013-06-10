@@ -276,8 +276,8 @@ class course_edit_form extends moodleform {
 
         $calendarsystems = array();
         $calendarsystems[''] = get_string('forceno');
-        $calendarsystems += get_list_of_calendars();
-        $mform->addElement('select', 'calendarsystem', get_string('forcecalendarsystem', 'calendarsystem'), $calendarsystems);
+        $calendarsystems += calendar_systems_plugin_factory::get_list_of_calendar_systems();
+        $mform->addElement('select', 'calendarsystem', get_string('forcecalendarsystem', 'calendar'), $calendarsystems);
 
 /// customizable role names in this course
 //--------------------------------------------------------------------------------

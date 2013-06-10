@@ -2694,7 +2694,7 @@ function dst_changes_for_year($year, $timezone) {
     list($stdhour, $stdmin) = explode(':', $timezone->std_time);
 
     // MDL-18375, Multi-Calendar Support
-    $calendarsystem_gregorian = calendarsystem_plugin_factory::factory('gregorian');
+    $calendarsystem_gregorian = calendar_systems_plugin_factory::factory('gregorian');
     $timedst = $calendarsystem_gregorian->make_timestamp($year, $timezone->dst_month, $monthdaydst, 0, 0, 0, 99, false);
     $timestd = $calendarsystem_gregorian->make_timestamp($year, $timezone->std_month, $monthdaystd, 0, 0, 0, 99, false);
 
@@ -2773,7 +2773,7 @@ function dst_offset_on($time, $strtimezone = null) {
 function find_day_in_month($startday, $weekday, $month, $year) {
 
     // MDL-18375, Multi-Calendar Support
-    $calendarsystem_gregorian = calendarsystem_plugin_factory::factory('gregorian');
+    $calendarsystem_gregorian = calendar_systems_plugin_factory::factory('gregorian');
 
     $daysinmonth = days_in_month($month, $year);
 

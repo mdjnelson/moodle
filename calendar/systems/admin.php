@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-require_once('../config.php');
+require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/tablelib.php');
 
@@ -36,7 +36,7 @@ if (!empty($delete) and confirm_sesskey()) {
         } else {
             $strpluginname = $delete;
         }
-        echo $OUTPUT->confirm(get_string('calendarsystemdeleteconfirm', 'calendarsystem', $strpluginname),
+        echo $OUTPUT->confirm(get_string('calendarsystemdeleteconfirm', 'calendar', $strpluginname),
                                 new moodle_url($PAGE->url, array('delete' => $delete, 'confirm' => 1)),
                                 $PAGE->url);
         echo $OUTPUT->footer();
@@ -94,5 +94,5 @@ foreach ($plugins as $plugin => $name) {
 }
 
 $table->print_html();
-echo $OUTPUT->container(html_writer::link('index.php', get_string('checkforupdates', 'calendarsystem')), 'singlebutton');
+echo $OUTPUT->container(html_writer::link('index.php', get_string('checkforupdates', 'calendar')), 'singlebutton');
 echo $OUTPUT->footer();

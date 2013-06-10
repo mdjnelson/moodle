@@ -59,12 +59,12 @@ class block_calendar_month extends block_base {
             $url = new moodle_url($url);
 
             $calendarselect = new single_select($url, 'calendarsystem', get_list_of_calendars(), current_calendarsystem_plugin(), false, 'choosecalendar');
-            $calendarselect->set_label('<span style="font-weight: normal;">'.get_string('system', 'calendarsystem').'</span>');
+            $calendarselect->set_label('<span style="font-weight: normal;">'.get_string('system', 'calendar').'</span>');
 
             $this->content->text .= '
             <div id="changecalendarlink" style="display: none; visibility: hidden;">
                 <a style="font-weight: normal;" onclick="return toggleCalendarVisibility(document.getElementById(\'choosecalendar\'))" href="#">
-                ' . get_string('changecalendar', 'calendarsystem') . '
+                ' . get_string('changecalendar', 'calendar') . '
                 </a>
             </div>
             ' . $OUTPUT->render($calendarselect) . '
