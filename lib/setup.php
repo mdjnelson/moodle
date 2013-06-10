@@ -482,13 +482,6 @@ global $FULLSCRIPT;
  */
 global $SCRIPT;
 
-/**
- * MDL-18375, Multi-Calendar Support
- *
- * $CALENDARSYSTEM is a global that defines the calendar system
- */
-global $CALENDARSYSTEM;
-
 // Set httpswwwroot default value (this variable will replace $CFG->wwwroot
 // inside some URLs used in HTTPSPAGEREQUIRED pages.
 $CFG->httpswwwroot = $CFG->wwwroot;
