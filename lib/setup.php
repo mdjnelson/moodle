@@ -434,6 +434,13 @@ global $FULLSCRIPT;
  */
 global $SCRIPT;
 
+/**
+ * MDL-18375, Multi-Calendar Support
+ *
+ * $CALENDARSYSTEM is a global that defines the calendar system
+ */
+global $CALENDARSYSTEM;
+
 // Store settings from config.php in array in $CFG - we can use it later to detect problems and overrides
 $CFG->config_php_settings = (array)$CFG;
 // Forced plugin settings override values from config_plugins table
@@ -534,6 +541,7 @@ require_once($CFG->libdir .'/editorlib.php');       // All text editor related f
 require_once($CFG->libdir .'/messagelib.php');      // Messagelib functions
 require_once($CFG->libdir .'/modinfolib.php');      // Cached information on course-module instances
 require_once($CFG->dirroot.'/cache/lib.php');       // Cache API
+require_once($CFG->dirroot . '/calendarsystem/calendarsystem.class.php');   // MDL-18375, Multi-Calendar Support
 
 // make sure PHP is not severly misconfigured
 setup_validate_php_configuration();
@@ -965,6 +973,26 @@ if (isset($CFG->maintenance_later) and $CFG->maintenance_later <= time()) {
         redirect(new moodle_url('/'));
     }
 }
+
+// MDL-18375, Multi-Calendar Support
+// note: do not accept calendarsystem parameter from POST
+if (isset($_GET['calendarsystem']) and ($calendarsystem = optional_param('calendarsystem', '', PARAM_SAFEDIR))) {
+    if (file_exists($CFG->dirroot .'/calendarsystem/'. $calendarsystem)) {
+        $SESSION->calendarsystem = $calendarsystem;
+    }
+}
+
+unset($calendarsystem);
+
+if (empty($CFG->calendarsystem)) {
+    if (empty($SESSION->calendarsystem)) {
+        $CFG->calendarsystem = 'gregorian';
+    } else {
+        $CFG->calendarsystem = $SESSION->calendarsystem;
+    }
+}
+
+$CALENDARSYSTEM = calendarsystem_plugin_factory::factory();
 
 // note: we can not block non utf-8 installations here, because empty mysql database
 // might be converted to utf-8 in admin/index.php during installation

@@ -1956,6 +1956,8 @@ function get_user_preferences($name = null, $default = null, $user = null) {
 /**
  * Given date parts in user time produce a GMT timestamp.
  *
+ * MDL-18375, Multi-Calendar Support
+ *
  * @package core
  * @category time
  * @param int $year The year part to create timestamp of
@@ -1971,6 +1973,16 @@ function get_user_preferences($name = null, $default = null, $user = null) {
  * @return int GMT timestamp
  */
 function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, $timezone=99, $applydst=true) {
+    global $CALENDARSYSTEM;
+    if ($CALENDARSYSTEM->get_min_year() == 1350 && $year > 2000) {
+    	debugging('Warning. Wrong call to make_timestamp().', DEBUG_DEVELOPER);
+    	error('Your code must be fixed by a developer.');
+    }
+    return $CALENDARSYSTEM->make_timestamp($year, $month, $day, $hour, $minute, $second, $timezone, $applydst);
+}
+
+// MDL-18375, Multi-Calendar Support
+function make_timestamp_old($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, $timezone=99, $applydst=true) {
 
     //save input timezone, required for dst offset check.
     $passedtimezone = $timezone;
@@ -2076,6 +2088,8 @@ function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, 
  * If parameter fixday = true (default), then take off leading
  * zero from %d, else maintain it.
  *
+ * MDL-18375, Multi-Calendar Support
+ *
  * @package core
  * @category time
  * @param int $date the timestamp in UTC, as obtained from the database.
@@ -2090,6 +2104,12 @@ function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, 
  * @return string the formatted date/time.
  */
 function userdate($date, $format = '', $timezone = 99, $fixday = true, $fixhour = true) {
+    global $CALENDARSYSTEM;
+    return $CALENDARSYSTEM->userdate($date, $format, $timezone, $fixday, $fixhour);
+}
+
+// MDL-18375, Multi-Calendar Support
+function userdate_old($date, $format = '', $timezone = 99, $fixday = true, $fixhour = true) {
 
     global $CFG;
 
@@ -2197,6 +2217,8 @@ function date_format_string($date, $format, $tz = 99) {
  * Given a $time timestamp in GMT (seconds since epoch),
  * returns an array that represents the date in user time
  *
+ * MDL-18375, Multi-Calendar Support
+ *
  * @package core
  * @category time
  * @uses HOURSECS
@@ -2205,7 +2227,13 @@ function date_format_string($date, $format, $tz = 99) {
  *        dst offset is applyed {@link http://docs.moodle.org/dev/Time_API#Timezone}
  * @return array An array that represents the date in user time
  */
-function usergetdate($time, $timezone=99) {
+ function usergetdate($time, $timezone=99) {
+    global $CALENDARSYSTEM;
+    return $CALENDARSYSTEM->usergetdate($time, $timezone);
+}
+
+// MDL-18375, Multi-Calendar Support
+function usergetdate_old($time, $timezone=99) {
 
     //save input timezone, required for dst offset check.
     $passedtimezone = $timezone;
@@ -2578,6 +2606,8 @@ function calculate_user_dst_table($from_year = NULL, $to_year = NULL, $strtimezo
 /**
  * Calculates the required DST change and returns a Timestamp Array
  *
+ * MDL-18375, Multi-Calendar Support
+ *
  * @package core
  * @category time
  * @uses HOURSECS
@@ -2598,8 +2628,10 @@ function dst_changes_for_year($year, $timezone) {
     list($dst_hour, $dst_min) = explode(':', $timezone->dst_time);
     list($std_hour, $std_min) = explode(':', $timezone->std_time);
 
-    $timedst = make_timestamp($year, $timezone->dst_month, $monthdaydst, 0, 0, 0, 99, false);
-    $timestd = make_timestamp($year, $timezone->std_month, $monthdaystd, 0, 0, 0, 99, false);
+    // MDL-18375, Multi-Calendar Support
+    $calendarsystem_gregorian = calendarsystem_plugin_factory::factory('gregorian');
+    $timedst = $calendarsystem_gregorian->make_timestamp($year, $timezone->dst_month, $monthdaydst, 0, 0, 0, 99, false);
+    $timestd = $calendarsystem_gregorian->make_timestamp($year, $timezone->std_month, $monthdaystd, 0, 0, 0, 99, false);
 
     // Instead of putting hour and minute in make_timestamp(), we add them afterwards.
     // This has the advantage of being able to have negative values for hour, i.e. for timezones
@@ -2676,6 +2708,9 @@ function dst_offset_on($time, $strtimezone = NULL) {
  */
 function find_day_in_month($startday, $weekday, $month, $year) {
 
+    // MDL-18375, Multi-Calendar Support
+    $calendarsystem_gregorian = calendarsystem_plugin_factory::factory('gregorian');
+
     $daysinmonth = days_in_month($month, $year);
 
     if($weekday == -1) {
@@ -2697,7 +2732,7 @@ function find_day_in_month($startday, $weekday, $month, $year) {
     if($startday < 1) {
 
         $startday = abs($startday);
-        $lastmonthweekday  = strftime('%w', mktime(12, 0, 0, $month, $daysinmonth, $year));
+        $lastmonthweekday  = strftime('%w', $calendarsystem_gregorian->mktime(12, 0, 0, $month, $daysinmonth, $year));
 
         // This is the last such weekday of the month
         $lastinmonth = $daysinmonth + $weekday - $lastmonthweekday;
@@ -2715,7 +2750,7 @@ function find_day_in_month($startday, $weekday, $month, $year) {
     }
     else {
 
-        $indexweekday = strftime('%w', mktime(12, 0, 0, $month, $startday, $year));
+        $indexweekday = strftime('%w', $calendarsystem_gregorian->mktime(12, 0, 0, $month, $startday, $year));
 
         $diff = $weekday - $indexweekday;
         if($diff < 0) {
@@ -2746,6 +2781,8 @@ function days_in_month($month, $year) {
 /**
  * Calculate the position in the week of a specific calendar day
  *
+ * MDL-18375, Multi-Calendar Support
+ *
  * @package core
  * @category time
  * @param int $day The day of the date whose position in the week is sought
@@ -2754,9 +2791,9 @@ function days_in_month($month, $year) {
  * @return int
  */
 function dayofweek($day, $month, $year) {
-    // I wonder if this is any different from
-    // strftime('%w', mktime(12, 0, 0, $month, $daysinmonth, $year, 0));
-    return intval(date('w', mktime(12, 0, 0, $month, $day, $year)));
+    // MDL-18375, Multi-Calendar Support
+    global $CALENDARSYSTEM;
+    return $CALENDARSYSTEM->dayofweek($day, $month, $year);
 }
 
 /// USER AUTHENTICATION AND LOGIN ////////////////////////////////////////
