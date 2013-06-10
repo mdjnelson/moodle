@@ -26,23 +26,23 @@ class calendarsystem_plugin_factory {
             $system = current_calendarsystem_plugin();
             // empty($CFG->calendarsystem) ? 'gregorian' : $CFG->calendarsystem; // we might be in the installation process and $CFG->calendarststem might be undefined yet
         }
-        if (file_exists("$CFG->dirroot/calendarsystem/$system/calendarsystem.php")) {
-            require_once("$CFG->dirroot/calendarsystem/$system/calendarsystem.php");
+        if (file_exists("$CFG->dirroot/calendar/systems/$system/lib.php")) {
+            require_once("$CFG->dirroot/calendar/systems/$system/lib.php");
             $class = "calendarsystem_plugin_$system";
             return new $class;
         } else {
-            trigger_error("$CFG->dirroot/calendarsystem/$system/calendarsystem.php does not exist");
-            notify("Calendar system file $system/calendarsystem.php does not exist");
+            trigger_error("$CFG->dirroot/calendar/systems/$system/lib.php does not exist");
+            notify("Calendar system file $system/lib.php does not exist");
         }
     }
 }
 
 function get_list_of_calendars() {
     $calendars = array();
-    $calendardirs = get_list_of_plugins('calendarsystem');
+    $calendardirs = get_plugin_list('calendarsystem');
 
-    foreach ($calendardirs as $calendar) {
-        $calendars[$calendar] = get_string('name', "calendarsystem_{$calendar}");
+    foreach ($calendardirs as $name => $location) {
+        $calendars[$name] = get_string('name', "calendarsystem_{$name}");
     }
 
     return $calendars;
