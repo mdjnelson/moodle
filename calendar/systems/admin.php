@@ -94,5 +94,4 @@ foreach ($plugins as $plugin => $name) {
 }
 
 $table->print_html();
-echo $OUTPUT->container(html_writer::link('index.php', get_string('checkforupdates', 'calendar')), 'singlebutton');
 echo $OUTPUT->footer();

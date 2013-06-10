@@ -461,7 +461,6 @@ if ($hassiteconfig) {
 if ($hassiteconfig) {
     $ADMIN->add('modules', new admin_category('calendarsystems', new lang_string('calendarsystems', 'calendar')));
     $ADMIN->add('calendarsystems', new admin_externalpage('managecalendarsystems', new lang_string('calendarsystemsmanage', 'calendar'), $CFG->wwwroot .'/calendar/systems/admin.php'));
-    $ADMIN->add('calendarsystems', new admin_externalpage('updatecalendarsystems', new lang_string('checkforupdates', 'calendar'), $CFG->wwwroot .'/calendar/systems/index.php'));
 }
 
 /// Add all local plugins - must be always last!
