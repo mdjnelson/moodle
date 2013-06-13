@@ -991,7 +991,7 @@ if (empty($CFG->calendarsystem)) {
     }
 }
 
-$CALENDARSYSTEM = calendarsystem_plugin_factory::factory();
+$CALENDARSYSTEM = calendar_systems_plugin_factory::factory();
 
 // note: we can not block non utf-8 installations here, because empty mysql database
 // might be converted to utf-8 in admin/index.php during installation

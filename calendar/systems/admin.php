@@ -15,6 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Handles displaying and managing calender systems.
+ *
+ * @package core_calendar
+ * @copyright 2008 onwards Foodle Group {@link http://foodle.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/tablelib.php');
@@ -25,11 +33,11 @@ $delete  = optional_param('delete', '', PARAM_PLUGIN);
 $confirm = optional_param('confirm', '', PARAM_BOOL);
 
 /// If data submitted, then process and store.
-
 if (!empty($delete) and confirm_sesskey()) {
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string('type_calendarsystem_plural', 'plugin'));
 
+    // Provide a confirmation message before deleting the plugin.
     if (!$confirm) {
         if (get_string_manager()->string_exists('pluginname', 'calendarsystem_' . $delete)) {
             $strpluginname = get_string('pluginname', 'calendarsystem_' . $delete);
@@ -37,12 +45,11 @@ if (!empty($delete) and confirm_sesskey()) {
             $strpluginname = $delete;
         }
         echo $OUTPUT->confirm(get_string('calendarsystemdeleteconfirm', 'calendar', $strpluginname),
-                                new moodle_url($PAGE->url, array('delete' => $delete, 'confirm' => 1)),
-                                $PAGE->url);
+                              new moodle_url($PAGE->url, array('delete' => $delete, 'confirm' => 1)),
+                              $PAGE->url);
         echo $OUTPUT->footer();
-        die();
-
-    } else {
+        exit();
+    } else { // They have confirmed they want to delete the plugin.
         uninstall_plugin('calendarsystem', $delete);
         $a = new stdclass();
         $a->name = $delete;
@@ -51,15 +58,14 @@ if (!empty($delete) and confirm_sesskey()) {
         echo $OUTPUT->notification(get_string('plugindeletefiles', '', $a), 'notifysuccess');
         echo $OUTPUT->continue_button($PAGE->url);
         echo $OUTPUT->footer();
-        die();
+        exit();
     }
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('type_calendarsystem_plural', 'plugin'));
 
-/// Print the table of all installed local plugins
-
+// Print the table of all installed local plugins.
 $table = new flexible_table('calendarsystems_administration_table');
 $table->define_columns(array('name', 'version', 'delete'));
 $table->define_headers(array(get_string('plugin'), get_string('version'), get_string('delete')));

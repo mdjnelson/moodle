@@ -15,13 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Version details.
  *
- * @package    calendarsystem
- * @subpackage gregorian
- * @author     Shamim Rezaie
- * @copyright  2008 onwards Foodle Group  {@link http://foodle.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package calendar_systems_plugin_gregorian
+ * @copyright 2008 onwards Foodle Group {@link http://foodle.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();

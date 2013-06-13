@@ -204,7 +204,7 @@ function rfc2445_is_valid_value($value, $type) {
             $d = intval(substr($value, 6, 2));
 
             // MDL-18375, Multi-Calendar Support
-            $calendarsystem_gregorian = calendarsystem_plugin_factory::factory('gregorian');
+            $calendarsystem_gregorian = calendar_systems_plugin_factory::factory('gregorian');
             return $calendarsystem_gregorian->checkdate($m, $d, $y);
         break;
 

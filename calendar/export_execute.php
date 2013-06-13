@@ -35,7 +35,7 @@ $what = optional_param('preset_what', 'all', PARAM_ALPHA);
 $time = optional_param('preset_time', 'weeknow', PARAM_ALPHA);
 
 // MDL-18375, Multi-Calendar Support
-$calendarsystem_gregorian = calendarsystem_plugin_factory::factory('gregorian');
+$calendarsystem_gregorian = calendar_systems_plugin_factory::factory('gregorian');
 $now = $calendarsystem_gregorian->usergetdate(time());
 // Let's see if we have sufficient and correct data
 $allowed_what = array('all', 'courses');
