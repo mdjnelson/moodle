@@ -102,8 +102,10 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
                 }
             }
         }
-        // MDL-18375, Multi-Calendar Support
-        // form_init_date_js();
+        // The YUI2 calendar only supports the gregorian calendar system.
+        if (calendar_systems_plugin_factory::get_calendar_system() === 'gregorian') {
+            form_init_date_js();
+        }
     }
 
     /**
@@ -127,10 +129,13 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
         $this->_elements[] = @MoodleQuickForm::createElement('select', 'day', get_string('day', 'form'), $days, $this->getAttributes(), true);
         $this->_elements[] = @MoodleQuickForm::createElement('select', 'month', get_string('month', 'form'), $months, $this->getAttributes(), true);
         $this->_elements[] = @MoodleQuickForm::createElement('select', 'year', get_string('year', 'form'), $years, $this->getAttributes(), true);
-        $this->_elements[] = @MoodleQuickForm::createElement('image', 'calendar', $OUTPUT->pix_url('i/calendar', 'moodle'),
-            array('title' => get_string('calendar', 'calendar'), 'class' => 'visibleifjs'));
+        // The YUI2 calendar only supports the gregorian calendar system so only display the calendar image if this is being used.
+        if (calendar_systems_plugin_factory::get_calendar_system() === 'gregorian') {
+            $this->_elements[] = @MoodleQuickForm::createElement('image', 'calendar', $OUTPUT->pix_url('i/calendar', 'moodle'),
+                array('title' => get_string('calendar', 'calendar'), 'class' => 'visibleifjs'));
+        }
         // If optional we add a checkbox which the user can use to turn if on
-        if($this->_options['optional']) {
+        if ($this->_options['optional']) {
             $this->_elements[] = @MoodleQuickForm::createElement('checkbox', 'enabled', null, get_string('enable'), $this->getAttributes(), true);
         }
         foreach ($this->_elements as $element){
