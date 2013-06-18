@@ -29,74 +29,25 @@
 abstract class calendar_systems_plugin_base {
 
     /**
-     * Returns the number of days in a given month for a specified year.
+     * Returns a list of all the possible days for all months.
      *
-     * @param int $m the month
-     * @param int $y the year
-     * @return int the number of days in that particular month
-     */
-    public abstract function calendar_days_in_month($m, $y);
-
-    /**
-     * Given a $time timestamp in GMT (seconds since epoch)
-     * returns an array that represents the date in user time.
+     * This is used to generate the select box for the days
+     * in the date selector elements. Some months contain more days
+     * than others so this function should return all possible days as
+     * we can not predict what month will be chosen (the user
+     * may have JS turned off and we need to support this situation in
+     * Moodle).
      *
-     * @param int $time Timestamp in GMT
-     * @param float|int|string $timezone offset's time with timezone, if float and not 99, then no
-     *        dst offset is applied {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @return array an array that represents the date in user time
+     * @return array the days
      */
-    public abstract function usergetdate($time, $timezone = 99);
-
-    /**
-     * Validates a given date.
-     *
-     * @param int $m the month
-     * @param int $d the day
-     * @param int $y the year
-     * @return bool returns true if valid, false otherwise
-     */
-    public abstract function checkdate($m, $d, $y);
-
-    /**
-     * Given date parts in user time produce a GMT timestamp.
-     *
-     * @param int $year the year part to create timestamp of
-     * @param int $month the month part to create timestamp of
-     * @param int $day the day part to create timestamp of
-     * @param int $hour the hour part to create timestamp of
-     * @param int $minute the minute part to create timestamp of
-     * @param int $second the second part to create timestamp of
-     * @param int|float|string $timezone timezone modifier, used to calculate GMT time offset.
-     *             if 99 then default user's timezone is used {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @param bool $applydst toggle Daylight Saving Time, default true, will be
-     *             applied only if timezone is 99 or string.
-     * @return int GMT timestamp
-     */
-    public abstract function make_timestamp($year, $month = 1, $day = 1, $hour = 0, $minute = 0, $second = 0, $timezone = 99, $applydst = true);
-
-    /**
-     * Returns a formatted string that represents a date in user time.
-     *
-     * @param int $date the timestamp.
-     * @param string $format strftime format. You should probably get this using
-     *        get_string('strftime...', 'langconfig');
-     * @param int|float|string  $timezone by default uses the user's time zone. if numeric and
-     *        not 99 then daylight saving will not be added.
-     *        {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @param bool $fixday If true (default) then the leading zero from %d is removed.
-     *        If false then the leading zero is maintained.
-     * @param bool $fixhour If true (default) then the leading zero from %I is removed.
-     * @return string the formatted date/time.
-     */
-    public abstract function userdate($date, $format = '', $timezone = 99, $fixday = true, $fixhour = true);
+    public abstract function get_days();
 
     /**
      * Returns a list of all the names of the months.
      *
      * @return array the month names
      */
-    public abstract function get_month_names();
+    public abstract function get_months();
 
     /**
      * Returns the minimum year of the calendar.
@@ -108,45 +59,22 @@ abstract class calendar_systems_plugin_base {
     /**
      * Returns the maximum year of the calendar.
      *
-     * @return int the max yearte
+     * @return int the max year
      */
     public abstract function get_max_year();
 
     /**
-     * Get unix timestamp for a GMT date.
+     * Provided with a day, month, year, hour and minute in a specific
+     * calendar system convert it into the equivalent Gregorian date.
      *
-     * @param int|null $hour the hour
-     * @param int|null $minute the minute
-     * @param int|null $second the second
-     * @param int|null $month the month
-     * @param int|null $day the day
-     * @param int|null $year the year
-     * @return int an integer unix timestamp
+     * @param int $day
+     * @param int $month
+     * @param int $year
+     * @param int $hour
+     * @param int $minute
+     * @return array the converted day, month and year.
      */
-    public abstract function gmmktime($hour = null, $minute = null, $second = null, $month = null, $day = null, $year = null);
-
-    /**
-     * Get unix timestamp for a date in the server time.
-     *
-     * @param int|null $hour the hour
-     * @param int|null $minute the minute
-     * @param int|null $second the second
-     * @param int|null $month the month
-     * @param int|null $day the day
-     * @param int|null $year the year
-     * @return int an integer unix timestamp
-     */
-    public abstract function mktime($hour = null, $minute = null, $second = null, $month = null, $day = null, $year = null);
-
-    /**
-     * Calculate the position in the week of a specific calendar day.
-     *
-     * @param int $day the day of the date whose position in the week is sought
-     * @param int $month the month of the date whose position in the week is sought
-     * @param int $year the year of the date whose position in the week is sought
-     * @return int
-     */
-    public abstract function dayofweek($day, $month, $year);
+    public abstract function convert_to_gregorian($day, $month, $year, $hour = 0, $minute = 0);
 }
 
 /**
@@ -208,8 +136,10 @@ class calendar_systems_plugin_factory {
             $return = $SESSION->calendarsystem;
         } else if (!empty($USER->calendarsystem)) {
             $return = $USER->calendarsystem;
-        } else {
+        } else if (!empty($CFG->calendarsystem)) {
             $return = $CFG->calendarsystem;
+        } else {
+            $return = 'gregorian';
         }
 
         return $return;

@@ -42,9 +42,7 @@ require_once($CFG->libdir . '/formslib.php');
 class MoodleQuickForm_date_selector extends MoodleQuickForm_group
 {
     /**
-     * Control the fieldnames for form elements
-     *
-     * MDL-18375, Multi-Calendar Support
+     * Control the fieldnames for form elements.
      *
      * startyear => int start of range of years that can be selected
      * stopyear => int last year that can be selected
@@ -78,13 +76,11 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
      * @param array $options Options to control the element's display
      * @param mixed $attributes Either a typical HTML attribute string or an associative array
      */
-    function MoodleQuickForm_date_selector($elementName = null, $elementLabel = null, $options = array(), $attributes = null)
-    {
-        // MDL-18375, Multi-Calendar Support
-        global $CALENDARSYSTEM;
-
-        $this->_options = array('startyear'=> $CALENDARSYSTEM->get_min_year(), 'stopyear'=>$CALENDARSYSTEM->get_max_year(),
-                                'timezone'=>99, 'optional'=>false);
+    function MoodleQuickForm_date_selector($elementName = null, $elementLabel = null, $options = array(), $attributes = null) {
+        // Get the calendar system used - see MDL-18375.
+        $calendarsystem = calendar_systems_plugin_factory::factory();
+        $this->_options = array('startyear' => $calendarsystem->get_min_year(), 'stopyear' => $calendarsystem->get_max_year(),
+            'defaulttime' => 0, 'timezone' => 99, 'step' => 5, 'optional' => false);
 
         $this->HTML_QuickForm_element($elementName, $elementLabel, $attributes);
         $this->_persistantFreeze = true;
@@ -113,18 +109,18 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
      *
      * @access private
      */
-    function _createElements()
-    {
-        global $OUTPUT, $CALENDARSYSTEM;
+    function _createElements() {
+        global $OUTPUT;
 
-        $this->_elements = array();
-        for ($i=1; $i<=31; $i++) {
-            $days[$i] = $i;
-        }
-        $months = $CALENDARSYSTEM->get_month_names();
-        for ($i=$this->_options['startyear']; $i<=$this->_options['stopyear']; $i++) {
+        // Get the calendar system used - see MDL-18375.
+        $calendarsystem = calendar_systems_plugin_factory::factory();
+        $days = $calendarsystem->get_days();
+        $months = $calendarsystem->get_months();
+        for ($i = $this->_options['startyear']; $i <= $this->_options['stopyear']; $i++) {
             $years[$i] = $i;
         }
+
+        $this->_elements = array();
         // E_STRICT creating elements without forms is nasty because it internally uses $this
         $this->_elements[] = @MoodleQuickForm::createElement('select', 'day', get_string('day', 'form'), $days, $this->getAttributes(), true);
         $this->_elements[] = @MoodleQuickForm::createElement('select', 'month', get_string('month', 'form'), $months, $this->getAttributes(), true);
@@ -154,8 +150,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
      * @param object $caller calling object
      * @return bool
      */
-    function onQuickFormEvent($event, $arg, &$caller)
-    {
+    function onQuickFormEvent($event, $arg, &$caller) {
         switch ($event) {
             case 'updateValue':
                 // constant values override both default and submitted ones
@@ -221,8 +216,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
      *
      * @return string
      */
-    function toHtml()
-    {
+    function toHtml() {
         include_once('HTML/QuickForm/Renderer/Default.php');
         $renderer = new HTML_QuickForm_Renderer_Default();
         $renderer->setElementTemplate('{element}');
@@ -246,8 +240,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
      * @param bool $required Whether a group is required
      * @param string $error An error message associated with a group
      */
-    function accept(&$renderer, $required = false, $error = null)
-    {
+    function accept(&$renderer, $required = false, $error = null) {
         $renderer->renderElement($this, $required, $error);
     }
 
@@ -258,8 +251,7 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
      * @param bool $assoc specifies if returned array is associative
      * @return array
      */
-    function exportValue(&$submitValues, $assoc = false)
-    {
+    function exportValue(&$submitValues, $assoc = false) {
         $value = null;
         $valuearray = array();
         foreach ($this->_elements as $element){
@@ -276,13 +268,15 @@ class MoodleQuickForm_date_selector extends MoodleQuickForm_group
                     return $value;
                 }
             }
-
-            $value[$this->getName()] = make_timestamp($valuearray['year'],
-                                   $valuearray['month'],
-                                   $valuearray['day'],
-                                   0, 0, 0,
-                                   $this->_options['timezone'],
-                                   true);
+            // Get the calendar system used - see MDL-18375.
+            $calendarsystem = calendar_systems_plugin_factory::factory();
+            $gregoriandate = $calendarsystem->convert_to_gregorian($valuearray['day'], $valuearray['month'], $valuearray['year']);
+            $value[$this->getName()] = make_timestamp($gregoriandate['year'],
+                                                      $gregoriandate['month'],
+                                                      $gregoriandate['day'],
+                                                      0, 0, 0,
+                                                      $this->_options['timezone'],
+                                                      true);
 
             return $value;
         } else {
