@@ -16,9 +16,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines functions used by calendar system plugins.
+ * Defines functions used by calendar type plugins.
  *
- * This library provides a unified interface for calendar stystems.
+ * This library provides a unified interface for calendar types.
  *
  * @package core_calendar
  * @author Shamim Rezaie <support@foodle.org>
@@ -26,7 +26,7 @@
  * @copyright 2008 onwards Foodle Group {@link http://foodle.org}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class calendar_systems_plugin_base {
+abstract class calendar_type_plugin_base {
 
     /**
      * Returns a list of all the possible days for all months.
@@ -64,8 +64,8 @@ abstract class calendar_systems_plugin_base {
     public abstract function get_max_year();
 
     /**
-     * Provided with a day, month, year, hour and minute in a specific
-     * calendar system convert it into the equivalent Gregorian date.
+     * Provided with a day, month, year, hour and minute in the specific
+     * calendar type convert it into the equivalent Gregorian date.
      *
      * @param int $day
      * @param int $month
@@ -78,66 +78,66 @@ abstract class calendar_systems_plugin_base {
 }
 
 /**
- * Class calendar_systems_plugin_factory.
+ * Class calendar_type_plugin_factory.
  *
- * Factory class producing required subclasses of {@link calendar_systems_plugin_base}.
+ * Factory class producing required subclasses of {@link calendar_type_plugin_base}.
  */
-class calendar_systems_plugin_factory {
+class calendar_type_plugin_factory {
 
     /**
-     * Returns an instance of the currently used calendar system.
+     * Returns an instance of the currently used calendar type.
      *
-     * @return calendar_systems_plugin_* the created calendar_system class
-     * @throws coding_exception if the calendar system file could not be loaded
+     * @return calendar_type_plugin_* the created calendar_type class
+     * @throws coding_exception if the calendar type file could not be loaded
      */
     static function factory() {
         global $CFG;
 
-        $system = self::get_calendar_system();
-        $file = 'calendar/systems/' . $system . '/lib.php';
+        $type = self::get_calendar_type();
+        $file = 'calendar/type/' . $type . '/lib.php';
         $fullpath = $CFG->dirroot . '/' . $file;
         if (is_readable($fullpath)) {
             require_once($fullpath);
-            $class = "calendar_systems_plugin_$system";
+            $class = "calendar_type_plugin_$type";
             return new $class();
         } else {
-            throw new coding_exception("The calendar system file $file could not be initialised, check that it exists
+            throw new coding_exception("The calendar type file $file could not be initialised, check that it exists
                 and that the web server has permission to read it.");
         }
     }
 
     /**
-     * Returns a list of calendar systems available for use.
+     * Returns a list of calendar typess available for use.
      *
-     * @return array the list of calendar systems
+     * @return array the list of calendar types
      */
-    static function get_list_of_calendar_systems() {
+    static function get_list_of_calendar_types() {
         $calendars = array();
-        $calendardirs = get_plugin_list('calendarsystem');
+        $calendardirs = core_component::get_plugin_list('calendartype');
 
         foreach ($calendardirs as $name => $location) {
-            $calendars[$name] = get_string('name', "calendarsystem_{$name}");
+            $calendars[$name] = get_string('name', "calendartype_{$name}");
         }
 
         return $calendars;
     }
 
     /**
-     * Returns the current calendar system in use.
+     * Returns the current calendar type in use.
      *
-     * @return string the current calendar system being used
+     * @return string the current calendar type being used
      */
-    static function get_calendar_system() {
+    static function get_calendar_type() {
         global $CFG, $USER, $SESSION, $COURSE;
 
-        if (!empty($COURSE->id) and $COURSE->id != SITEID and !empty($COURSE->calendarsystem)) { // Course calendarsystem can override all other settings for this page.
-            $return = $COURSE->calendarsystem;
-        } else if (!empty($SESSION->calendarsystem)) { // Session calendarsystem can override other settings.
-            $return = $SESSION->calendarsystem;
-        } else if (!empty($USER->calendarsystem)) {
-            $return = $USER->calendarsystem;
-        } else if (!empty($CFG->calendarsystem)) {
-            $return = $CFG->calendarsystem;
+        if (!empty($COURSE->id) and $COURSE->id != SITEID and !empty($COURSE->calendartype)) { // Course calendartype can override all other settings for this page.
+            $return = $COURSE->calendartype;
+        } else if (!empty($SESSION->calendartype)) { // Session calendartype can override other settings.
+            $return = $SESSION->calendartype;
+        } else if (!empty($USER->calendartype)) {
+            $return = $USER->calendartype;
+        } else if (!empty($CFG->calendartype)) {
+            $return = $CFG->calendartype;
         } else {
             $return = 'gregorian';
         }

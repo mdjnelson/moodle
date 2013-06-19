@@ -39,7 +39,7 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright 2006 Jamie Pratt <me@jamiep.org>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group{
+class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group {
 
     /**
      * Options for the element.
@@ -79,9 +79,9 @@ class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group{
      * @param mixed $attributes Either a typical HTML attribute string or an associative array
      */
     function MoodleQuickForm_date_time_selector($elementName = null, $elementLabel = null, $options = array(), $attributes = null) {
-        // Get the calendar system used - see MDL-18375.
-        $calendarsystem = calendar_systems_plugin_factory::factory();
-        $this->_options = array('startyear' => $calendarsystem->get_min_year(), 'stopyear' => $calendarsystem->get_max_year(),
+        // Get the calendar type used - see MDL-18375.
+        $calendartype = calendar_type_plugin_factory::factory();
+        $this->_options = array('startyear' => $calendartype->get_min_year(), 'stopyear' => $calendartype->get_max_year(),
                                 'defaulttime' => 0, 'timezone' => 99, 'step' => 5, 'optional' => false);
 
         $this->HTML_QuickForm_element($elementName, $elementLabel, $attributes);
@@ -100,8 +100,8 @@ class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group{
                 }
             }
         }
-        // The YUI2 calendar only supports the gregorian calendar system.
-        if (calendar_systems_plugin_factory::get_calendar_system() === 'gregorian') {
+        // The YUI2 calendar only supports the gregorian calendar type.
+        if (calendar_type_plugin_factory::get_calendar_type() === 'gregorian') {
             form_init_date_js();
         }
     }
@@ -114,10 +114,10 @@ class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group{
     function _createElements() {
         global $OUTPUT;
 
-        // Get the calendar system used - see MDL-18375.
-        $calendarsystem = calendar_systems_plugin_factory::factory();
-        $days = $calendarsystem->get_days();
-        $months = $calendarsystem->get_months();
+        // Get the calendar type used - see MDL-18375.
+        $calendartype = calendar_type_plugin_factory::factory();
+        $days = $calendartype->get_days();
+        $months = $calendartype->get_months();
         for ($i = $this->_options['startyear']; $i <= $this->_options['stopyear']; $i++) {
             $years[$i] = $i;
         }
@@ -140,8 +140,8 @@ class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group{
             $this->_elements[] = @MoodleQuickForm::createElement('select', 'hour', get_string('hour', 'form'), $hours, $this->getAttributes(), true);
             $this->_elements[] = @MoodleQuickForm::createElement('select', 'minute', get_string('minute', 'form'), $minutes, $this->getAttributes(), true);
         }
-        // The YUI2 calendar only supports the gregorian calendar system so only display the calendar image if this is being used.
-        if (calendar_systems_plugin_factory::get_calendar_system() === 'gregorian') {
+        // The YUI2 calendar only supports the gregorian calendar type so only display the calendar image if this is being used.
+        if (calendar_type_plugin_factory::get_calendar_type() === 'gregorian') {
             $this->_elements[] = @MoodleQuickForm::createElement('image', 'calendar', $OUTPUT->pix_url('i/calendar', 'moodle'),
                 array('title' => get_string('calendar', 'calendar'), 'class' => 'visibleifjs'));
         }
@@ -290,13 +290,13 @@ class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group{
                     return $value;
                 }
             }
-            // Get the calendar system used - see MDL-18375.
-            $calendarsystem = calendar_systems_plugin_factory::factory();
-            $gregoriandate = $calendarsystem->convert_to_gregorian($valuearray['day'],
-                                                                   $valuearray['month'],
-                                                                   $valuearray['year'],
-                                                                   $valuearray['hour'],
-                                                                   $valuearray['minute']);
+            // Get the calendar type used - see MDL-18375.
+            $calendartype = calendar_type_plugin_factory::factory();
+            $gregoriandate = $calendartype->convert_to_gregorian($valuearray['day'],
+                                                                 $valuearray['month'],
+                                                                 $valuearray['year'],
+                                                                 $valuearray['hour'],
+                                                                 $valuearray['minute']);
             $value[$this->getName()] = make_timestamp($gregoriandate['year'],
                                                       $gregoriandate['month'],
                                                       $gregoriandate['day'],

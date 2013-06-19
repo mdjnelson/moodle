@@ -457,10 +457,10 @@ if ($hassiteconfig) {
     }
 }
 
-// The calendar system plugins.
+// The calendar type plugins.
 if ($hassiteconfig) {
-    $ADMIN->add('modules', new admin_category('calendarsystems', new lang_string('calendarsystems', 'calendar')));
-    $ADMIN->add('calendarsystems', new admin_externalpage('managecalendarsystems', new lang_string('calendarsystemsmanage', 'calendar'), $CFG->wwwroot .'/calendar/systems/admin.php'));
+    $ADMIN->add('modules', new admin_category('calendartypes', new lang_string('calendartypes', 'calendar')));
+    $ADMIN->add('calendartypes', new admin_externalpage('managecalendartypes', new lang_string('calendartypesmanage', 'calendar'), $CFG->wwwroot .'/calendar/type/admin.php'));
 }
 
 /// Add all local plugins - must be always last!

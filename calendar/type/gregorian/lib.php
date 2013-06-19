@@ -18,13 +18,13 @@
 /**
  * Handles calendar functions for the gregorian calendar.
  *
- * @package calendar_systems_plugin_gregorian
+ * @package calendar_type_plugin_gregorian
  * @author Shamim Rezaie <support@foodle.org>
  * @author Mark Nelson <markn@moodle.com>
  * @copyright 2008 onwards Foodle Group {@link http://foodle.org}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class calendar_systems_plugin_gregorian extends calendar_systems_plugin_base {
+class calendar_type_plugin_gregorian extends calendar_type_plugin_base {
 
     /**
      * Returns a list of all the possible days for all months.
@@ -83,11 +83,11 @@ class calendar_systems_plugin_gregorian extends calendar_systems_plugin_base {
 
     /**
      * Provided with a day, month, year, hour and minute in a specific
-     * calendar system convert it into the equivalent Gregorian date.
+     * calendar type convert it into the equivalent Gregorian date.
      *
      * In this function we don't need to do anything as the date received
      * is Gregorian, this is a simple skeleton function for others to copy
-     * when creating other calendar systems.
+     * when creating other calendar types.
      *
      * @param int $day
      * @param int $month
