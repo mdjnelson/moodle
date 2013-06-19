@@ -17,13 +17,13 @@
 /**
  * Version details.
  *
- * @package calendar_systems_plugin_gregorian
+ * @package calendar_type_plugin_gregorian
  * @copyright 2008 onwards Foodle Group {@link http://foodle.org}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013011900;                    // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2012120300;                    // Requires this Moodle version
-$plugin->component = 'calendarsystem_gregorian';    // Full name of the plugin (used for diagnostics)
+$plugin->version   = 2013062000; // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2012120300; // Requires this Moodle version.
+$plugin->component = 'calendartype_gregorian'; // Full name of the plugin (used for diagnostics).

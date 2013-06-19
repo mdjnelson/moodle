@@ -276,10 +276,10 @@ class course_edit_form extends moodleform {
         // Multi-Calendar Support - see MDL-18375
         $mform->addElement('header','', get_string('calendar', 'calendar'));
 
-        $calendarsystems = array();
-        $calendarsystems[''] = get_string('forceno');
-        $calendarsystems += calendar_systems_plugin_factory::get_list_of_calendar_systems();
-        $mform->addElement('select', 'calendarsystem', get_string('forcecalendarsystem', 'calendar'), $calendarsystems);
+        $calendartypes = array();
+        $calendartypes[''] = get_string('forceno');
+        $calendartypes += calendar_type_plugin_factory::get_list_of_calendar_types();
+        $mform->addElement('select', 'calendartype', get_string('forcecalendartype', 'calendar'), $calendartypes);
 
         // Customizable role names in this course.
         $mform->addElement('header','rolerenaming', get_string('rolerenaming'));
