@@ -85,9 +85,33 @@ class calendar_type_plugin_gregorian extends calendar_type_plugin_base {
      * Provided with a day, month, year, hour and minute in a specific
      * calendar type convert it into the equivalent Gregorian date.
      *
-     * In this function we don't need to do anything as the date received
-     * is Gregorian, this is a simple skeleton function for others to copy
-     * when creating other calendar types.
+     * In this function we don't need to do anything except pass the data
+     * back as an array. This is because the date received is Gregorian.
+     *
+     * @param int $day
+     * @param int $month
+     * @param int $year
+     * @param int $hour
+     * @param int $minute
+     * @return array the converted day, month, year, hour and minute.
+     */
+    public function convert_from_gregorian($day, $month, $year, $hour = 0, $minute = 0) {
+        $date = array();
+        $date['day'] = $day;
+        $date['month'] = $month;
+        $date['year'] = $year;
+        $date['hour'] = $hour;
+        $date['minute'] = $minute;
+
+        return $date;
+    }
+
+    /**
+     * Provided with a day, month, year, hour and minute in a specific
+     * calendar type convert it into the equivalent Gregorian date.
+     *
+     * In this function we don't need to do anything except pass the data
+     * back as an array. This is because the date received is Gregorian.
      *
      * @param int $day
      * @param int $month
