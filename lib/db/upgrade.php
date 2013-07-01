@@ -2259,5 +2259,28 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2013070800.01);
     }
 
+    if ($oldversion < 2013071200.01) {
+        // Define field calendartype to be added to course.
+        $table = new xmldb_table('course');
+        $field = new xmldb_field('calendartype', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, 'gregorian', 'lang');
+
+        // Conditionally launch add field calendartype.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field calendartype to be added to user.
+        $table = new xmldb_table('user');
+        $field = new xmldb_field('calendartype', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, 'gregorian', 'lang');
+
+        // Conditionally launch add field calendartype.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2013071200.01);
+    }
+
     return true;
 }
