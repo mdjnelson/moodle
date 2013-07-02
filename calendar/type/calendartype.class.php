@@ -90,6 +90,34 @@ abstract class calendar_type_plugin_base {
     public abstract function convert_from_gregorian($day, $month, $year, $hour = 0, $minute = 0);
 
     /**
+     * Convert a given year in the calendar type being used to the Gregorian year.
+     *
+     * @param int $year
+     * @return int the gregorian year
+     */
+    public function convert_year_to_gregorian($year) {
+        // Get a valid day and month for this calendar.
+        $day = key($this->get_days());
+        $month = key($this->get_months());
+
+        $date = $this->convert_to_gregorian($day, $month, $year);
+
+        return $date['year'];
+    }
+
+    /**
+     * Convert a given Gregorian year to the calendar type being used.
+     *
+     * @param int $year
+     * @return int the gregorian year
+     */
+    public function convert_year_from_gregorian($year) {
+        $date = $this->convert_from_gregorian(1, 1, $year);
+
+        return $date['year'];
+    }
+
+    /**
      * Returns a formatted string that represents a date in user time.
      *
      * Returns a formatted string that represents a date in user time
