@@ -2090,7 +2090,7 @@ function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, 
  * @return string the formatted date/time.
  */
 function userdate($date, $format = '', $timezone = 99, $fixday = true, $fixhour = true) {
-    $calendartype = calendar_type_plugin_factory::factory();
+    $calendartype = core_calendar\type_factory::factory();
     return $calendartype->userdate($date, $format, $timezone, $fixday, $fixhour);
 }
 
@@ -2145,7 +2145,7 @@ function date_format_string($date, $format, $tz = 99) {
  * @return array An array that represents the date in user time
  */
 function usergetdate($time, $timezone = 99) {
-    $calendartype = calendar_type_plugin_factory::factory();
+    $calendartype = core_calendar\type_factory::factory();
     return $calendartype->usergetdate($time, $timezone);
 }
 
