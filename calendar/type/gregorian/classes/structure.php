@@ -91,18 +91,18 @@ class structure extends type_base {
      * In this function we don't need to do anything except pass the data
      * back as an array. This is because the date received is Gregorian.
      *
-     * @param int $day
-     * @param int $month
      * @param int $year
+     * @param int $month
+     * @param int $day
      * @param int $hour
      * @param int $minute
      * @return array the converted day, month, year, hour and minute.
      */
-    public function convert_from_gregorian($day, $month, $year, $hour = 0, $minute = 0) {
+    public function convert_from_gregorian($year, $month, $day, $hour = 0, $minute = 0) {
         $date = array();
-        $date['day'] = $day;
-        $date['month'] = $month;
         $date['year'] = $year;
+        $date['month'] = $month;
+        $date['day'] = $day;
         $date['hour'] = $hour;
         $date['minute'] = $minute;
 
@@ -116,18 +116,18 @@ class structure extends type_base {
      * In this function we don't need to do anything except pass the data
      * back as an array. This is because the date received is Gregorian.
      *
-     * @param int $day
-     * @param int $month
      * @param int $year
+     * @param int $month
+     * @param int $day
      * @param int $hour
      * @param int $minute
      * @return array the converted day, month, year, hour and minute.
      */
-    public function convert_to_gregorian($day, $month, $year, $hour = 0, $minute = 0) {
+    public function convert_to_gregorian($year, $month, $day, $hour = 0, $minute = 0) {
         $date = array();
-        $date['day'] = $day;
-        $date['month'] = $month;
         $date['year'] = $year;
+        $date['month'] = $month;
+        $date['day'] = $day;
         $date['hour'] = $hour;
         $date['minute'] = $minute;
 

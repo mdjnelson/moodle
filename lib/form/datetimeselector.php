@@ -292,9 +292,9 @@ class MoodleQuickForm_date_time_selector extends MoodleQuickForm_group {
             }
             // Get the calendar type used - see MDL-18375.
             $calendartype = core_calendar\type_factory::factory();
-            $gregoriandate = $calendartype->convert_to_gregorian($valuearray['day'],
+            $gregoriandate = $calendartype->convert_to_gregorian($valuearray['year'],
                                                                  $valuearray['month'],
-                                                                 $valuearray['year'],
+                                                                 $valuearray['day'],
                                                                  $valuearray['hour'],
                                                                  $valuearray['minute']);
             $value[$this->getName()] = make_timestamp($gregoriandate['year'],
