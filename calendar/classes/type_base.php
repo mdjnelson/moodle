@@ -69,27 +69,27 @@ abstract class type_base {
      * Provided with a day, month, year, hour and minute in the specific
      * calendar type convert it into the equivalent Gregorian date.
      *
-     * @param int $day
-     * @param int $month
      * @param int $year
+     * @param int $month
+     * @param int $day
      * @param int $hour
      * @param int $minute
      * @return array the converted day, month and year.
      */
-    public abstract function convert_to_gregorian($day, $month, $year, $hour = 0, $minute = 0);
+    public abstract function convert_to_gregorian($year, $month, $day, $hour = 0, $minute = 0);
 
     /**
      * Provided with a day, month, year, hour and minute in a Gregorian date
      * convert it into the specific calendar type date.
      *
-     * @param int $day
-     * @param int $month
      * @param int $year
+     * @param int $month
+     * @param int $day
      * @param int $hour
      * @param int $minute
      * @return array the converted day, month and year.
      */
-    public abstract function convert_from_gregorian($day, $month, $year, $hour = 0, $minute = 0);
+    public abstract function convert_from_gregorian($year, $month, $day, $hour = 0, $minute = 0);
 
     /**
      * Convert a given year in the calendar type being used to the Gregorian year.
@@ -102,7 +102,7 @@ abstract class type_base {
         $day = key($this->get_days());
         $month = key($this->get_months());
 
-        $date = $this->convert_to_gregorian($day, $month, $year);
+        $date = $this->convert_to_gregorian($year, $month, $day);
 
         return $date['year'];
     }
@@ -114,7 +114,7 @@ abstract class type_base {
      * @return int the gregorian year
      */
     public function convert_year_from_gregorian($year) {
-        $date = $this->convert_from_gregorian(1, 1, $year);
+        $date = $this->convert_from_gregorian($year, 1, 1);
 
         return $date['year'];
     }
