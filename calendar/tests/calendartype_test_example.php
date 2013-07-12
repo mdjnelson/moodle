@@ -21,7 +21,7 @@ use core_calendar\type_base;
 /**
  * Handles calendar functions for the test calendar.
  *
- * The test calendar is going to be 20 years, 2 days, 2 hours and 2 minutes
+ * The test calendar is going to be 2 years, 2 days, 2 hours and 2 minutes
  * in the future of the Gregorian calendar.
  *
  * @package core_calendar
@@ -176,5 +176,25 @@ class structure extends type_base {
                      'day' => (int) $day,
                      'hour' => (int) $hour,
                      'minute' => (int) $minute);
+    }
+
+    /**
+     * Convert a given year in the calendar type being used to the Gregorian year.
+     *
+     * @param int $year
+     * @return int the gregorian year
+     */
+    public function convert_year_to_gregorian($year) {
+        return $year - 2;
+    }
+
+    /**
+     * Convert a given Gregorian year to the calendar type being used.
+     *
+     * @param int $year
+     * @return int the gregorian year
+     */
+    public function convert_year_from_gregorian($year) {
+        return $year + 2;
     }
 }
