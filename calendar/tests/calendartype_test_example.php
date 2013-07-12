@@ -21,6 +21,9 @@ use core_calendar\type_base;
 /**
  * Handles calendar functions for the test calendar.
  *
+ * The test calendar is going to be 20 years, 2 days, 2 hours and 2 minutes
+ * in the future of the Gregorian calendar.
+ *
  * @package core_calendar
  * @copyright Mark Nelson <markn@moodle.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -114,7 +117,7 @@ class structure extends type_base {
      */
     public function usergetdate($time, $timezone) {
         $date = parent::usergetdate($time, $timezone);
-        $newdate = $this->convert_from_gregorian($date["mday"], $date["mon"], $date["year"],
+        $newdate = $this->convert_from_gregorian($date["year"], $date["mon"], $date["mday"],
             $date['hours'], $date['minutes']);
 
         $date["year"] = $newdate['year'];
@@ -130,24 +133,24 @@ class structure extends type_base {
      * Provided with a day, month, year, hour and minute
      * convert it into the equivalent Gregorian date.
      *
-     * @param int $day
-     * @param int $month
      * @param int $year
+     * @param int $month
+     * @param int $day
      * @param int $hour
      * @param int $minute
      * @return array the converted day, month, year, hour and minute.
      */
-    public function convert_to_gregorian($day, $month, $year, $hour = 0, $minute = 0) {
-        $jd = juliantojd($month, $day, $year);
-        $gregorian = jdtogregorian($jd);
+    public function convert_to_gregorian($year, $month, $day, $hour = 0, $minute = 0) {
+        $timestamp = make_timestamp($year, $month, $day, $hour, $minute);
+        $date = date('Y/n/j/H/i', strtotime('-2 year, -2 months, -2 days, -2 hours, -2 minutes', $timestamp));
 
-        list($month, $day, $year) = explode('/', $gregorian);
+        list($year, $month, $day, $hour, $minute) = explode('/', $date);
 
-        return array('year' => $year,
-                     'month' => $month,
-                     'day' => $day,
-                     'hour' => $hour,
-                     'minute' => $minute);
+        return array('year' => (int) $year,
+                     'month' => (int) $month,
+                     'day' => (int) $day,
+                     'hour' => (int) $hour,
+                     'minute' => (int) $minute);
 
     }
 
@@ -155,23 +158,23 @@ class structure extends type_base {
      * Provided with a day, month, year, hour and minute in a Gregorian date
      * convert it into the specific calendar type date.
      *
-     * @param int $day
-     * @param int $month
      * @param int $year
+     * @param int $month
+     * @param int $day
      * @param int $hour
      * @param int $minute
      * @return array the converted day, month, year, hour and minute.
      */
-    public function convert_from_gregorian($day, $month, $year, $hour = 0, $minute = 0) {
-        $jd = gregoriantojd($month, $day, $year);
-        $julian = jdtojulian($jd);
+    public function convert_from_gregorian($year, $month, $day, $hour = 0, $minute = 0) {
+        $timestamp = make_timestamp($year, $month, $day, $hour, $minute);
+        $date = date('Y/n/j/H/i', strtotime('+2 year, +2 months, +2 days, +2 hours, +2 minutes', $timestamp));
 
-        list($month, $day, $year) = explode('/', $julian);
+        list($year, $month, $day, $hour, $minute) = explode('/', $date);
 
-        return array('year' => $year,
-                     'month' => $month,
-                     'day' => $day,
-                     'hour' => $hour,
-                     'minute' => $minute);
+        return array('year' => (int) $year,
+                     'month' => (int) $month,
+                     'day' => (int) $day,
+                     'hour' => (int) $hour,
+                     'minute' => (int) $minute);
     }
 }

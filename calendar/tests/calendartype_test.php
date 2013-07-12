@@ -58,7 +58,7 @@ class core_calendar_type_testcase extends advanced_testcase {
     /**
      * Test that setting the calendar type works.
      */
-    public function test_calendar_set_type() {
+    public function test_calendar_type_set() {
         // We want to reset the test data after this run.
         $this->resetAfterTest(true);
 
@@ -71,10 +71,12 @@ class core_calendar_type_testcase extends advanced_testcase {
         $this->assertEquals('gregorian', core_calendar\type_factory::get_calendar_type());
 
     }
+
     /**
-     * Test the calendar type system.
+     * Test that calling core Moodle functions responsible for displaying the date
+     * have the same results as directly calling the same function in the calendar type.
      */
-    public function test_calendar_type() {
+    public function test_calendar_type_core_functions() {
         // We want to reset the test data after this run.
         $this->resetAfterTest(true);
 
@@ -83,9 +85,19 @@ class core_calendar_type_testcase extends advanced_testcase {
 
         // Test that the core functions reproduce the same results as the test calendar.
         $this->core_functions_test('test');
+    }
 
-        // Check converting dates to Gregorian when submitting a date selector element works. Note: the Gregorian
-        // date 07/04/2013 is equivalent to the Julian date 21/06/2013 - which is what the test calendar is based on.
+    /**
+     * Test that dates selected using the date selector elements are being saved as unixtime, and that the
+     * unixtime is being converted back to a valid date to display in the date selector elements for
+     * different calendar types.
+     */
+    public function test_calendar_type_dateselector_elements() {
+        // We want to reset the test data after this run.
+        $this->resetAfterTest(true);
+
+        // Check converting dates to Gregorian when submitting a date selector element works. Note: the test
+        // calendar is 2 years, 2 months, 2 days, 2 hours and 2 minutes ahead of the Gregorian calendar.
         $date1 = array();
         $date1['day'] = 4;
         $date1['month'] = 7;
@@ -93,16 +105,16 @@ class core_calendar_type_testcase extends advanced_testcase {
         $date1['hour'] = 0;
         $date1['minute'] = 0;
         $date1['timestamp'] = 1372896000;
-        $this->convert_date_to_unixtime_test('dateselector', 'gregorian', $date1);
+        $this->convert_dateselector_to_unixtime_test('dateselector', 'gregorian', $date1);
 
         $date2 = array();
-        $date2['day'] = 21;
-        $date2['month'] = 6;
-        $date2['year'] = 2013;
-        $date2['hour'] = 0;
-        $date2['minute'] = 0;
+        $date2['day'] = 7;
+        $date2['month'] = 9;
+        $date2['year'] = 2015;
+        $date2['hour'] = 0; // The dateselector element does not have hours.
+        $date2['minute'] = 0; // The dateselector element does not have minutes.
         $date2['timestamp'] = 1372896000;
-        $this->convert_date_to_unixtime_test('dateselector', 'test', $date2);
+        $this->convert_dateselector_to_unixtime_test('dateselector', 'test', $date2);
 
         $date3 = array();
         $date3['day'] = 4;
@@ -111,27 +123,21 @@ class core_calendar_type_testcase extends advanced_testcase {
         $date3['hour'] = 23;
         $date3['minute'] = 15;
         $date3['timestamp'] = 1372979700;
-        $this->convert_date_to_unixtime_test('datetimeselector', 'gregorian', $date3);
+        $this->convert_dateselector_to_unixtime_test('datetimeselector', 'gregorian', $date3);
 
         $date4 = array();
-        $date4['day'] = 21;
-        $date4['month'] = 6;
-        $date4['year'] = 2013;
-        $date4['hour'] = 23;
-        $date4['minute'] = 15;
+        $date4['day'] = 7;
+        $date4['month'] = 9;
+        $date4['year'] = 2015;
+        $date4['hour'] = 1;
+        $date4['minute'] = 17;
         $date4['timestamp'] = 1372979700;
-        $this->convert_date_to_unixtime_test('datetimeselector', 'test', $date4);
+        $this->convert_dateselector_to_unixtime_test('datetimeselector', 'test', $date4);
 
         // The date selector element values are set by using the function usergetdate, here we want to check that
         // the unixtime passed is being successfully converted to the correct values for the calendar type.
-        $this->convert_unixtime_to_date_test('gregorian', $date1);
-        $this->convert_unixtime_to_date_test('test', $date2);
-
-        // Test that the user profile field datetime minimum year and maximum year settings are saved as
-        // the equivalent Gregorian years.
-
-        // Now check that when we display the miniumum and maximum year on the settings page for the user profile field
-        // datetime that it converts the Gregorian years to the equivalent calendar type.
+        $this->convert_unixtime_to_dateselector_test('gregorian', $date3);
+        $this->convert_unixtime_to_dateselector_test('test', $date4);
     }
 
     /**
@@ -154,19 +160,19 @@ class core_calendar_type_testcase extends advanced_testcase {
 
     /**
      * Simulates submitting a form with a date selector element and tests that the chosen dates
-     * are converted into Gregorian and then into unixtime before being saved in DB.
+     * are converted into unixtime before being saved in DB.
      *
      * @param string $element the form element we are testing
      * @param string $type the calendar type we want to test
      * @param array $date the date variables
      */
-    private function convert_date_to_unixtime_test($element, $type, $date) {
+    private function convert_dateselector_to_unixtime_test($element, $type, $date) {
         $this->set_calendar_type($type);
 
         if ($element == 'dateselector') {
-            $el = new MoodleQuickForm_date_selector('dateselector', null, array('timezone' => 0.0));
+            $el = new MoodleQuickForm_date_selector('dateselector', null, array('timezone' => 0.0, 'step' => 1));
         } else {
-            $el = new MoodleQuickForm_date_time_selector('dateselector', null, array('timezone' => 0.0));
+            $el = new MoodleQuickForm_date_time_selector('dateselector', null, array('timezone' => 0.0, 'step' => 1));
         }
         $el->_createElements();
         $submitvalues = array('dateselector' => $date);
@@ -175,17 +181,17 @@ class core_calendar_type_testcase extends advanced_testcase {
     }
 
     /**
-     * Test converting dates from unixtime .
+     * Test converting dates from unixtime to a date for the calendar type specified.
      *
      * @param string $type the calendar type we want to test
      * @param array $date the date variables
      */
-    private function convert_unixtime_to_date_test($type, $date) {
+    private function convert_unixtime_to_dateselector_test($type, $date) {
         $this->set_calendar_type($type);
 
         $usergetdate = usergetdate($date['timestamp'], 0.0);
         $comparedate = array(
-            'minute' => $usergetdate['minutes'],
+            'minute' => (int) $usergetdate['minutes'],
             'hour' => $usergetdate['hours'],
             'day' => $usergetdate['mday'],
             'month' => $usergetdate['mon'],
