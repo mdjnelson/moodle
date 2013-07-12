@@ -46,9 +46,8 @@ class core_calendar_type_testcase extends advanced_testcase {
     protected function setUp() {
         global $CFG;
 
+        // The test calendar type.
         require_once($CFG->dirroot . '/calendar/tests/calendartype_test_example.php');
-        require_once($CFG->libdir . '/form/dateselector.php');
-        require_once($CFG->libdir . '/form/datetimeselector.php');
 
         // The user we are going to test this on.
         $this->user = self::getDataGenerator()->create_user();
@@ -93,6 +92,12 @@ class core_calendar_type_testcase extends advanced_testcase {
      * different calendar types.
      */
     public function test_calendar_type_dateselector_elements() {
+        global $CFG;
+
+        // Used to test the dateselector elements.
+        require_once($CFG->libdir . '/form/dateselector.php');
+        require_once($CFG->libdir . '/form/datetimeselector.php');
+
         // We want to reset the test data after this run.
         $this->resetAfterTest();
 
@@ -138,6 +143,36 @@ class core_calendar_type_testcase extends advanced_testcase {
         // the unixtime passed is being successfully converted to the correct values for the calendar type.
         $this->convert_unixtime_to_dateselector_test('gregorian', $date3);
         $this->convert_unixtime_to_dateselector_test('test', $date4);
+    }
+
+    /**
+     * Test that the user profile field datetime minimum and maximum year settings are saved as the
+     * equivalent Gregorian years.
+     */
+    public function test_calendar_type_datetime_field_submission() {
+        global $CFG;
+
+        // Used to test the user datetime profile field.
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+        require_once($CFG->dirroot . '/user/profile/definelib.php');
+        require_once($CFG->dirroot . '/user/profile/index_field_form.php');
+
+        // We want to reset the test data after this run.
+        $this->resetAfterTest(true);
+
+        // Create an array with the input values and expected values once submitted.
+        $date = array();
+        $date['inputminyear'] = '1970';
+        $date['inputmaxyear'] = '2013';
+        $date['expectedminyear'] = '1970';
+        $date['expectedmaxyear'] = '2013';
+        $this->datetime_field_submission_test('gregorian', $date);
+
+        // The test calendar is 2 years in the future, so when these values are submitted they should
+        // be converted into the Gregorian minimum and maximum year.
+        $date['expectedminyear'] = '1968';
+        $date['expectedmaxyear'] = '2011';
+        $this->datetime_field_submission_test('test', $date);
     }
 
     /**
@@ -198,6 +233,43 @@ class core_calendar_type_testcase extends advanced_testcase {
             'year' => $usergetdate['year'],
             'timestamp' => $date['timestamp']
         );
+
+        $this->assertEquals($comparedate, $date);
+    }
+
+    /**
+     * Test saving the minimum and max year settings for the user datetime field.
+     *
+     * @param string $type the calendar type we want to test
+     * @param array $date the date variables
+     */
+    private function datetime_field_submission_test($type, $date) {
+        $this->set_calendar_type($type);
+
+        // Get the data we are submitting for the form.
+        $formdata = array();
+        $formdata['shortname'] = 'Shortname';
+        $formdata['name'] = 'Name';
+        $formdata['param1'] = $date['inputminyear'];
+        $formdata['param2'] = $date['inputmaxyear'];
+
+        // Mock submitting this.
+        field_form::mock_submit($formdata);
+
+        // Create the user datetime form.
+        $form = new field_form(null, 'datetime');
+
+        // Get the data from the submission.
+        $submissiondata = $form->get_data();
+        // On the user profile field page after get_data, the function define_save is called
+        // in the field base class, which then calls the field's function define_save_preprocess.
+        $field = new profile_define_datetime();
+        $submissiondata = $field->define_save_preprocess($submissiondata);
+
+        // Create an array we want to compare with the date passed.
+        $comparedate = $date;
+        $comparedate['expectedminyear'] = $submissiondata->param1;
+        $comparedate['expectedmaxyear'] = $submissiondata->param2;
 
         $this->assertEquals($comparedate, $date);
     }
