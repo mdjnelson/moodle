@@ -25,6 +25,20 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+
+// The test calendar type.
+require_once($CFG->dirroot . '/calendar/tests/calendartype_test_example.php');
+
+// Used to test the dateselector elements.
+require_once($CFG->libdir . '/form/dateselector.php');
+require_once($CFG->libdir . '/form/datetimeselector.php');
+
+// Used to test the user datetime profile field.
+require_once($CFG->dirroot . '/user/profile/lib.php');
+require_once($CFG->dirroot . '/user/profile/definelib.php');
+require_once($CFG->dirroot . '/user/profile/index_field_form.php');
+
 /**
  * Unit tests for the calendar type system.
  *
@@ -44,11 +58,6 @@ class core_calendar_type_testcase extends advanced_testcase {
      * Test set up.
      */
     protected function setUp() {
-        global $CFG;
-
-        // The test calendar type.
-        require_once($CFG->dirroot . '/calendar/tests/calendartype_test_example.php');
-
         // The user we are going to test this on.
         $this->user = self::getDataGenerator()->create_user();
         self::setUser($this->user);
@@ -68,7 +77,6 @@ class core_calendar_type_testcase extends advanced_testcase {
         // Test setting it as the 'Gregorian' calendar type.
         $this->set_calendar_type('gregorian');
         $this->assertEquals('gregorian', core_calendar\type_factory::get_calendar_type());
-
     }
 
     /**
@@ -92,12 +100,6 @@ class core_calendar_type_testcase extends advanced_testcase {
      * different calendar types.
      */
     public function test_calendar_type_dateselector_elements() {
-        global $CFG;
-
-        // Used to test the dateselector elements.
-        require_once($CFG->libdir . '/form/dateselector.php');
-        require_once($CFG->libdir . '/form/datetimeselector.php');
-
         // We want to reset the test data after this run.
         $this->resetAfterTest();
 
@@ -150,13 +152,6 @@ class core_calendar_type_testcase extends advanced_testcase {
      * equivalent Gregorian years.
      */
     public function test_calendar_type_datetime_field_submission() {
-        global $CFG;
-
-        // Used to test the user datetime profile field.
-        require_once($CFG->dirroot . '/user/profile/lib.php');
-        require_once($CFG->dirroot . '/user/profile/definelib.php');
-        require_once($CFG->dirroot . '/user/profile/index_field_form.php');
-
         // We want to reset the test data after this run.
         $this->resetAfterTest(true);
 
