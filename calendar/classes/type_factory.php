@@ -18,9 +18,9 @@
 namespace core_calendar;
 
 /**
- * Class core_calendar\type_factory.
+ * Class \core_calendar\type_factory.
  *
- * Factory class producing required subclasses of {@link core_calendar\type_base}.
+ * Factory class producing required subclasses of {@link \core_calendar\type_base}.
  */
 class type_factory {
 

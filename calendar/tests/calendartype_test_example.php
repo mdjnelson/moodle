@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace calendartype_test;
-use core_calendar\type_base;
+use \core_calendar\type_base;
 
 /**
  * Handles calendar functions for the test calendar.

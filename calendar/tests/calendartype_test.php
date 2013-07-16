@@ -72,11 +72,11 @@ class core_calendar_type_testcase extends advanced_testcase {
 
         // Test setting it as the 'Test' calendar type.
         $this->set_calendar_type('test');
-        $this->assertEquals('test', core_calendar\type_factory::get_calendar_type());
+        $this->assertEquals('test', \core_calendar\type_factory::get_calendar_type());
 
         // Test setting it as the 'Gregorian' calendar type.
         $this->set_calendar_type('gregorian');
-        $this->assertEquals('gregorian', core_calendar\type_factory::get_calendar_type());
+        $this->assertEquals('gregorian', \core_calendar\type_factory::get_calendar_type());
     }
 
     /**
