@@ -31,7 +31,7 @@ class profile_field_datetime extends profile_field_base {
      */
     function edit_field_add($mform) {
         // Get the current calendar in use - see MDL-18375.
-        $calendartype = core_calendar\type_factory::factory();
+        $calendartype = \core_calendar\type_factory::factory();
 
         // Check if the field is required
         if ($this->field->required) {

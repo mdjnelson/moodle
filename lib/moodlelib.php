@@ -2090,7 +2090,7 @@ function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, 
  * @return string the formatted date/time.
  */
 function userdate($date, $format = '', $timezone = 99, $fixday = true, $fixhour = true) {
-    $calendartype = core_calendar\type_factory::factory();
+    $calendartype = \core_calendar\type_factory::factory();
     return $calendartype->userdate($date, $format, $timezone, $fixday, $fixhour);
 }
 
