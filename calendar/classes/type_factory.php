@@ -30,7 +30,7 @@ class type_factory {
      * @return calendar_type_plugin_* the created calendar_type class
      * @throws coding_exception if the calendar type file could not be loaded
      */
-    static function factory($type = null) {
+    public static function factory($type = null) {
         if (is_null($type)) {
             $type = self::get_calendar_type();
         }
@@ -44,7 +44,7 @@ class type_factory {
      *
      * @return array the list of calendar types
      */
-    static function get_list_of_calendar_types() {
+    public static function get_list_of_calendar_types() {
         $calendars = array();
         $calendardirs = \core_component::get_plugin_list('calendartype');
 
@@ -60,7 +60,7 @@ class type_factory {
      *
      * @return string the current calendar type being used
      */
-    static function get_calendar_type() {
+    public static function get_calendar_type() {
         global $CFG, $USER, $SESSION, $COURSE;
 
         if (!empty($COURSE->id) and $COURSE->id != SITEID and !empty($COURSE->calendartype)) { // Course calendartype can override all other settings for this page.
