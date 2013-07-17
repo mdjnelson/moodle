@@ -106,16 +106,13 @@ class structure extends type_base {
     }
 
     /**
-     * Given a $time timestamp in GMT (seconds since epoch), returns an array that
-     * represents the date in user time.
+     * Given a $time timestamp in GMT, returns an array that represents the date in user time.
      *
-     * @param int $time Timestamp in GMT
-     * @param float|int|string $timezone offset's time with timezone, if float and not 99, then no
-     *        dst offset is applyed {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @return array An array that represents the date in user time
+     * @param int $time the timestamp
+     * @return array an array that represents the date in user time
      */
-    public function usergetdate($time, $timezone) {
-        $date = parent::usergetdate($time, $timezone);
+    public function unixtime_to_date_array($time) {
+        $date = getdate($time);
         $newdate = $this->convert_from_gregorian($date["year"], $date["mon"], $date["mday"],
             $date['hours'], $date['minutes']);
 

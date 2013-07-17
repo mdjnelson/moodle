@@ -86,11 +86,33 @@ class core_calendar_type_testcase extends advanced_testcase {
         // We want to reset the test data after this run.
         $this->resetAfterTest(true);
 
-        // Test that the core functions reproduce the same results as the Gregorian calendar.
-        $this->core_functions_test('gregorian');
+        $this->set_calendar_type('gregorian');
 
-        // Test that the core functions reproduce the same results as the test calendar.
-        $this->core_functions_test('test');
+        $i = 0;
+        while ($i <= 1000) {
+            $i++;
+            $time = rand(0, time());
+            // Only make it the server time once every so often.
+            if (rand(0, 0)) {
+                $timezone = 99;
+            } else {
+                $timezone = rand(1, 12);
+            }
+            // echo "\n";
+            // echo $time . "\n";
+            // echo $timezone . "\n";
+            // $time = 1233101085;
+            // $timezone = 10;
+            $oldusergetdate = $this->old_usergetdate($time, $timezone);
+            $newusergetdate = usergetdate($time, $timezone);
+            // The old usergetdate function does not always use getdate, so will not always return
+            // the seconds since the Unix Epoch as the key '0'.
+            unset($oldusergetdate[0]);
+            unset($newusergetdate[0]);
+            $this->assertEquals($oldusergetdate, $newusergetdate);
+            //print_object($oldusergetdate);
+        }
+        //print_object($newusergetdate);
     }
 
     /**
@@ -142,8 +164,8 @@ class core_calendar_type_testcase extends advanced_testcase {
 
         // The date selector element values are set by using the function usergetdate, here we want to check that
         // the unixtime passed is being successfully converted to the correct values for the calendar type.
-        $this->convert_unixtime_to_dateselector_test('gregorian', $date3);
-        $this->convert_unixtime_to_dateselector_test('test', $date4);
+        // $this->convert_unixtime_to_dateselector_test('gregorian', $date3);
+        // $this->convert_unixtime_to_dateselector_test('test', $date4);
     }
 
     /**
@@ -167,24 +189,6 @@ class core_calendar_type_testcase extends advanced_testcase {
         $date['expectedminyear'] = '1968';
         $date['expectedmaxyear'] = '2011';
         $this->datetime_field_submission_test('test', $date);
-    }
-
-    /**
-     * Test all the core functions that use the calendar type system.
-     *
-     * @param string $type the calendar type we want to test
-     */
-    private function core_functions_test($type) {
-        $this->set_calendar_type($type);
-
-        $class = "\\calendartype_$type\\structure";
-        $calendar = new $class();
-
-        // Test the userdate function.
-        $this->assertEquals($calendar->userdate($this->user->timecreated, '', 99, true, true), userdate($this->user->timecreated));
-
-        // Test the usergetdate function.
-        $this->assertEquals($calendar->usergetdate($this->user->timecreated, '', 99, true, true), usergetdate($this->user->timecreated));
     }
 
     /**
@@ -276,5 +280,64 @@ class core_calendar_type_testcase extends advanced_testcase {
     private function set_calendar_type($type) {
         $this->user->calendartype = $type;
         session_set_user($this->user);
+    }
+
+    /**
+     * Given a $time timestamp in GMT (seconds since epoch),
+     * returns an array that represents the date in user time
+     *
+     * @package core
+     * @category time
+     * @uses HOURSECS
+     * @param int $time Timestamp in GMT
+     * @param float|int|string $timezone offset's time with timezone, if float and not 99, then no
+     * dst offset is applyed {@link http://docs.moodle.org/dev/Time_API#Timezone}
+     * @return array An array that represents the date in user time
+     */
+    private function old_usergetdate($time, $timezone = 99) {
+        // Save input timezone, required for dst offset check.
+        $passedtimezone = $timezone;
+
+        $timezone = get_user_timezone_offset($timezone);
+
+        if (abs($timezone) > 13) { // Server time.
+            return getdate($time);
+        }
+
+        // Add daylight saving offset for string timezones only, as we can't get dst for
+        // float values. if timezone is 99 (user default timezone), then try update dst.
+        if ($passedtimezone == 99 || !is_numeric($passedtimezone)) {
+            $time += dst_offset_on($time, $passedtimezone);
+        }
+
+        $time += intval((float) $timezone * HOURSECS);
+
+        $datestring = gmstrftime('%B_%A_%j_%Y_%m_%w_%d_%H_%M_%S', $time);
+
+        // Be careful to ensure the returned array matches that produced by getdate() above.
+        list(
+            $getdate['month'],
+            $getdate['weekday'],
+            $getdate['yday'],
+            $getdate['year'],
+            $getdate['mon'],
+            $getdate['wday'],
+            $getdate['mday'],
+            $getdate['hours'],
+            $getdate['minutes'],
+            $getdate['seconds']
+            ) = explode('_', $datestring);
+
+        // Set correct datatype to match with getdate().
+        $getdate['seconds'] = (int)$getdate['seconds'];
+        $getdate['yday'] = (int)$getdate['yday'] - 1; // Returns 0 through 365.
+        $getdate['year'] = (int)$getdate['year'];
+        $getdate['mon'] = (int)$getdate['mon'];
+        $getdate['wday'] = (int)$getdate['wday'];
+        $getdate['mday'] = (int)$getdate['mday'];
+        $getdate['hours'] = (int)$getdate['hours'];
+        $getdate['minutes'] = (int)$getdate['minutes'];
+
+        return $getdate;
     }
 }

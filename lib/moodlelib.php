@@ -2145,8 +2145,42 @@ function date_format_string($date, $format, $tz = 99) {
  * @return array An array that represents the date in user time
  */
 function usergetdate($time, $timezone = 99) {
-    $calendartype = core_calendar\type_factory::factory();
-    return $calendartype->usergetdate($time, $timezone);
+    $passedtime = $time;
+    // Save input timezone, required for dst offset check.
+    $passedtimezone = $timezone;
+
+    $timezone = get_user_timezone_offset($timezone);
+
+    if (abs($timezone) <= 13) { // Not server time.
+        // Add daylight saving offset for string timezones only, as we can't get dst for
+        // float values. if timezone is 99 (user default timezone), then try update dst.
+        if ($passedtimezone == 99 || !is_numeric($passedtimezone)) {
+            $time -= dst_offset_on($time, $passedtimezone);
+        }
+
+        // echo "\n";
+        // echo intval((float) $timezone * HOURSECS) . "\n";
+        // echo 8 * 60 * 60 . "\n";
+        echo "\n";
+        echo "Passed Time: " . $passedtime . "\n";
+        echo "Passed Timezone: " . $passedtimezone . "\n";
+        echo "Modified Timezone: " . $timezone . "\n";
+        echo "gmstrftime before: " . gmstrftime('%s', $time) . "\n";
+        echo "Time 1: " . $time . "\n";
+        $time += intval((float) $timezone * HOURSECS);
+        echo "Time 2: " . $time . "\n";
+        if (date('I', $time)) { // Check if we are running daylight savings time.
+            $time -= 9 * HOURSECS;
+        } else {
+            $time -= 8 * HOURSECS;
+        }
+        echo "Time 3: " . $time . "\n";
+        echo "gmstrftime after: " . gmstrftime('%s', $time) . "\n";
+        echo "\n";
+    }
+
+    $calendartype = \core_calendar\type_factory::factory();
+    return $calendartype->unixtime_to_date_array($time);
 }
 
 /**

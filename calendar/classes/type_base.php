@@ -91,15 +91,12 @@ abstract class type_base {
     public abstract function userdate($date, $format, $timezone, $fixday, $fixhour);
 
     /**
-     * Given a $time timestamp in GMT (seconds since epoch), returns an array that
-     * represents the date in user time.
+     * Given a $time timestamp returns an array that represents the date in user time.
      *
-     * @param int $time Timestamp in GMT
-     * @param float|int|string $timezone offset's time with timezone, if float and not 99, then no
-     *        dst offset is applyed {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @return array An array that represents the date in user time
+     * @param int $time the timestamp
+     * @return array an array that represents the date in user time
      */
-    public abstract function usergetdate($time, $timezone);
+    public abstract function unixtime_to_date_array($time);
 
     /**
      * Provided with a day, month, year, hour and minute in the specific
