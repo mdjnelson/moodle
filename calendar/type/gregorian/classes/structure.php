@@ -97,18 +97,17 @@ class structure extends type_base {
      * If parameter fixday = true (default), then take off leading
      * zero from %d, else maintain it.
      *
-     * @param int $date the timestamp in UTC, as obtained from the database.
-     * @param string $format strftime format. You should probably get this using
-     *        get_string('strftime...', 'langconfig');
-     * @param int|float|string  $timezone by default, uses the user's time zone. if numeric and
-     *        not 99 then daylight saving will not be added.
+     * @param int $date the timestamp in UTC, as obtained from the database
+     * @param string $format strftime format
+     * @param int|float|string $timezone the timezone to use
      *        {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @param bool $fixday if true (default) then the leading zero from %d is removed.
-     *        If false then the leading zero is maintained.
-     * @param bool $fixhour if true (default) then the leading zero from %I is removed.
-     * @return string the formatted date/time.
+     * @param bool $fixday if true then the leading zero from %d is removed,
+     *        if false then the leading zero is maintained
+     * @param bool $fixhour if true then the leading zero from %I is removed,
+     *        if false then the leading zero is maintained
+     * @return string the formatted date/time
      */
-    public function userdate($date, $format, $timezone, $fixday, $fixhour) {
+    public function timestamp_to_date_string($date, $format, $timezone, $fixday, $fixhour) {
         global $CFG;
 
         if (empty($format)) {
@@ -177,10 +176,10 @@ class structure extends type_base {
      *
      * @param int $time Timestamp in GMT
      * @param float|int|string $timezone offset's time with timezone, if float and not 99, then no
-     *        dst offset is applyed {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @return array An array that represents the date in user time
+     *        dst offset is applied {@link http://docs.moodle.org/dev/Time_API#Timezone}
+     * @return array an array that represents the date in user time
      */
-    public function usergetdate($time, $timezone) {
+    public function timestamp_to_date_array($time, $timezone) {
         // Save input timezone, required for dst offset check.
         $passedtimezone = $timezone;
 

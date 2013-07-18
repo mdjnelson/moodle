@@ -68,39 +68,28 @@ abstract class type_base {
     /**
      * Returns a formatted string that represents a date in user time.
      *
-     * Returns a formatted string that represents a date in user time
-     * <b>WARNING: note that the format is for strftime(), not date().</b>
-     * Because of a bug in most Windows time libraries, we can't use
-     * the nicer %e, so we have to use %d which has leading zeroes.
-     * A lot of the fuss in the function is just getting rid of these leading
-     * zeroes as efficiently as possible.
-     *
-     * If parameter fixday = true (default), then take off leading
-     * zero from %d, else maintain it.
-     *
-     * @param int $date the timestamp in UTC, as obtained from the database.
-     * @param string $format strftime format. You should probably get this using
-     *        get_string('strftime...', 'langconfig');
-     * @param int|float|string  $timezone by default, uses the user's time zone. if numeric and
-     *        not 99 then daylight saving will not be added.
+     * @param int $date the timestamp in UTC, as obtained from the database
+     * @param string $format strftime format
+     * @param int|float|string $timezone the timezone to use
      *        {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @param bool $fixday if true (default) then the leading zero from %d is removed.
-     *        If false then the leading zero is maintained.
-     * @param bool $fixhour if true (default) then the leading zero from %I is removed.
-     * @return string the formatted date/time.
+     * @param bool $fixday if true then the leading zero from %d is removed,
+     *        if false then the leading zero is maintained
+     * @param bool $fixhour if true then the leading zero from %I is removed,
+     *        if false then the leading zero is maintained
+     * @return string the formatted date/time
      */
-    public abstract function userdate($date, $format, $timezone, $fixday, $fixhour);
+    public abstract function timestamp_to_date_string($date, $format, $timezone, $fixday, $fixhour);
 
     /**
-     * Given a $time timestamp in GMT (seconds since epoch), returns an array that
-     * represents the date in user time.
+     * Given a $time timestamp in GMT (seconds since epoch), returns an array that represents
+     * the date in user time.
      *
-     * @param int $time Timestamp in GMT
-     * @param float|int|string $timezone offset's time with timezone, if float and not 99, then no
-     *        dst offset is applyed {@link http://docs.moodle.org/dev/Time_API#Timezone}
-     * @return array An array that represents the date in user time
+     * @param int $time timestamp in GMT
+     * @param float|int|string $timezone the timezone to use to calculate the time
+     *        {@link http://docs.moodle.org/dev/Time_API#Timezone}
+     * @return array an array that represents the date in user time
      */
-    public abstract function usergetdate($time, $timezone);
+    public abstract function timestamp_to_date_array($time, $timezone);
 
     /**
      * Provided with a day, month, year, hour and minute in the specific
