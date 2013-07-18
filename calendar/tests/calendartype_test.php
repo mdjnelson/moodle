@@ -163,10 +163,12 @@ class core_calendar_type_testcase extends advanced_testcase {
         $date['expectedmaxyear'] = '2013';
         $this->datetime_field_submission_test('gregorian', $date);
 
-        // The test calendar is 2 years in the future, so when these values are submitted they should
-        // be converted into the Gregorian minimum and maximum year.
-        $date['expectedminyear'] = '1968';
-        $date['expectedmaxyear'] = '2011';
+        // The test calendar is 2 years, 2 months, 2 days, 2 hours and 2 minutes in the future, so when these
+        // values are submitted they should be converted into the Gregorian year. Note: For the datetime profile
+        // field we do not specify a day or month, so it is treated as the 1st day of the 1st month. In this case,
+        // we do not take 2 years from the input values as the calendar is also 2 months in the future.
+        $date['expectedminyear'] = '1967';
+        $date['expectedmaxyear'] = '2010';
         $this->datetime_field_submission_test('test', $date);
     }
 

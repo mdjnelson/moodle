@@ -127,32 +127,4 @@ abstract class type_base {
      * @return array the converted day, month and year.
      */
     public abstract function convert_from_gregorian($year, $month, $day, $hour = 0, $minute = 0);
-
-    /**
-     * Convert a given year in the calendar type being used to the Gregorian year.
-     *
-     * @param int $year
-     * @return int the gregorian year
-     */
-    public function convert_year_to_gregorian($year) {
-        // Get a valid day and month for this calendar.
-        $day = key($this->get_days());
-        $month = key($this->get_months());
-
-        $date = $this->convert_to_gregorian($year, $month, $day);
-
-        return $date['year'];
-    }
-
-    /**
-     * Convert a given Gregorian year to the calendar type being used.
-     *
-     * @param int $year
-     * @return int the gregorian year
-     */
-    public function convert_year_from_gregorian($year) {
-        $date = $this->convert_from_gregorian($year, 1, 1);
-
-        return $date['year'];
-    }
 }

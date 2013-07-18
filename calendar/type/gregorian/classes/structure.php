@@ -276,30 +276,4 @@ class structure extends type_base {
 
         return $date;
     }
-
-    /**
-     * Convert a given year in the calendar type being used to the Gregorian year.
-     *
-     * In this function we don't need to do anything except pass the year
-     * back. This is because the date received is Gregorian.
-     *
-     * @param int $year
-     * @return int the gregorian year
-     */
-    public function convert_year_to_gregorian($year) {
-        return $year;
-    }
-
-    /**
-     * Convert a given Gregorian year to the calendar type being used.
-     *
-     * In this function we don't need to do anything except pass the year
-     * back. This is because the date received is Gregorian.
-     *
-     * @param int $year
-     * @return int the gregorian year
-     */
-    public function convert_year_from_gregorian($year) {
-        return $year;
-    }
 }

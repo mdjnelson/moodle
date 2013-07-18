@@ -28,26 +28,30 @@ class profile_field_datetime extends profile_field_base {
     /**
      * Handles editing datetime fields.
      *
-     * @param stdClass moodleform instance
+     * @param moodleform $mform
      */
-    function edit_field_add($mform) {
+    public function edit_field_add($mform) {
         // Get the current calendar in use - see MDL-18375.
         $calendartype = \core_calendar\type_factory::factory();
 
-        // Check if the field is required
+        // Check if the field is required.
         if ($this->field->required) {
             $optional = false;
         } else {
             $optional = true;
         }
 
+        // Convert the year stored in the DB as gregorian to that used by the calendar type.
+        $startdate = $calendartype->convert_from_gregorian($this->field->param1, 1, 1);
+        $stopdate = $calendartype->convert_from_gregorian($this->field->param2, 1, 1);
+
         $attributes = array(
-            'startyear' => $calendartype->convert_year_from_gregorian($this->field->param1),
-            'stopyear'  => $calendartype->convert_year_from_gregorian($this->field->param2),
+            'startyear' => $startdate['year'],
+            'stopyear'  => $stopdate['year'],
             'optional'  => $optional
         );
 
-        // Check if they wanted to include time as well
+        // Check if they wanted to include time as well.
         if (!empty($this->field->param3)) {
             $mform->addElement('date_time_selector', $this->inputname, format_string($this->field->name), $attributes);
         } else {
@@ -66,7 +70,7 @@ class profile_field_datetime extends profile_field_base {
      * @return int timestamp
      * @since Moodle 2.5
      */
-    function edit_save_data_preprocess($datetime, $datarecord) {
+    public function edit_save_data_preprocess($datetime, $datarecord) {
         // If timestamp then explode it to check if year is within field limit.
         $isstring = strpos($datetime, '-');
         if (empty($isstring)) {
@@ -86,7 +90,7 @@ class profile_field_datetime extends profile_field_base {
     /**
      * Display the data for this field.
      */
-    function display_data() {
+    public function display_data() {
         // Check if time was specified.
         if (!empty($this->field->param3)) {
             $format = get_string('strftimedaydatetime', 'langconfig');

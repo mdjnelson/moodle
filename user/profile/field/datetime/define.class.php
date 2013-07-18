@@ -28,14 +28,16 @@ class profile_define_datetime extends profile_define_base {
     /**
      * Define the setting for a datetime custom field.
      *
-     * @param stdClass $form the user form
+     * @param moodleform $form the user form
      */
-    function define_form_specific($form) {
+    public function define_form_specific($form) {
         // Get the current calendar in use - see MDL-18375.
         $calendartype = \core_calendar\type_factory::factory();
 
         // Create variables to store start and end.
-        $currentyear = $calendartype->convert_year_from_gregorian(date('Y'));
+        list($year, $month, $day) = explode('_', date('Y_m_d'));
+        $currentdate = $calendartype->convert_from_gregorian($year, $month, $day);
+        $currentyear = $currentdate['year'];
         $startyear = $calendartype->get_min_year();
         $endyear = $calendartype->get_max_year();
 
@@ -52,7 +54,7 @@ class profile_define_datetime extends profile_define_base {
 
         $form->addElement('select', 'param2', get_string('endyear', 'profilefield_datetime'), $arryears);
         $form->setType('param2', PARAM_INT);
-        $form->setDefault('param2', $currentyear + 20);
+        $form->setDefault('param2', $currentyear);
 
         $form->addElement('checkbox', 'param3', get_string('wanttime', 'profilefield_datetime'));
         $form->setType('param3', PARAM_INT);
@@ -68,7 +70,7 @@ class profile_define_datetime extends profile_define_base {
      * @param array $files
      * @return array associative array of error messages
      */
-    function define_validate_specific($data, $files) {
+    public function define_validate_specific($data, $files) {
         $errors = array();
 
         // Make sure the start year is not greater than the end year.
@@ -82,9 +84,9 @@ class profile_define_datetime extends profile_define_base {
     /**
      * Alter form based on submitted or existing data.
      *
-     * @param stdClass $form
+     * @param moodleform $mform
      */
-    function define_after_data(&$mform) {
+    public function define_after_data(&$mform) {
         // Get the current calendar in use - see MDL-18375.
         $calendartype = \core_calendar\type_factory::factory();
 
@@ -93,12 +95,15 @@ class profile_define_datetime extends profile_define_base {
         $param1 = $mform->getElement('param1');
         $year = $param1->getValue(); // The getValue() for select elements returns an array.
         $year = $year[0];
-        $param1->setValue($calendartype->convert_year_from_gregorian($year));
+        $date1 = $calendartype->convert_from_gregorian($year, 1, 1);
 
         $param2 = $mform->getElement('param2');
         $year = $param2->getValue(); // The getValue() for select elements returns an array.
         $year = $year[0];
-        $param2->setValue($calendartype->convert_year_from_gregorian($year));
+        $date2 = $calendartype->convert_from_gregorian($year, 1, 1);
+
+        $param1->setValue($date1['year']);
+        $param2->setValue($date2['year']);
     }
 
     /**
@@ -108,16 +113,19 @@ class profile_define_datetime extends profile_define_base {
      * @param stdClass $data from the add/edit profile field form
      * @return stdClass processed data object
      */
-    function define_save_preprocess($data) {
+    public function define_save_preprocess($data) {
         // Get the current calendar in use - see MDL-18375.
         $calendartype = \core_calendar\type_factory::factory();
 
         // Ensure the years are saved as Gregorian in the database.
-        $data->param1 = $calendartype->convert_year_to_gregorian($data->param1);
-        $data->param2 = $calendartype->convert_year_to_gregorian($data->param2);
+        $startdate = $calendartype->convert_to_gregorian($data->param1, 1, 1);
+        $stopdate = $calendartype->convert_to_gregorian($data->param2, 1, 1);
+
+        $data->param1 = $startdate['year'];
+        $data->param2 = $stopdate['year'];
 
         if (empty($data->param3)) {
-            $data->param3 = NULL;
+            $data->param3 = null;
         }
 
         // No valid value in the default data column needed.

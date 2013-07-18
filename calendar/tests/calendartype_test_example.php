@@ -177,24 +177,4 @@ class structure extends type_base {
                      'hour' => (int) $hour,
                      'minute' => (int) $minute);
     }
-
-    /**
-     * Convert a given year in the calendar type being used to the Gregorian year.
-     *
-     * @param int $year
-     * @return int the gregorian year
-     */
-    public function convert_year_to_gregorian($year) {
-        return $year - 2;
-    }
-
-    /**
-     * Convert a given Gregorian year to the calendar type being used.
-     *
-     * @param int $year
-     * @return int the gregorian year
-     */
-    public function convert_year_from_gregorian($year) {
-        return $year + 2;
-    }
 }
