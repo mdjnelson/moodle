@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,7 +24,7 @@ use \core_calendar\type_base;
  * in the future of the Gregorian calendar.
  *
  * @package core_calendar
- * @copyright Mark Nelson <markn@moodle.com>
+ * @copyright 2013 Mark Nelson <markn@moodle.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class structure extends type_base {
