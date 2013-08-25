@@ -229,4 +229,38 @@ class structure extends type_base {
 
         return $date;
     }
+
+    /**
+     * Provided with a year in Gregorian convert it to the year
+     * for this calendar type.
+     *
+     * This is used by the date/time user profile field where
+     * no day or month is supplied.
+     *
+     * In this function we don't need to do anything except pass the year
+     * back as it is already in Gregorian.
+     *
+     * @param int $year
+     * @return int the year
+     */
+    public function convert_year_from_gregorian($year) {
+        return $year;
+    }
+
+    /**
+     * Provided with a year in Gregorian convert it to the year
+     * for this calendar type.
+     *
+     * This is used by the date/time user profile field where
+     * no day or month is supplied.
+     *
+     * In this function we don't need to do anything except pass the year
+     * back as it is already in Gregorian.
+     *
+     * @param int $year
+     * @return int the year
+     */
+    public function convert_year_to_gregorian($year) {
+        return $year;
+    }
 }

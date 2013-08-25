@@ -92,7 +92,7 @@ class profile_define_datetime extends profile_define_base {
         if (required_param('id', PARAM_INT) === 0) {
             return;
         }
-
+        // TODO
         // Get the current calendar in use - see MDL-18375.
         $calendartype = \core_calendar\type_factory::get_calendar_instance();
 
