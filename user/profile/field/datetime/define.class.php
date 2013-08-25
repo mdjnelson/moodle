@@ -85,6 +85,14 @@ class profile_define_datetime extends profile_define_base {
      * @param moodleform $mform
      */
     public function define_after_data(&$mform) {
+        // If we are adding a new profile field then the dates have already been set
+        // by setDefault to the correct dates in the used calendar system. We only want
+        // to execute the rest of the code when we have the years in the DB saved in
+        // Gregorian that need converting to the date for this user.
+        if (required_param('id', PARAM_INT) === 0) {
+            return;
+        }
+
         // Get the current calendar in use - see MDL-18375.
         $calendartype = \core_calendar\type_factory::get_calendar_instance();
 
