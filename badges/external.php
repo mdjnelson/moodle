@@ -51,6 +51,12 @@ if (!empty($CFG->forceloginforprofiles)) {
 
 // Get all external badges of a user.
 $out = get_backpack_settings($userid);
+
+// If we didn't find any badges then print an error.
+if (is_null($out)) {
+    print_error('error:externalbadgedoesntexist', 'badges');
+}
+
 $badges = $out->badges;
 
 // Loop through the badges and check if supplied badge hash exists in user external badges.
@@ -61,9 +67,9 @@ foreach ($badges as $b) {
     }
 }
 
-// If we didn't find the badge, a user might be trying to replace userid parameter.
-if (is_null($badge)) {
-    print_error(get_string('error:externalbadgedoesntexist', 'badges'));
+// If we didn't find the badge a user might be trying to replace the userid parameter.
+if (!isset($badge)) {
+    print_error('error:externalbadgedoesntexist', 'badges');
 }
 
 $PAGE->set_context(context_system::instance());
