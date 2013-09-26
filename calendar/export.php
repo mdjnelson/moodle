@@ -70,7 +70,8 @@ if ($courseid != SITEID && !empty($courseid)) {
     $courses = calendar_get_default_courses();
     $issite = true;
 }
-require_course_login($course);
+
+require_login($course);
 
 $url = new moodle_url('/calendar/export.php');
 if ($action !== '') {
