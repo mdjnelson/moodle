@@ -37,5 +37,7 @@ $hash = required_param('b', PARAM_ALPHANUM);
 
 $badge = badges_get_issued_badge_info($hash);
 
+$PAGE->set_context(context_system::instance());
+
 echo $OUTPUT->header();
 echo json_encode($badge);
