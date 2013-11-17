@@ -103,6 +103,7 @@ $string['informminpasswordupper'] = 'at least {$a} upper case letter(s)';
 $string['informpasswordpolicy'] = 'The password must have {$a}';
 $string['instructions'] = 'Instructions';
 $string['internal'] = 'Internal';
+$string['invalidauthtype'] = 'Invalid authentication type';
 $string['locked'] = 'Locked';
 $string['md5'] = 'MD5 hash';
 $string['nopasswordchange'] = 'Password can not be changed';
