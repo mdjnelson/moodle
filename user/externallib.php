@@ -112,53 +112,12 @@ class core_user_external extends external_api {
         // If any problems are found then exceptions are thrown with helpful error messages
         $params = self::validate_parameters(self::create_users_parameters(), array('users'=>$users));
 
-        $availableauths  = core_component::get_plugin_list('auth');
-        unset($availableauths['mnet']);       // these would need mnethostid too
-        unset($availableauths['webservice']); // we do not want new webservice users for now
-
-        $availablethemes = core_component::get_plugin_list('theme');
-        $availablelangs  = get_string_manager()->get_list_of_translations();
-
         $transaction = $DB->start_delegated_transaction();
 
         $userids = array();
         foreach ($params['users'] as $user) {
-            // Make sure that the username doesn't already exist
-            if ($DB->record_exists('user', array('username'=>$user['username'], 'mnethostid'=>$CFG->mnet_localhost_id))) {
-                throw new invalid_parameter_exception('Username already exists: '.$user['username']);
-            }
-
-            // Make sure auth is valid
-            if (empty($availableauths[$user['auth']])) {
-                throw new invalid_parameter_exception('Invalid authentication type: '.$user['auth']);
-            }
-
-            // Make sure lang is valid
-            if (empty($availablelangs[$user['lang']])) {
-                throw new invalid_parameter_exception('Invalid language code: '.$user['lang']);
-            }
-
-            // Make sure lang is valid
-            if (!empty($user['theme']) && empty($availablethemes[$user['theme']])) { //theme is VALUE_OPTIONAL,
-                                                                                     // so no default value.
-                                                                                     // We need to test if the client sent it
-                                                                                     // => !empty($user['theme'])
-                throw new invalid_parameter_exception('Invalid theme: '.$user['theme']);
-            }
-
             $user['confirmed'] = true;
             $user['mnethostid'] = $CFG->mnet_localhost_id;
-
-            // Start of user info validation.
-            // Lets make sure we validate current user info as handled by current GUI. see user/editadvanced_form.php function validation()
-            if (!validate_email($user['email'])) {
-                throw new invalid_parameter_exception('Email address is invalid: '.$user['email']);
-            } else if ($DB->record_exists('user', array('email'=>$user['email'], 'mnethostid'=>$user['mnethostid']))) {
-                throw new invalid_parameter_exception('Email address already exists: '.$user['email']);
-            }
-            // End of user info validation.
-
-            // create the user data now!
             $user['id'] = user_create_user($user);
 
             // custom fields

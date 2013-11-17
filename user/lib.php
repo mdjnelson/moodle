@@ -33,11 +33,11 @@
  * @return int id of the newly created user
  */
 function user_create_user($user, $updatepassword = true) {
-    global $DB;
+    global $CFG, $DB;
 
     // Set the timecreate field to the current time.
     if (!is_object($user)) {
-            $user = (object)$user;
+        $user = (object) $user;
     }
 
     // Check username.
@@ -59,6 +59,48 @@ function user_create_user($user, $updatepassword = true) {
 
         $userpassword = $user->password;
         unset($user->password);
+    }
+
+    // Make sure that the username doesn't already exist.
+    if ($DB->record_exists('user', array('username' => $user->username, 'mnethostid' => $CFG->mnet_localhost_id))) {
+        throw new moodle_exception('usernameexists', 'moodle', '', null, 'Username already exists: ' . $user->username);
+    }
+
+    // Check that the email is valid and does not already exist.
+    if (!validate_email($user->email)) {
+        throw new moodle_exception('invalidemail', 'moodle', '', null, 'Email address is invalid: ' . $user->email);
+    } else if ($DB->record_exists('user', array('email' => $user->email, 'mnethostid' => $user->mnethostid))) {
+        throw new moodle_exception('emailexists', 'moodle', '', null, 'Email address already exists: ' . $user->email);
+    }
+
+    // Make sure auth, if set, is valid.
+    if (!empty($user->auth)) {
+        $availableauths = core_component::get_plugin_list('auth');
+        if ($user->auth === 'mnet') {
+            throw new moodle_exception('invalidauthtype', 'auth', '', null,
+                'Invalid authentication type: mnet requires a mnethostid in order to work');
+        } else if (empty($availableauths[$user->auth])) {
+            throw new moodle_exception('invalidauthtype', 'auth', '', null,
+                'Invalid authentication type: ' . $user->auth);
+        }
+    }
+
+    // Make sure lang, if set, is valid.
+    if (!empty($user->lang)) {
+        $availablelangs = get_string_manager()->get_list_of_translations();
+        if (empty($availablelangs[$user->lang])) {
+            throw new moodle_exception('invalidlangcode', 'moodle', '', null,
+                'Invalid language code: ' . $user->lang);
+        }
+    }
+
+    // Make sure theme, if set, is valid.
+    if (!empty($user->theme)) {
+        $availablethemes = core_component::get_plugin_list('theme');
+        if (empty($availablethemes[$user->theme])) {
+            throw new moodle_exception('invalidtheme', 'moodle', '', null,
+                'Invalid theme: ' . $user->theme);
+        }
     }
 
     $user->timecreated = time();
@@ -101,7 +143,7 @@ function user_update_user($user, $updatepassword = true) {
 
     // set the timecreate field to the current time
     if (!is_object($user)) {
-            $user = (object)$user;
+        $user = (object) $user;
     }
 
     //check username
@@ -125,6 +167,36 @@ function user_update_user($user, $updatepassword = true) {
 
         $passwd = $user->password;
         unset($user->password);
+    }
+
+    // Make sure auth, if set, is valid.
+    if (!empty($user->auth)) {
+        $availableauths = core_component::get_plugin_list('auth');
+        if ($user->auth === 'mnet') {
+            throw new moodle_exception('invalidauthtype', 'auth', '', null,
+                'Invalid authentication type: mnet requires a mnethostid in order to work');
+        } else if (empty($availableauths[$user->auth])) {
+            throw new moodle_exception('invalidauthtype', 'auth', '', null,
+                'Invalid authentication type: ' . $user->auth);
+        }
+    }
+
+    // Make sure lang, if set, is valid.
+    if (!empty($user->lang)) {
+        $availablelangs = get_string_manager()->get_list_of_translations();
+        if (empty($availablelangs[$user->lang])) {
+            throw new moodle_exception('invalidlangcode', 'moodle', '', null,
+                'Invalid language code: ' . $user->lang);
+        }
+    }
+
+    // Make sure theme, if set, is valid.
+    if (!empty($user->theme)) {
+        $availablethemes = core_component::get_plugin_list('theme');
+        if (empty($availablethemes[$user->theme])) {
+            throw new moodle_exception('invalidtheme', 'moodle', '', null,
+                'Invalid theme: ' . $user->theme);
+        }
     }
 
     $user->timemodified = time();
