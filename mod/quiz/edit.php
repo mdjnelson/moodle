@@ -155,8 +155,13 @@ $questionbank = new quiz_question_bank_view($contexts, $thispageurl, $course, $c
 $questionbank->set_quiz_has_attempts($quizhasattempts);
 
 // Log this visit.
-add_to_log($cm->course, 'quiz', 'editquestions',
-            "view.php?id=$cm->id", "$quiz->id", $cm->id);
+$params = array(
+    'objectid' => $quiz->id,
+    'courseid' => $course->id,
+    'context' => $contexts->lowest()
+);
+$event = \mod_quiz\event\questions_updated::create($params);
+$event->trigger();
 
 // You need mod/quiz:manage in addition to question capabilities to access this page.
 require_capability('mod/quiz:manage', $contexts->lowest());
