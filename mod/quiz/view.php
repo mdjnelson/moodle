@@ -71,7 +71,13 @@ $accessmanager = new quiz_access_manager($quizobj, $timenow,
 $quiz = $quizobj->get_quiz();
 
 // Log this request.
-add_to_log($course->id, 'quiz', 'view', 'view.php?id=' . $cm->id, $quiz->id, $cm->id);
+$params = array(
+    'context' => $context,
+    'objectid' => $quiz->id
+);
+$event = \mod_quiz\event\course_module_viewed::create($params);
+$event->add_record_snapshot('quiz', $quiz);
+$event->trigger();
 
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
