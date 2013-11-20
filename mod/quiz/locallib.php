@@ -332,6 +332,8 @@ function quiz_delete_attempt($attempt, $quiz) {
         if (!$attempt = $DB->get_record('quiz_attempts', array('id' => $attempt))) {
             return;
         }
+    } else if (!$attempt = $DB->get_record('quiz_attempts', array('id' => $attempt->id))) {
+        return;
     }
 
     if ($attempt->quiz != $quiz->id) {
@@ -342,6 +344,16 @@ function quiz_delete_attempt($attempt, $quiz) {
 
     question_engine::delete_questions_usage_by_activity($attempt->uniqueid);
     $DB->delete_records('quiz_attempts', array('id' => $attempt->id));
+
+    // Log the deletion of the attempt.
+    $params = array(
+        'objectid' => $attempt->id,
+        'relateduserid' => $attempt->userid,
+        'context' => context_module::instance($quiz->cmid)
+    );
+    $event = \mod_quiz\event\attempt_deleted::create($params);
+    $event->add_record_snapshot('quiz_attempts', $attempt);
+    $event->trigger();
 
     // Search quiz_attempts for other instances by this user.
     // If none, then delete record for this quiz, this user from quiz_grades
