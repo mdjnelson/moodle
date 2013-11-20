@@ -83,8 +83,19 @@ if (!is_readable("report/$mode/report.php")) {
     print_error('reportnotfound', 'quiz', '', $mode);
 }
 
-add_to_log($course->id, 'quiz', 'report', 'report.php?id=' . $cm->id . '&mode=' . $mode,
-        $quiz->id, $cm->id);
+// Get the report id.
+$report = $DB->get_record('quiz_reports', array('name' => $mode));
+$params = array(
+    'objectid' => $report->id,
+    'context' => $context,
+    'other' => array(
+        'quizid' => $quiz->id,
+        'reportname' => $report->name
+    )
+);
+$event = \mod_quiz\event\report_viewed::create($params);
+$event->add_record_snapshot('quiz_reports', $report);
+$event->trigger();
 
 // Open the selected quiz report and display it.
 $file = $CFG->dirroot . '/mod/quiz/report/' . $mode . '/report.php';

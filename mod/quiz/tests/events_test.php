@@ -272,4 +272,44 @@ class mod_quiz_events_testcase extends advanced_testcase {
             $attempt->id, $quizobj->get_cmid());
         $this->assertEventLegacyLogData($expected, $event);
     }
+
+    /**
+     * Test the report viewed event.
+     *
+     * There is no external API for viewing reports, so the unit test will simply
+     * create and trigger the event and ensure the event data is returned as expected.
+     */
+    public function test_report_viewed() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $quiz = $this->getDataGenerator()->create_module('quiz', array('course' => $course->id));
+
+        $report = $DB->get_record('quiz_reports', array('name' => 'overview'));
+        $params = array(
+            'objectid' => $report->id,
+            'context' => $context = context_module::instance($quiz->cmid),
+            'other' => array(
+                'quizid' => $quiz->id,
+                'reportname' => 'overview'
+            )
+        );
+        $event = \mod_quiz\event\report_viewed::create($params);
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+        $event->trigger();
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\mod_quiz\event\report_viewed', $event);
+        $this->assertEquals(context_module::instance($quiz->cmid), $event->get_context());
+        $expected = array($course->id, 'quiz', 'report', 'report.php?id=' . $quiz->cmid . '&mode=overview',
+            $quiz->id, $quiz->cmid);
+        $this->assertEventLegacyLogData($expected, $event);
+    }
 }
