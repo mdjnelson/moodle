@@ -78,9 +78,15 @@ if ($attemptobj->is_finished()) {
 }
 
 // Log this page view.
-add_to_log($attemptobj->get_courseid(), 'quiz', 'view summary',
-        'summary.php?attempt=' . $attemptobj->get_attemptid(),
-        $attemptobj->get_quizid(), $attemptobj->get_cmid());
+$params = array(
+    'objectid' => $attemptobj->get_attemptid(),
+    'relateduserid' => $attemptobj->get_userid(),
+    'courseid' => $attemptobj->get_courseid(),
+    'context' => context_module::instance($attemptobj->get_cmid()),
+);
+$event->add_record_snapshot('quiz_attempts', $attemptobj->get_attempt());
+$event = \mod_quiz\event\attempt_summary_viewed::create($params);
+$event->trigger();
 
 // Arrange for the navigation to be displayed.
 if (empty($attemptobj->get_quiz()->showblocks)) {
