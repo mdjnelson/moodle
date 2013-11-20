@@ -307,6 +307,7 @@ $string['errorunexpectedevent'] = 'Unexpected event code {$a->event} found for q
 $string['essay'] = 'Essay';
 $string['essayquestions'] = 'Questions';
 $string['eventattemptdeleted'] = 'Quiz attempt deleted';
+$string['eventattemptreviewed'] = 'Quiz attempt reviewed';
 $string['eventquizattemptabandoned'] = 'Quiz attempt abandoned';
 $string['eventquizattempttimelimitexceeded'] = 'Quiz attempt time limit exceeded';
 $string['eventquizattemptstarted'] = 'Quiz attempt started';

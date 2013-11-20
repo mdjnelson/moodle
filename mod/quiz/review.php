@@ -86,8 +86,18 @@ if ($options->flags == question_display_options::EDITABLE && optional_param('sav
 }
 
 // Log this review.
-add_to_log($attemptobj->get_courseid(), 'quiz', 'review', 'review.php?attempt=' .
-        $attemptobj->get_attemptid(), $attemptobj->get_quizid(), $attemptobj->get_cmid());
+$params = array(
+    'objectid' => $attemptobj->get_attemptid(),
+    'relateduserid' => $attemptobj->get_userid(),
+    'courseid' => $attemptobj->get_courseid(),
+    'context' => context_module::instance($attemptobj->get_cmid()),
+    'other' => array(
+        'quizid' => $attemptobj->get_quizid()
+    )
+);
+$event = \mod_quiz\event\attempt_reviewed::create($params);
+$event->add_record_snapshot('quiz_attempts', $attemptobj->get_attempt());
+$event->trigger();
 
 // Work out appropriate title and whether blocks should be shown.
 if ($attemptobj->is_preview_user() && $attemptobj->is_own_attempt()) {
