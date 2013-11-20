@@ -307,6 +307,8 @@ abstract class quiz_attempts_report extends quiz_default_report {
     protected function delete_selected_attempts($quiz, $cm, $attemptids, $allowed) {
         global $DB;
 
+        // Get the context for this course module.
+        $context = context_module::instance($cm->id);
         foreach ($attemptids as $attemptid) {
             $attempt = $DB->get_record('quiz_attempts', array('id' => $attemptid));
             if (!$attempt || $attempt->quiz != $quiz->id || $attempt->preview != 0) {
@@ -317,8 +319,7 @@ abstract class quiz_attempts_report extends quiz_default_report {
                 // Ensure the attempt belongs to a student included in the report. If not skip.
                 continue;
             }
-            add_to_log($quiz->course, 'quiz', 'delete attempt', 'report.php?id=' . $cm->id,
-                    $attemptid, $cm->id);
+
             quiz_delete_attempt($attempt, $quiz);
         }
     }
