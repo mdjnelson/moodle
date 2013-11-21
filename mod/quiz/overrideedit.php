@@ -172,8 +172,15 @@ if ($mform->is_cancelled()) {
     quiz_update_open_attempts(array('quizid'=>$quiz->id));
     quiz_update_events($quiz, $fromform);
 
-    add_to_log($cm->course, 'quiz', 'edit override',
-            "overrideedit.php?id=$fromform->id", $quiz->id, $cm->id);
+    $params = array(
+        'objectid' => $fromform->id,
+        'relateduserid' => $fromform->userid,
+        'context' => $context,
+        'other' => array('quizid' => $fromform->quiz)
+    );
+    $event = \mod_quiz\event\override_updated::create($params);
+    $event->add_record_snapshot('quiz_overrides', $fromform);
+    $event->trigger();
 
     if (!empty($fromform->submitbutton)) {
         redirect($overridelisturl);
