@@ -159,11 +159,17 @@ if (!$finishattempt) {
 }
 
 // Otherwise, we have been asked to finish attempt, so do that.
-
 // Log the end of this attempt.
-add_to_log($attemptobj->get_courseid(), 'quiz', 'close attempt',
-        'review.php?attempt=' . $attemptobj->get_attemptid(),
-        $attemptobj->get_quizid(), $attemptobj->get_cmid());
+$params = array(
+    'objectid' => $attemptobj->get_attemptid(),
+    'relateduserid' => $attemptobj->get_userid(),
+    'courseid' => $attemptobj->get_courseid(),
+    'context' => context_module::instance($attemptobj->get_cmid()),
+    'other' => array('quizid' => $attemptobj->get_quizid())
+);
+$event = \mod_quiz\event\attempt_closed::create($params);
+$event->add_record_snapshot('quiz_attempts', $attemptobj->get_attempt());
+$event->trigger();
 
 // Update the quiz attempt record.
 try {
