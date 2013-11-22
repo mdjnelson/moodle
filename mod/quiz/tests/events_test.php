@@ -449,4 +449,39 @@ class mod_quiz_events_testcase extends advanced_testcase {
         $expected = array($course->id, 'quiz', 'delete override', 'overrides.php?cmid=' . $quiz->cmid, $quiz->id, $quiz->cmid);
         $this->assertEventLegacyLogData($expected, $event);
     }
+
+    /**
+     * Test the attempt viewed event.
+     *
+     * There is no external API for continuing an attempt, so the unit test will simply
+     * create and trigger the event and ensure the event data is returned as expected.
+     */
+    public function test_attempt_viewed() {
+        $this->resetAfterTest();
+
+        // Create quiz attempt.
+        list($quizobj, $quba, $attempt) = $this->prepare_quiz_data();
+
+        $params = array(
+            'objectid' => $attempt->id,
+            'relateduserid' => 2,
+            'courseid' => $quizobj->get_courseid(),
+            'context' => context_module::instance($quizobj->get_cmid())
+        );
+        $event = \mod_quiz\event\attempt_viewed::create($params);
+        $event->add_record_snapshot('quiz_attempts', $attempt);
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+        $event->trigger();
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\mod_quiz\event\attempt_viewed', $event);
+        $this->assertEquals(context_module::instance($quizobj->get_cmid()), $event->get_context());
+        $expected = array($quizobj->get_courseid(), 'quiz', 'continue attempt', 'review.php?attempt=1', $quizobj->get_quizid(),
+            $quizobj->get_cmid());
+        $this->assertEventLegacyLogData($expected, $event);
+    }
 }
