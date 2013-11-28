@@ -35,7 +35,13 @@ admin_externalpage_setup('reportquestioninstances', '', null, '', array('pagelay
 echo $OUTPUT->header();
 
 // Log.
-add_to_log(SITEID, "admin", "report questioninstances", "report/questioninstances/index.php?qtype=$requestedqtype", $requestedqtype);
+$params = array(
+    'courseid' => $SITE->id,
+    'context' => context_system::instance(),
+    'other' => array('requestedqtype' => $requestedqtype)
+);
+$event = \report_questioninstances\event\report_viewed::create($params);
+$event->trigger();
 
 // Prepare the list of capabilities to choose from
 $qtypes = question_bank::get_all_qtypes();
