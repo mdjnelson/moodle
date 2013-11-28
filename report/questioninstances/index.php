@@ -34,9 +34,6 @@ $requestedqtype = optional_param('qtype', '', PARAM_SAFEDIR);
 admin_externalpage_setup('reportquestioninstances', '', null, '', array('pagelayout'=>'report'));
 echo $OUTPUT->header();
 
-// Log.
-add_to_log(SITEID, "admin", "report questioninstances", "report/questioninstances/index.php?qtype=$requestedqtype", $requestedqtype);
-
 // Prepare the list of capabilities to choose from
 $qtypes = question_bank::get_all_qtypes();
 $qtypechoices = array();
@@ -59,6 +56,14 @@ echo $OUTPUT->box_end();
 
 // If we have a qtype to report on, generate the report.
 if ($requestedqtype) {
+    // Log the review of this report.
+    $params = array(
+        'courseid' => $SITE->id,
+        'context' => context_system::instance(),
+        'other' => array('requestedqtype' => $requestedqtype)
+    );
+    $event = \report_questioninstances\event\report_viewed::create($params);
+    $event->trigger();
 
     // Work out the bits needed for the SQL WHERE clauses.
     if ($requestedqtype == 'missingtype') {
