@@ -768,8 +768,20 @@ function clam_log_upload($newfilepath, $course=null, $nourl=false) {
     $courseid = 0;
     if ($course) {
         $courseid = $course->id;
+        $context = context_course::instance($courseid);
+    } else {
+        $context = context_system::instance();
     }
-    add_to_log($courseid, 'upload', 'upload', ((!$nourl) ? substr($_SERVER['HTTP_REFERER'], 0, 100) : ''), $newfilepath);
+
+    // Trigger event for an infected file being uploaded.
+    $event = \core\event\file_uploaded::create(array(
+        'courseid' => $courseid,
+        'context' => $context,
+        'other' => array(
+            'filepath' => $newfilepath,
+        )
+    ));
+    $event->trigger();
 }
 
 /**
@@ -783,9 +795,21 @@ function clam_log_upload($newfilepath, $course=null, $nourl=false) {
 function clam_log_infected($oldfilepath='', $newfilepath='', $userid=0) {
     global $DB;
 
-    add_to_log(0, 'upload', 'infected', $_SERVER['HTTP_REFERER'], $oldfilepath, 0, $userid);
+    $user = $DB->get_record('user', array('id' => $userid));
 
-    $user = $DB->get_record('user', array('id'=>$userid));
+    // Trigger event for an infected file being uploaded.
+    $event = \core\event\infected_file_uploaded::create(array(
+        'context' => context_system::instance(),
+        'userid' => $userid,
+        'other' => array(
+            'oldfilepath' => $oldfilepath,
+            'newfilepath' => $newfilepath
+        )
+    ));
+    if (!empty($user)) {
+        $event->add_record_snapshot('user', $user);
+    }
+    $event->trigger();
 
     $errorstr = 'Clam AV has found a file that is infected with a virus. It was uploaded by '
         . ((empty($user)) ? ' an unknown user ' : fullname($user))
