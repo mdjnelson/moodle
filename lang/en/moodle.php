@@ -729,6 +729,7 @@ $string['eventcourserestored'] = 'Course restored';
 $string['eventcourseupdated'] = 'Course updated';
 $string['eventcoursesectionupdated'] = ' Course section updated';
 $string['eventcoursemoduleinstancelistviewed'] = 'Course module instance list viewed';
+$string['eventemailfailedtosend'] = 'Email failed to send';
 $string['eventfileuploaded'] = 'File uploaded';
 $string['eventinfectedfileuploaded'] = 'Infected file uploaded';
 $string['eventreportviewed'] = 'Report viewed';

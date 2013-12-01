@@ -75,4 +75,36 @@ class core_events_testcase extends advanced_testcase {
         $expected = array(0, 'upload', 'infected', '', 'the/old/file/path', 0, $USER->id);
         $this->assertEventLegacyLogData($expected, $event);
     }
+
+    /**
+     * Test the sending email failed event.
+     *
+     * It's not possible to use the moodle API to simulate the failure of sending
+     * an email, so here we simply create the event and trigger it.
+     */
+    public function test_sending_email_failed() {
+        // Trigger event for failing to send email.
+        $event = \core\event\sending_email_failed::create(array(
+            'context' => context_system::instance(),
+            'userid' => 1,
+            'relateduserid' => 2,
+            'other' => array(
+                'subject' => 'This is a subject',
+                'message' => 'This is a message',
+                'errorinfo' => 'The email failed to send!'
+            )
+        ));
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+        $event->trigger();
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\sending_email_failed', $event);
+        $this->assertEquals(context_system::instance(), $event->get_context());
+        $expected = array(SITEID, 'library', 'mailer', qualified_me(), 'ERROR: The email failed to send!');
+        $this->assertEventLegacyLogData($expected, $event);
+    }
 }
