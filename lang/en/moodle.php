@@ -722,6 +722,7 @@ $string['eventcourseresetstarted'] = 'Course reset started';
 $string['eventcourserestored'] = 'Course restored';
 $string['eventcourseupdated'] = 'Course updated';
 $string['eventcoursesectionupdated'] = ' Course section updated';
+$string['eventemailfailedtosend'] = 'Email failed to send';
 $string['eventfileuploaded'] = 'File uploaded';
 $string['eventinfectedfileuploaded'] = 'Infected file uploaded';
 $string['eventusercreated'] = 'User created';
