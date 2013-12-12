@@ -481,6 +481,9 @@ class grade_category extends grade_object {
                  WHERE gi.id = g.itemid AND gi.id $usql $usersql
               ORDER BY g.userid";
 
+        // Store a list of users that we have already graded.
+        $gradedusers = array();
+
         // group the results by userid and aggregate the grades for this user
         $rs = $DB->get_recordset_sql($sql, $params);
         if ($rs->valid()) {
@@ -497,6 +500,7 @@ class grade_category extends grade_object {
                     $grade_values = array();
                     $excluded     = array();
                     $oldgrade     = null;
+                    $gradedusers[] = $used->userid;
                 }
                 $grade_values[$used->itemid] = $used->finalgrade;
 
@@ -511,6 +515,22 @@ class grade_category extends grade_object {
             $this->aggregate_grades($prevuser, $items, $grade_values, $oldgrade, $excluded);//the last one
         }
         $rs->close();
+
+        // Now we want to get the users who are enrolled in this course who may not have the item graded.
+        // This is done when no grades have been recorded for items in a category, with the category setting
+        // 'Aggregrate only non-empty grades' NOT set, meaning the user needs a grade of '0'.
+        if ($userid) {
+            $user = new stdClass();
+            $user->id = $userid;
+            $users = array($user);
+        } else {
+            $users = get_enrolled_users(context_course::instance($this->courseid), '', 0, 'u.id');
+        }
+        foreach ($users as $user) {
+            if (!in_array($user->id, $gradedusers)) {
+                $this->aggregate_grades($user->id, $items, array(), null, array());
+            }
+        }
 
         return true;
     }
@@ -560,7 +580,7 @@ class grade_category extends grade_object {
         }
 
         // if no grades calculation possible or grading not allowed clear final grade
-        if (empty($grade_values) or empty($items) or ($this->grade_item->gradetype != GRADE_TYPE_VALUE and $this->grade_item->gradetype != GRADE_TYPE_SCALE)) {
+        if (empty($items) or ($this->grade_item->gradetype != GRADE_TYPE_VALUE and $this->grade_item->gradetype != GRADE_TYPE_SCALE)) {
             $grade->finalgrade = null;
 
             if (!is_null($oldfinalgrade)) {
