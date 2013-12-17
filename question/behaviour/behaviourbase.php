@@ -431,6 +431,8 @@ abstract class question_behaviour {
      * @return bool either {@link question_attempt::KEEP}
      */
     public function process_comment(question_attempt_pending_step $pendingstep) {
+        global $PAGE;
+
         if (!$this->qa->get_state()->is_finished()) {
             throw new coding_exception('Cannot manually grade a question before it is finshed.');
         }
@@ -450,6 +452,17 @@ abstract class question_behaviour {
                                 ', slot ' . $this->qa->get_slot() . ', fraction ' . $fraction);
             }
             $pendingstep->set_fraction($fraction);
+
+            // Log this action.
+            $params = array(
+                'objectid' => $this->question->id,
+                'context' => context_system::instance(),
+                'other' => array(
+                    'attemptid' => $this->qa->get_database_id()
+                )
+            );
+            $event = \core\event\question_manually_graded::create($params);
+            $event->trigger();
         }
 
         $pendingstep->set_state($this->qa->get_state()->corresponding_commented_state(

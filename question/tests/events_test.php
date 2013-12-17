@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
+require_once($CFG->dirroot . '/mod/quiz/editlib.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 require_once($CFG->dirroot . '/question/category_class.php');
 
@@ -69,5 +70,59 @@ class core_question_events_testcase extends advanced_testcase {
         $this->assertEquals(context_module::instance($quiz->cmid), $event->get_context());
         $expected = array($course->id, 'quiz', 'addcategory', 'view.php?id=' . $quiz->cmid , $categoryid, $quiz->cmid);
         $this->assertEventLegacyLogData($expected, $event);
+    }
+
+    /**
+     * Test the question manually graded event.
+     */
+    public function test_question_manually_graded() {
+        $this->resetAfterTest();
+
+        // Create the user, course and quiz we are going to be testing with.
+        $this->setAdminUser();
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $quiz = $this->getDataGenerator()->create_module('quiz', array('course' => $course->id));
+
+        // Create a couple of questions.
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+
+        $cat = $questiongenerator->create_question_category();
+        $saq = $questiongenerator->create_question('shortanswer', null, array('category' => $cat->id));
+        $numq = $questiongenerator->create_question('numerical', null, array('category' => $cat->id));
+
+        // Add them to the quiz.
+        quiz_add_quiz_question($saq->id, $quiz);
+        quiz_add_quiz_question($numq->id, $quiz);
+
+        $quizobj = quiz::create($quiz->id, $user->id);
+
+        // Start the attempt.
+        $quba = question_engine::make_questions_usage_by_activity('mod_quiz', $quizobj->get_context());
+        $quba->set_preferred_behaviour($quizobj->get_quiz()->preferredbehaviour);
+
+        $timenow = time();
+        $attempt = quiz_create_attempt($quizobj, 1, false, $timenow, false, $user->id);
+
+        quiz_start_new_attempt($quizobj, $quba, $attempt, 1, $timenow);
+
+        quiz_attempt_save_started($quizobj, $quba, $attempt);
+
+        // Finish the attempt.
+        $attemptobj = quiz_attempt::create($attempt->id);
+        $attemptobj->process_finish($timenow, false);
+
+        // Get the question usage for this attempt.
+        $quba = question_engine::load_questions_usage_by_activity($attemptobj->get_uniqueid());
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+        $quba->manual_grade(1, 'comment', 1, FORMAT_HTML);
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\question_manually_graded', $event);
+        $this->assertEquals(context_system::instance(), $event->get_context());
     }
 }

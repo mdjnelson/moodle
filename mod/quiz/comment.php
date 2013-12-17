@@ -43,11 +43,6 @@ if (!$attemptobj->is_finished()) {
 require_login($attemptobj->get_course(), false, $attemptobj->get_cm());
 $attemptobj->require_capability('mod/quiz:grade');
 
-// Log this action.
-add_to_log($attemptobj->get_courseid(), 'quiz', 'manualgrade', 'comment.php?attempt=' .
-        $attemptobj->get_attemptid() . '&slot=' . $slot,
-        $attemptobj->get_quizid(), $attemptobj->get_cmid());
-
 // Print the page header.
 $PAGE->set_pagelayout('popup');
 $PAGE->set_heading($attemptobj->get_course()->fullname);
