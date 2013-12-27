@@ -92,7 +92,16 @@ if ($data = $form->get_data()) {
     }
 }
 
-add_to_log(SITEID, "admin", "tool capability", "tool/capability/index.php", count($capabilities));
+// Get the number of capabilities.
+$numcapabilities = count($capabilities);
+
+$params = array(
+    'courseid' => $SITE->id,
+    'context' => $systemcontext,
+    'other' => array('numcapabilities' => $numcapabilities)
+);
+$event = \tool_capability\event\report_viewed::create($params);
+$event->trigger();
 
 $renderer = $PAGE->get_renderer('tool_capability');
 
@@ -101,7 +110,7 @@ echo $OUTPUT->header();
 $form->display();
 
 // If we have a capability, generate the report.
-if (count($capabilities) && count($rolestoshow)) {
+if ($numcapabilities && count($rolestoshow)) {
     /* @var tool_capability_renderer $renderer */
     echo $renderer->capability_comparison_table($capabilities, $context->id, $rolestoshow);
 }
