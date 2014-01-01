@@ -114,6 +114,9 @@
         <testsuite name="core_repository">
             <directory suffix="_test.php">repository/tests</directory>
         </testsuite>
+        <testsuite name="core_tag">
+            <directory suffix="_test.php">tag/tests</directory>
+        </testsuite>
         <testsuite name="core_user">
             <directory suffix="_test.php">user/tests</directory>
         </testsuite>
