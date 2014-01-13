@@ -118,7 +118,7 @@ function useredit_update_trackforums($user, $usernew) {
 }
 
 function useredit_update_interests($user, $interests) {
-    tag_set('user', $user->id, $interests);
+    tag_set('user', $user->id, $interests, 'core', context_user::instance($user->id)->id);
 }
 
 function useredit_shared_definition(&$mform, $editoroptions = null, $filemanageroptions = null) {
