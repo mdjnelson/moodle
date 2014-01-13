@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
 require_once($CFG->dirroot . '/tag/lib.php');
+require_once($CFG->dirroot . '/tag/coursetagslib.php');
 
 class core_tag_events_testcase extends advanced_testcase {
 
@@ -91,6 +92,43 @@ class core_tag_events_testcase extends advanced_testcase {
         $this->assertInstanceOf('\core\event\tag_updated', $event);
         $this->assertEquals($systemcontext, $event->get_context());
         $expected = array(0, 'tag', 'update', 'index.php?id=' . $tag->id, $tag->name);
+        $this->assertEventLegacyLogData($expected, $event);
+    }
+
+    /**
+     * Test the item tagged event.
+     */
+    public function test_item_tagged() {
+        // Create a course to tag.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Trigger and capture the event for tagging a course.
+        $sink = $this->redirectEvents();
+        tag_set('course', $course->id, array('A tag'), 'core', context_course::instance($course->id)->id);
+        $events = $sink->get_events();
+        $event = $events[1];
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\item_tagged', $event);
+        $this->assertEquals(context_course::instance($course->id), $event->get_context());
+        $expected = array($course->id, 'coursetags', 'add', 'tag/search.php?query=A+tag', 'Course tagged');
+        $this->assertEventLegacyLogData($expected, $event);
+
+        // Create a question to tag.
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $cat = $questiongenerator->create_question_category();
+        $question = $questiongenerator->create_question('shortanswer', null, array('category' => $cat->id));
+
+        // Trigger and capture the event for tagging a question.
+        $sink = $this->redirectEvents();
+        tag_set('question', $question->id, array('A tag'), 'core', $cat->contextid);
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\item_tagged', $event);
+        $this->assertEquals(context_system::instance(), $event->get_context());
+        $expected = null;
         $this->assertEventLegacyLogData($expected, $event);
     }
 }

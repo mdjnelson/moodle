@@ -252,12 +252,6 @@ function coursetag_store_keywords($tags, $courseid, $userid=0, $tagtype='officia
                 //tag_instance entry
                 $context = context_course::instance($courseid);
                 tag_assign('course', $courseid, $tagid, $ordering, $userid, 'core', $context->id);
-
-                //logging - note only for user added tags
-                if ($tagtype == 'default' and $myurl != '') {
-                    $url = $myurl.'?query='.urlencode($tag);
-                    add_to_log($courseid, 'coursetags', 'add', $url, 'Course tagged');
-                }
             }
         }
     }
