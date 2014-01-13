@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
 require_once($CFG->dirroot . '/tag/lib.php');
+require_once($CFG->dirroot . '/tag/coursetagslib.php');
 
 class core_tag_events_testcase extends advanced_testcase {
 
@@ -91,6 +92,29 @@ class core_tag_events_testcase extends advanced_testcase {
         $this->assertInstanceOf('\core\event\tag_updated', $event);
         $this->assertEquals($systemcontext, $event->get_context());
         $expected = array(0, 'tag', 'update', 'index.php?id=' . $tag->id, $tag->name);
+        $this->assertEventLegacyLogData($expected, $event);
+    }
+
+    /**
+     * Test the item tagged event.
+     */
+    public function test_item_tagged() {
+        // Create a course to tag.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Create the tag.
+        $tag = $this->getDataGenerator()->create_tag();
+
+        // Trigger and capture the event for tagging a course.
+        $sink = $this->redirectEvents();
+        tag_assign('course', $course->id, $tag->id, '1');
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\item_tagged', $event);
+        $this->assertEquals(context_course::instance($course->id), $event->get_context());
+        $expected = array($course->id, 'coursetags', 'add', 'tag/search.php?query=' . urlencode($tag->rawname), 'Course tagged');
         $this->assertEventLegacyLogData($expected, $event);
     }
 }

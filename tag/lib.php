@@ -827,12 +827,16 @@ function tag_add($tags, $type="default") {
  * @return  bool     true on success, false otherwise
  */
 function tag_assign($record_type, $record_id, $tagid, $ordering, $userid = 0) {
-    global $DB;
+    global $DB, $USER;
+
+    // Get the tag.
+    $tag = $DB->get_record('tag', array('id' => $tagid), 'name, rawname', MUST_EXIST);
 
     if ( $tag_instance_object = $DB->get_record('tag_instance', array('tagid'=>$tagid, 'itemtype'=>$record_type, 'itemid'=>$record_id, 'tiuserid'=>$userid), 'id')) {
         $tag_instance_object->ordering     = $ordering;
         $tag_instance_object->timemodified = time();
-        return $DB->update_record('tag_instance', $tag_instance_object);
+
+        $DB->update_record('tag_instance', $tag_instance_object);
     } else {
         $tag_instance_object = new StdClass;
         $tag_instance_object->tagid        = $tagid;
@@ -841,8 +845,45 @@ function tag_assign($record_type, $record_id, $tagid, $ordering, $userid = 0) {
         $tag_instance_object->ordering     = $ordering;
         $tag_instance_object->timemodified = time();
         $tag_instance_object->tiuserid     = $userid;
-        return $DB->insert_record('tag_instance', $tag_instance_object);
+
+        $tag_instance_object->id = $DB->insert_record('tag_instance', $tag_instance_object);
     }
+
+    switch ($record_type) {
+        case 'course':
+            $context = context_course::instance($record_id);
+            break;
+        case 'user':
+            $context = context_user::instance($record_id);
+            break;
+        case 'post': // Blog posts.
+            $context = context_user::instance($USER->id);
+            break;
+        case 'wiki_pages':
+            $wikipage = $DB->get_record('wiki_pages', array('id' => $record_id));
+            $subwiki = $DB->get_record('wiki_subwikis', array('id' => $wikipage->subwikiid));
+            $cm = get_coursemodule_from_instance('wiki', $subwiki->wikiid);
+            $context = context_module::instance($cm->id);
+            break;
+        default:
+            $context = context_system::instance();
+    }
+
+    // Trigger item tagged event.
+    $event = \core\event\item_tagged::create(array(
+        'objectid' => $tag_instance_object->id,
+        'context' => $context,
+        'other' => array(
+            'tagid' => $tagid,
+            'tagname' => $tag->name,
+            'tagrawname' => $tag->rawname,
+            'itemid' => $record_id,
+            'itemtype' => $record_type
+        )
+    ));
+    $event->trigger();
+
+    return true;
 }
 
 /**
