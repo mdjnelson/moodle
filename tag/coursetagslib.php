@@ -267,32 +267,46 @@ function coursetag_store_keywords($tags, $courseid, $userid=0, $tagtype='officia
  * @param    int      $courseid the course that the tag is associated with
  */
 function coursetag_delete_keyword($tagid, $userid, $courseid) {
+    global $DB;
 
-    global $CFG, $DB;
-
-    $sql = "SELECT COUNT(*)
-        FROM {tag_instance}
-        WHERE tagid = $tagid
-        AND tiuserid = $userid
-        AND itemtype = 'course'
-        AND itemid = $courseid";
-    if ($DB->count_records_sql($sql) == 1) {
-        $sql = "tagid = $tagid
-            AND tiuserid = $userid
+    $sql = "SELECT *
+            FROM {tag_instance}
+            WHERE tagid = :tagid
+            AND tiuserid = :userid
             AND itemtype = 'course'
-            AND itemid = $courseid";
-        $DB->delete_records_select('tag_instance', $sql);
-        // if there are no other instances of the tag then consider deleting the tag as well
+            AND itemid = :courseid";
+    if ($DB->record_exists_sql($sql, array('tagid' => $tagid, 'userid' => $userid, 'courseid' => $courseid))) {
+        $coursecontext = context_course::instance($courseid);
+
+        $sql = "tagid = :tagid
+                AND tiuserid = :userid
+                AND itemtype = 'course'
+                AND itemid = :courseid";
+        $DB->delete_records_select('tag_instance', $sql, array('tagid' => $tagid, 'userid' => $userid, 'courseid' => $courseid));
+        // If there are no other instances of the tag then consider deleting the tag as well.
         if (!$DB->record_exists('tag_instance', array('tagid' => $tagid))) {
-            // if the tag is a personal tag then delete it - don't do official tags
-            if ($DB->record_exists('tag', array('id' => $tagid, 'tagtype' => 'default'))) {
-                $DB->delete_records('tag', array('id' => $tagid, 'tagtype' => 'default'));
+            // If the tag is a personal tag then delete it - don't do official tags.
+            if ($tag = $DB->get_record('tag', array('id' => $tagid, 'tagtype' => 'default'))) {
+                // Now delete the tag.
+                $DB->delete_records('tag', array('id' => $tag->id));
+
+                // Trigger an event for deleting this tag.
+                $event = \core\event\tag_deleted::create(array(
+                    'objectid' => $tag->id,
+                    'relateduserid' => $tag->userid,
+                    'context' => $coursecontext,
+                    'other' => array(
+                        'name' => $tag->name,
+                        'rawname' => $tag->rawname
+                    )
+                ));
+                $event->add_record_snapshot('tag', $tag);
+                $event->trigger();
             }
         }
     } else {
         print_error("errordeleting", 'tag', '', $tagid);
     }
-
 }
 
 /**
@@ -340,18 +354,49 @@ function coursetag_get_tagged_courses($tagid) {
 function coursetag_delete_course_tags($courseid, $showfeedback=false) {
     global $DB, $OUTPUT;
 
-    if ($tags = $DB->get_records_select('tag_instance', "itemtype='course' AND itemid=:courseid", array('courseid'=>$courseid))) {
-        foreach ($tags as $tag) {
-            //delete the course tag instance record
-            $DB->delete_records('tag_instance', array('tagid'=>$tag->tagid, 'itemtype'=>'course', 'itemid'=> $courseid));
-            // delete tag if there are no other tag_instance entries now
-            if (!($DB->record_exists('tag_instance', array('tagid'=>$tag->tagid)))) {
-                $DB->delete_records('tag', array('id'=>$tag->tagid));
-                // Delete files
+    if ($taginstances = $DB->get_fieldset_select('tag_instance', 'tagid', "itemtype = 'course' AND itemid = :courseid",
+        array('courseid' => $courseid))) {
+        // Get the course context.
+        $coursecontext = context_course::instance($courseid);
+
+        // Use the taginstances to create a select statement to retrieve all tags.
+        list($tagsql, $tagparams) = $DB->get_in_or_equal(array_values($taginstances));
+
+        // Before we delete the tags, we want to fire an event that they were deleted.
+        if ($tags = $DB->get_records_select('tag', 'id ' . $tagsql, $tagparams)) {
+            foreach ($tags as $tag) {
+                // Delete files.
                 $fs = get_file_storage();
-                $fs->delete_area_files(context_system::instance()->id, 'tag', 'description', $tag->tagid);
+                $fs->delete_area_files(context_system::instance()->id, 'tag', 'description', $tag->id);
+
+                // Trigger an event for deleting this tag.
+                $event = \core\event\tag_deleted::create(array(
+                    'objectid' => $tag->id,
+                    'relateduserid' => $tag->userid,
+                    'context' => $coursecontext,
+                    'other' => array(
+                        'name' => $tag->name,
+                        'rawname' => $tag->rawname
+                    )
+                ));
+                $event->add_record_snapshot('tag', $tag);
+                $event->trigger();
             }
         }
+
+        // Delete all the tag instances.
+        $select = 'WHERE tagid ' . $tagsql;
+        $sql = "DELETE FROM {tag_instance} $select";
+        $DB->execute($sql, $tagparams);
+
+        // Delete all the tag correlations.
+        $sql = "DELETE FROM {tag_correlation} $select";
+        $DB->execute($sql, $tagparams);
+
+        // Delete all the tags.
+        $select = 'WHERE id ' . $tagsql;
+        $sql = "DELETE FROM {tag} $select";
+        $DB->execute($sql, $tagparams);
     }
 
     if ($showfeedback) {
