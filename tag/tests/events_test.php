@@ -337,4 +337,19 @@ class core_tag_events_testcase extends advanced_testcase {
             $this->assertEquals(context_system::instance(), $event->get_context());
         }
     }
+
+    /**
+     * Test the tag created event.
+     */
+    public function test_tag_created() {
+        // Trigger and capture the event for creating a tag.
+        $sink = $this->redirectEvents();
+        tag_add('A really awesome tag!');
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\tag_created', $event);
+        $this->assertEquals(context_system::instance(), $event->get_context());
+    }
 }
