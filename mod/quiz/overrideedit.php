@@ -179,6 +179,18 @@ if ($mform->is_cancelled()) {
     } else {
         unset($fromform->id);
         $fromform->id = $DB->insert_record('quiz_overrides', $fromform);
+
+        // Trigger the event.
+        $params = array(
+            'objectid' => $fromform->id,
+            'relateduserid' => $fromform->userid,
+            'context' => $context,
+            'other' => array(
+                'quizid' => $fromform->quiz
+            )
+        );
+        $event = \mod_quiz\event\override_created::create($params);
+        $event->trigger();
     }
 
     quiz_update_open_attempts(array('quizid'=>$quiz->id));

@@ -401,6 +401,40 @@ class mod_quiz_events_testcase extends advanced_testcase {
     }
 
     /**
+     * Test the override created event.
+     *
+     * There is no external API for creating an override, so the unit test will simply
+     * create and trigger the event and ensure the event data is returned as expected.
+     */
+    public function test_override_created() {
+        $this->resetAfterTest();
+
+        $this->setAdminUser();
+        $course = $this->getDataGenerator()->create_course();
+        $quiz = $this->getDataGenerator()->create_module('quiz', array('course' => $course->id));
+
+        $params = array(
+            'objectid' => 1,
+            'relateduserid' => 2,
+            'context' => context_module::instance($quiz->cmid),
+            'other' => array(
+                'quizid' => $quiz->id
+            )
+        );
+        $event = \mod_quiz\event\override_created::create($params);
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+        $event->trigger();
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\mod_quiz\event\override_created', $event);
+        $this->assertEquals(context_module::instance($quiz->cmid), $event->get_context());
+    }
+
+    /**
      * Test the override updated event.
      *
      * There is no external API for updating an override, so the unit test will simply

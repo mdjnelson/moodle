@@ -310,7 +310,11 @@ $string['eventattemptdeleted'] = 'Quiz attempt deleted';
 $string['eventattemptpreviewed'] = 'Quiz attempt previewed';
 $string['eventattemptreviewed'] = 'Quiz attempt reviewed';
 $string['eventattemptsummaryviewed'] = 'Quiz attempt summary viewed';
+<<<<<<< HEAD
 $string['eventattemptviewed'] = 'Quiz attempt viewed';
+=======
+$string['eventoverridecreated'] = 'Quiz override created';
+>>>>>>> b495550... MDL-40063 mod_quiz: created 'override_created' event
 $string['eventoverridedeleted'] = 'Quiz override deleted';
 $string['eventoverrideupdated'] = 'Quiz override updated';
 $string['eventquizattemptabandoned'] = 'Quiz attempt abandoned';
