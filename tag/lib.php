@@ -647,8 +647,9 @@ function tag_delete($tagids) {
     // Use the tagids to create a select statement to be used later.
     list($tagsql, $tagparams) = $DB->get_in_or_equal($tagids);
 
-    // Store the tags we are going to delete.
+    // Store the tags and tag instances we are going to delete.
     $tags = $DB->get_records_select('tag', 'id ' . $tagsql, $tagparams);
+    $taginstances = $DB->get_records_select('tag_instance', 'tagid ' . $tagsql, $tagparams);
 
     // Delete all the tag instances.
     $select = 'WHERE tagid ' . $tagsql;
@@ -663,6 +664,29 @@ function tag_delete($tagids) {
     $select = 'WHERE id ' . $tagsql;
     $sql = "DELETE FROM {tag} $select";
     $DB->execute($sql, $tagparams);
+
+    // Fire an event that these items were untagged.
+    if ($taginstances) {
+        foreach ($taginstances as $taginstance) {
+            // Get the context.
+            $context = tag_get_tag_related_event_context($taginstance->itemtype, $taginstance->itemid);
+
+            // Trigger item untagged event.
+            $event = \core\event\item_untagged::create(array(
+                'objectid' => $taginstance->id,
+                'context' => $context,
+                'other' => array(
+                    'tagid' => $taginstance->tagid,
+                    'tagname' => $tags[$taginstance->tagid]->name,
+                    'tagrawname' => $tags[$taginstance->tagid]->rawname,
+                    'itemid' => $taginstance->itemid,
+                    'itemtype' => $taginstance->itemtype
+                )
+            ));
+            $event->add_record_snapshot('tag_instance', $taginstance);
+            $event->trigger();
+        }
+    }
 
     // Fire an event that these tags were deleted.
     if ($tags) {
@@ -702,20 +726,48 @@ function tag_delete($tagids) {
  * @param    string $record_type the type of the record for which to remove the instance
  * @param    int    $record_id   the id of the record for which to remove the instance
  * @param    int    $tagid       the tagid that needs to be removed
+ * @param    int    $userid      (optional) the userid
  * @return   bool   true on success, false otherwise
  */
-function tag_delete_instance($record_type, $record_id, $tagid) {
-    global $CFG, $DB;
+function tag_delete_instance($record_type, $record_id, $tagid, $userid = null) {
+    global $DB;
 
-    if ($DB->delete_records('tag_instance', array('tagid'=>$tagid, 'itemtype'=>$record_type, 'itemid'=>$record_id))) {
-        if (!$DB->record_exists_sql("SELECT * ".
-                                      "FROM {tag} tg ".
-                                     "WHERE tg.id = ? AND ( tg.tagtype = 'official' OR ".
-                                        "EXISTS (SELECT 1
-                                                   FROM {tag_instance} ti
-                                                  WHERE ti.tagid = ?) )",
-                                     array($tagid, $tagid))) {
-            return tag_delete($tagid);
+    if (is_null($userid)) {
+        $taginstance = $DB->get_record('tag_instance', array('tagid' => $tagid, 'itemtype' => $record_type, 'itemid' => $record_id));
+    } else {
+        $taginstance = $DB->get_record('tag_instance', array('tagid' => $tagid, 'itemtype' => $record_type, 'itemid' => $record_id,
+            'tiuserid' => $userid));
+    }
+    if ($taginstance) {
+        // Get the tag.
+        $tag = $DB->get_record('tag', array('id' => $tagid));
+
+        $DB->delete_records('tag_instance', array('id' => $taginstance->id));
+
+        // Get the context.
+        $context = tag_get_tag_related_event_context($taginstance->itemtype, $taginstance->itemid);
+
+        // Trigger item untagged event.
+        $event = \core\event\item_untagged::create(array(
+            'objectid' => $taginstance->id,
+            'context' => $context,
+            'other' => array(
+                'tagid' => $tag->id,
+                'tagname' => $tag->name,
+                'tagrawname' => $tag->rawname,
+                'itemid' => $taginstance->itemid,
+                'itemtype' => $taginstance->itemtype
+            )
+        ));
+        $event->add_record_snapshot('tag_instance', $taginstance);
+        $event->trigger();
+
+        // If there are no other instances of the tag then consider deleting the tag as well.
+        if (!$DB->record_exists('tag_instance', array('tagid' => $tagid))) {
+            // If the tag is a personal tag then delete it - don't delete official tags.
+            if ($tag->tagtype == 'default') {
+                tag_delete($tagid);
+            }
         }
     } else {
         return false;
@@ -864,7 +916,7 @@ function tag_add($tags, $type="default") {
  * @return  bool     true on success, false otherwise
  */
 function tag_assign($record_type, $record_id, $tagid, $ordering, $userid = 0) {
-    global $DB, $USER;
+    global $DB;
 
     // Get the tag.
     $tag = $DB->get_record('tag', array('id' => $tagid), 'name, rawname', MUST_EXIST);
@@ -886,25 +938,7 @@ function tag_assign($record_type, $record_id, $tagid, $ordering, $userid = 0) {
         $tag_instance_object->id = $DB->insert_record('tag_instance', $tag_instance_object);
     }
 
-    switch ($record_type) {
-        case 'course':
-            $context = context_course::instance($record_id);
-            break;
-        case 'user':
-            $context = context_user::instance($record_id);
-            break;
-        case 'post': // Blog posts.
-            $context = context_user::instance($USER->id);
-            break;
-        case 'wiki_pages':
-            $wikipage = $DB->get_record('wiki_pages', array('id' => $record_id));
-            $subwiki = $DB->get_record('wiki_subwikis', array('id' => $wikipage->subwikiid));
-            $cm = get_coursemodule_from_instance('wiki', $subwiki->wikiid);
-            $context = context_module::instance($cm->id);
-            break;
-        default:
-            $context = context_system::instance();
-    }
+    $context = tag_get_tag_related_event_context($record_type, $record_id);
 
     // Trigger item tagged event.
     $event = \core\event\item_tagged::create(array(
@@ -1389,4 +1423,41 @@ function tag_page_type_list($pagetype, $parentcontext, $currentcontext) {
         'tag-search'=>get_string('page-tag-search', 'tag'),
         'tag-manage'=>get_string('page-tag-manage', 'tag')
     );
+}
+
+/**
+ * Return the context appropriate for this item type.
+ *
+ * This function is used when calling the tagging/untagging
+ * an item in order to pass the correct context to the event.
+ *
+ * @param string $itemtype
+ * @param int $itemid
+ * @return context
+ */
+function tag_get_tag_related_event_context($itemtype, $itemid) {
+    global $DB, $USER;
+
+    // Get the context.
+    switch ($itemtype) {
+        case 'course':
+            $context = context_course::instance($itemid);
+            break;
+        case 'user':
+            $context = context_user::instance($itemid);
+            break;
+        case 'post': // Blog posts.
+            $context = context_user::instance($USER->id);
+            break;
+        case 'wiki_pages':
+            $wikipage = $DB->get_record('wiki_pages', array('id' => $itemid));
+            $subwiki = $DB->get_record('wiki_subwikis', array('id' => $wikipage->subwikiid));
+            $cm = get_coursemodule_from_instance('wiki', $subwiki->wikiid);
+            $context = context_module::instance($cm->id);
+            break;
+        default:
+            $context = context_system::instance();
+    }
+
+    return $context;
 }
