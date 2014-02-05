@@ -30,6 +30,9 @@ global $CFG;
 require_once($CFG->dirroot . '/tag/lib.php');
 require_once($CFG->dirroot . '/tag/coursetagslib.php');
 
+// Used to create a wiki page to tag.
+require_once($CFG->dirroot . '/mod/wiki/locallib.php');
+
 class core_tag_events_testcase extends advanced_testcase {
 
     /**
@@ -130,6 +133,54 @@ class core_tag_events_testcase extends advanced_testcase {
         $this->assertEquals(context_system::instance(), $event->get_context());
         $expected = null;
         $this->assertEventLegacyLogData($expected, $event);
+    }
+
+    /**
+     * Test the item untagged event.
+     */
+    public function test_item_untagged() {
+        $this->setAdminUser();
+
+        // Create a course to tag.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Create a wiki page to tag.
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_wiki');
+        $wiki = $generator->create_instance(array('course' => $course->id));
+        $subwikiid = wiki_add_subwiki($wiki->id, 0);
+        $wikipageid = wiki_create_page($subwikiid, 'Title', FORMAT_HTML, '2');
+
+        // Create the tag.
+        $tag = $this->getDataGenerator()->create_tag();
+
+        // Assign a tag to a course.
+        tag_assign('course', $course->id, $tag->id, 1, 2, 'core', context_course::instance($course->id)->id);
+
+        // Trigger and capture the event for untagging a course.
+        $sink = $this->redirectEvents();
+        coursetag_delete_keyword($tag->id, 2, $course->id);
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\item_untagged', $event);
+        $this->assertEquals(context_course::instance($course->id), $event->get_context());
+
+        // Create the tag.
+        $tag = $this->getDataGenerator()->create_tag();
+
+        // Assign a tag to a wiki this time.
+        tag_assign('wiki_pages', $wikipageid, $tag->id, 1, 2, 'mod_wiki', context_module::instance($wiki->cmid)->id);
+
+        // Trigger and capture the event for deleting this tag instance.
+        $sink = $this->redirectEvents();
+        tag_delete_instance('wiki_pages', $wikipageid, $tag->id);
+        $events = $sink->get_events();
+        $event = reset($events);
+
+        // Check that the event data is valid.
+        $this->assertInstanceOf('\core\event\item_untagged', $event);
+        $this->assertEquals(context_module::instance($wiki->cmid), $event->get_context());
     }
 
     /**
@@ -292,7 +343,7 @@ class core_tag_events_testcase extends advanced_testcase {
         $sink = $this->redirectEvents();
         coursetag_delete_keyword($tag->id, 2, $course->id);
         $events = $sink->get_events();
-        $event = reset($events);
+        $event = $events[1];
 
         // Check that the event data is valid.
         $this->assertInstanceOf('\core\event\tag_deleted', $event);
@@ -308,7 +359,7 @@ class core_tag_events_testcase extends advanced_testcase {
         $sink = $this->redirectEvents();
         coursetag_delete_course_tags($course->id);
         $events = $sink->get_events();
-        $event = reset($events);
+        $event = $events[1];
 
         // Check that the event data is valid.
         $this->assertEquals(0, $DB->count_records('tag_instance'));
@@ -328,6 +379,7 @@ class core_tag_events_testcase extends advanced_testcase {
         $sink = $this->redirectEvents();
         coursetag_delete_course_tags($course->id);
         $events = $sink->get_events();
+        $events = array($events[2], $events[3]);
 
         $this->assertEquals(0, $DB->count_records('tag_instance'));
         $this->assertEquals(0, $DB->count_records('tag'));

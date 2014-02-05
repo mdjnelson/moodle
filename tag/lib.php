@@ -656,8 +656,9 @@ function tag_delete($tagids) {
     // Use the tagids to create a select statement to be used later.
     list($tagsql, $tagparams) = $DB->get_in_or_equal($tagids);
 
-    // Store the tags we are going to delete.
+    // Store the tags and tag instances we are going to delete.
     $tags = $DB->get_records_select('tag', 'id ' . $tagsql, $tagparams);
+    $taginstances = $DB->get_records_select('tag_instance', 'tagid ' . $tagsql, $tagparams);
 
     // Delete all the tag instances.
     $select = 'WHERE tagid ' . $tagsql;
@@ -672,6 +673,31 @@ function tag_delete($tagids) {
     $select = 'WHERE id ' . $tagsql;
     $sql = "DELETE FROM {tag} $select";
     $DB->execute($sql, $tagparams);
+
+    // Fire an event that these items were untagged.
+    if ($taginstances) {
+        foreach ($taginstances as $taginstance) {
+            // We can not fire an event with 'null' as the contextid.
+            if (is_null($taginstance->contextid)) {
+                $taginstance->contextid = context_system::instance()->id;
+            }
+
+            // Trigger item untagged event.
+            $event = \core\event\item_untagged::create(array(
+                'objectid' => $taginstance->id,
+                'contextid' => $taginstance->contextid,
+                'other' => array(
+                    'tagid' => $taginstance->tagid,
+                    'tagname' => $tags[$taginstance->tagid]->name,
+                    'tagrawname' => $tags[$taginstance->tagid]->rawname,
+                    'itemid' => $taginstance->itemid,
+                    'itemtype' => $taginstance->itemtype
+                )
+            ));
+            $event->add_record_snapshot('tag_instance', $taginstance);
+            $event->trigger();
+        }
+    }
 
     // Fire an event that these tags were deleted.
     if ($tags) {
@@ -711,20 +737,50 @@ function tag_delete($tagids) {
  * @param    string $record_type the type of the record for which to remove the instance
  * @param    int    $record_id   the id of the record for which to remove the instance
  * @param    int    $tagid       the tagid that needs to be removed
+ * @param    int    $userid      (optional) the userid
  * @return   bool   true on success, false otherwise
  */
-function tag_delete_instance($record_type, $record_id, $tagid) {
-    global $CFG, $DB;
+function tag_delete_instance($record_type, $record_id, $tagid, $userid = null) {
+    global $DB;
 
-    if ($DB->delete_records('tag_instance', array('tagid'=>$tagid, 'itemtype'=>$record_type, 'itemid'=>$record_id))) {
-        if (!$DB->record_exists_sql("SELECT * ".
-                                      "FROM {tag} tg ".
-                                     "WHERE tg.id = ? AND ( tg.tagtype = 'official' OR ".
-                                        "EXISTS (SELECT 1
-                                                   FROM {tag_instance} ti
-                                                  WHERE ti.tagid = ?) )",
-                                     array($tagid, $tagid))) {
-            return tag_delete($tagid);
+    if (is_null($userid)) {
+        $taginstance = $DB->get_record('tag_instance', array('tagid' => $tagid, 'itemtype' => $record_type, 'itemid' => $record_id));
+    } else {
+        $taginstance = $DB->get_record('tag_instance', array('tagid' => $tagid, 'itemtype' => $record_type, 'itemid' => $record_id,
+            'tiuserid' => $userid));
+    }
+    if ($taginstance) {
+        // Get the tag.
+        $tag = $DB->get_record('tag', array('id' => $tagid));
+
+        $DB->delete_records('tag_instance', array('id' => $taginstance->id));
+
+        // We can not fire an event with 'null' as the contextid.
+        if (is_null($taginstance->contextid)) {
+            $taginstance->contextid = context_system::instance()->id;
+        }
+
+        // Trigger item untagged event.
+        $event = \core\event\item_untagged::create(array(
+            'objectid' => $taginstance->id,
+            'contextid' => $taginstance->contextid,
+            'other' => array(
+                'tagid' => $tag->id,
+                'tagname' => $tag->name,
+                'tagrawname' => $tag->rawname,
+                'itemid' => $taginstance->itemid,
+                'itemtype' => $taginstance->itemtype
+            )
+        ));
+        $event->add_record_snapshot('tag_instance', $taginstance);
+        $event->trigger();
+
+        // If there are no other instances of the tag then consider deleting the tag as well.
+        if (!$DB->record_exists('tag_instance', array('tagid' => $tagid))) {
+            // If the tag is a personal tag then delete it - don't delete official tags.
+            if ($tag->tagtype == 'default') {
+                tag_delete($tagid);
+            }
         }
     } else {
         return false;
