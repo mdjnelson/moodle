@@ -3019,5 +3019,20 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2014020500.00);
     }
 
+    if ($oldversion < 2014020700.01) {
+        // We want to regrade all categories due to the change in logic in the gradebook - see MDL-38827.
+        // Get all the grade categories that do NOT have 'aggregateonlygraded' set.
+        if ($gradecategories = $DB->get_records('grade_categories', array('aggregateonlygraded' => 0))) {
+            require_once($CFG->dirroot . '/lib/gradelib.php');
+            foreach ($gradecategories as $gradecategory) {
+                $gc = grade_category::fetch(array('id' => $gradecategory->id));
+                $gc->generate_grades();
+            }
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2014020700.01);
+    }
+
     return true;
 }
