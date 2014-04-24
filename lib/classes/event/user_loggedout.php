@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * @property-read array $other {
  *      Extra information about event.
  *
- *      @type string sessionid session id.
+ *      - string sessionid: session id.
  * }
  *
  * @package    core
@@ -66,7 +66,7 @@ class user_loggedout extends base {
      * @return string
      */
     public function get_description() {
-        return 'User '.$this->objectid.' logged out.';
+        return "The user with the id '$this->objectid' has logged out.";
     }
 
     /**
@@ -104,5 +104,19 @@ class user_loggedout extends base {
     protected function get_legacy_logdata() {
         return array(SITEID, 'user', 'logout', 'view.php?id='.$this->objectid.'&course='.SITEID, $this->objectid, 0,
             $this->objectid);
+    }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception when validation does not pass.
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->other['sessionid'])) {
+            throw new \coding_exception('The \'sessionid\' value must be set in other.');
+        }
     }
 }

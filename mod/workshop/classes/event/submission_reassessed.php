@@ -15,10 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * mod_workshop submission_reassessed event.
+ * The mod_workshop submission reassessed event.
  *
  * @package    mod_workshop
- * @category   event
  * @copyright  2013 Adrian Greeve
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,19 +26,18 @@ namespace mod_workshop\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_workshop submission_reassessed event class.
+ * The mod_workshop submission reassessed event class.
  *
  * @property-read array $other {
  *     Extra information about the event.
  *
- *     @type int workshopid Workshop ID.
- *     @type int submissionid Submission ID.
- *     @type float grade Assessment grade.
+ *     - int workshopid: Workshop ID.
+ *     - int submissionid: Submission ID.
+ *     - float grade: Assessment grade.
  * }
  *
  * @package    mod_workshop
  * @since      Moodle 2.7
- * @category   event
  * @copyright  2013 Adrian Greeve
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -62,7 +60,8 @@ class submission_reassessed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return 'A submission was re-assessed in the workshop ' . $this->other['workshopid'] . '.';
+        return "The submission with the id '$this->objectid' has been reassessed by the user with the id '$this->userid' for the user " .
+            "with the id '$this->relateduserid' in the workshop with the course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -91,5 +90,31 @@ class submission_reassessed extends \core\event\base {
      */
     public function get_url() {
         return new \moodle_url('/mod/workshop/assessment.php?', array('asid' => $this->objectid));
+    }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->relateduserid)) {
+            throw new \coding_exception('The \'relateduserid\' must be set.');
+        }
+
+        if (!isset($this->other['workshopid'])) {
+            throw new \coding_exception('The \'workshopid\' value must be set in other.');
+        }
+
+        if (!isset($this->other['submissionid'])) {
+            throw new \coding_exception('The \'submissionid\' value must be set in other.');
+        }
+
+        if (!isset($this->other['grade'])) {
+            throw new \coding_exception('The \'grade\' value must be set in other.');
+        }
     }
 }

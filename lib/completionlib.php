@@ -1041,12 +1041,12 @@ class completion_info {
 
         // Trigger an event for course module completion changed.
         $event = \core\event\course_module_completion_updated::create(
-            array('objectid' => $data->id,
+            array(
+                'objectid' => $data->id,
                 'context' => $cmcontext,
-                'relateduserid' => $data->userid,
-                'other' => array('relateduserid' => $data->userid)
-                )
-            );
+                'relateduserid' => $data->userid
+            )
+        );
         $event->add_record_snapshot('course_modules_completion', $data);
         $event->trigger();
 

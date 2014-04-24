@@ -62,7 +62,8 @@ class cohort_member_removed extends base {
      * @return string
      */
     public function get_description() {
-        return 'User '.$this->relateduserid.' was removed from cohort '.$this->objectid.' by user '.$this->userid;
+        return "The user with the id '$this->relateduserid' was removed from the cohort with the id '$this->objectid' by the " .
+            "user with the id '$this->userid'.";
     }
 
     /**
@@ -93,5 +94,19 @@ class cohort_member_removed extends base {
         $data->cohortid = $this->objectid;
         $data->userid = $this->relateduserid;
         return $data;
+    }
+
+    /**
+     * Custom validations.
+     *
+     * @throws \coding_exception
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->relateduserid)) {
+            throw new \coding_exception('The \'relateduserid\' must be set.');
+        }
     }
 }

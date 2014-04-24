@@ -14,19 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Role assigned event.
+ *
+ * @package    core
+ * @copyright  2013 Rajesh Taneja <rajesh@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace core\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Role assigned event.
+ * Role assigned event class.
  *
  * @property-read array $other {
  *      Extra information about event.
  *
- *      @type string shortname shortname of role.
- *      @type string description role description.
- *      @type string archetype role type.
+ *      - string shortname: shortname of role.
+ *      - string description: role description.
+ *      - string archetype: role type.
  * }
  *
  * @package    core
@@ -34,7 +42,6 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2013 Rajesh Taneja <rajesh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class role_deleted extends base {
     /**
      * Initialise event parameters.
@@ -60,7 +67,7 @@ class role_deleted extends base {
      * @return string
      */
     public function get_description() {
-        return 'Role ' . $this->objectid . ' is deleted by user ' . $this->userid;
+        return "The role with the id '$this->objectid' was deleted by the user with the id '$this->userid'.";
     }
 
     /**
@@ -80,5 +87,27 @@ class role_deleted extends base {
     protected function get_legacy_logdata() {
         return array(SITEID, 'role', 'delete', 'admin/roles/manage.php?action=delete&roleid=' . $this->objectid,
             $this->other['shortname'], '');
+    }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->other['shortname'])) {
+            throw new \coding_exception('The \'shortname\' value must be set in other.');
+        }
+
+        if (!isset($this->other['description'])) {
+            throw new \coding_exception('The \'description\' value must be set in other.');
+        }
+
+        if (!isset($this->other['archetype'])) {
+            throw new \coding_exception('The \'archetype\' value must be set in other.');
+        }
     }
 }

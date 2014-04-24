@@ -32,8 +32,8 @@ defined('MOODLE_INTERNAL') || die();
  * @property-read array $other {
  *      Extra information about event.
  *
- *      @type string originalusername original username.
- *      @type string loggedinasusername username of logged in as user.
+ *      - string originalusername: original username.
+ *      - string loggedinasusername: username of logged in as user.
  * }
  *
  * @package    core
@@ -69,7 +69,7 @@ class user_loggedinas extends base {
      * @return string
      */
     public function get_description() {
-        return 'Userid ' . $this->userid . ' has logged in as '. $this->relateduserid;
+        return "The user with the id '$this->userid' has logged in as the user with the id '$this->relateduserid'.";
     }
 
     /**
@@ -89,5 +89,23 @@ class user_loggedinas extends base {
      */
     public function get_url() {
         return new \moodle_url('/user/view.php', array('id' => $this->objectid));
+    }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception when validation does not pass.
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->other['originalusername'])) {
+            throw new \coding_exception('The \'originalusername\' value must be set in other.');
+        }
+
+        if (!isset($this->other['loggedinasusername'])) {
+            throw new \coding_exception('The \'loggedinasusername\' value must be set in other.');
+        }
     }
 }

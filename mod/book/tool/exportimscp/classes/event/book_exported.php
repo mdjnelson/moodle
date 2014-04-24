@@ -60,7 +60,7 @@ class book_exported extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user $this->userid has exported the book $this->objectid.";
+        return "The user with the id '$this->userid' has exported the book with the course module id '$this->contextinstanceid'.";
     }
 
     /**

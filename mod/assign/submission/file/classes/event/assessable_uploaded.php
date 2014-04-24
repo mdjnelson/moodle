@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * assignsubmission_file assessable uploaded event.
+ * The assignsubmission_file assessable uploaded event.
  *
  * @package    assignsubmission_file
  * @copyright  2013 Frédéric Massart
@@ -27,13 +27,13 @@ namespace assignsubmission_file\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * assignsubmission_file assessable uploaded event class.
+ * The assignsubmission_file assessable uploaded event class.
  *
  * @property-read array $other {
  *      Extra information about event.
  *
- *      @type array pathnamehashes uploaded files path name hash.
- *      @type string content empty string.
+ *      - array pathnamehashes: uploaded files path name hash.
+ *      - string content: empty string.
  * }
  *
  * @package    assignsubmission_file
@@ -56,7 +56,8 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return string
      */
     public function get_description() {
-        return "User {$this->userid} has uploaded a file in submission {$this->objectid}.";
+        return "The user with the id '$this->userid' has uploaded a file to the submission with the id '$this->objectid' " .
+            "in the assignment activity with the course module id '$this->contextinstanceid'.";
     }
 
     /**
