@@ -88,7 +88,7 @@ class book_exported extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/book/view.php', array('id' => $this->contextinstanceid));
+        return new \moodle_url('/mod/book/tool/exportimscp/index.php', array('id' => $this->contextinstanceid));
     }
 
     /**
