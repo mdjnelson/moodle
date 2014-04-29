@@ -35,7 +35,8 @@ defined('MOODLE_INTERNAL') || die();
  *      - int submissionid: ID number of this submission.
  *      - int submissionattempt: Number of attempts made on this submission.
  *      - string submissionstatus: Status of the submission.
- *      - int groupid: (optional) The group ID if this is a teamsubmission (optional).
+ *      - int groupid: (optional) The group ID if this is a teamsubmission.
+ *      - string groupname: (optional) The name of the group if this is a teamsubmission.
  * }
  *
  * @package    mod_assign
