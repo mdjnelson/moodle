@@ -88,18 +88,4 @@ class submission_updated extends \core\event\base {
             'submission.php?cmid=' . $this->contextinstanceid . '&id=' . $this->objectid,
             $this->objectid, $this->contextinstanceid);
     }
-
-    /**
-     * Custom validation.
-     *
-     * @throws \coding_exception
-     * @return void
-     */
-    protected function validate_data() {
-        parent::validate_data();
-
-        if (!isset($this->other['submissiontitle'])) {
-            throw new \coding_exception('The \'submissiontitle\' value must be set in other.');
-        }
-    }
 }

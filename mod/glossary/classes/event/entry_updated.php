@@ -103,10 +103,6 @@ class entry_updated extends \core\event\base {
         if (!$this->contextlevel === CONTEXT_MODULE) {
             throw new \coding_exception('Context level must be CONTEXT_MODULE.');
         }
-
-        if (!isset($this->other['concept'])) {
-            throw new \coding_exception('The \'concept\' value must be set in other.');
-        }
     }
 }
 

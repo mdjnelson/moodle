@@ -103,10 +103,5 @@ class webservice_token_created extends base {
         if (!isset($this->relateduserid)) {
            throw new \coding_exception('The \'relateduserid\' must be set.');
         }
-
-        if (!isset($this->other['auto'])) {
-            throw new \coding_exception('The \'auto\' value must be set in other.');
-        }
     }
-
 }

@@ -117,22 +117,4 @@ class course_updated extends base {
     protected function get_legacy_logdata() {
         return $this->legacylogdata;
     }
-
-    /**
-     * Custom validation.
-     *
-     * @throws \coding_exception
-     * @return void
-     */
-    protected function validate_data() {
-        parent::validate_data();
-
-        if (!isset($this->other['shortname'])) {
-            throw new \coding_exception('The \'shortname\' value must be set in other.');
-        }
-
-        if (!isset($this->other['fullname'])) {
-            throw new \coding_exception('The \'fullname\' value must be set in other.');
-        }
-    }
 }

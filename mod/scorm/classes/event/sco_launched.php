@@ -101,9 +101,5 @@ class sco_launched extends \core\event\base {
         if (empty($this->other['loadedcontent'])) {
             throw new \coding_exception('The \'loadedcontent\' value must be set in other.');
         }
-
-        if (empty($this->other['instanceid'])) {
-            throw new \coding_exception('The \'instanceid\' value must be set in other.');
-        }
     }
 }

@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @property-read array $other {
  *      Extra information about event.
  *
- *      - int submitterid: (optional) id of submitter (null when trigged by CLI script).
+ *      - int submitterid: id of submitter (null when trigged by CLI script).
  *      - int quizid: the id of the quiz.
  * }
  *
@@ -122,8 +122,8 @@ class attempt_submitted extends \core\event\base {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
 
-        if (!isset($this->other['quizid'])) {
-            throw new \coding_exception('The \'quizid\' value must be set in other.');
+        if (!array_key_exists('submitterid', $this->other)) {
+            throw new \coding_exception('The \'submitterid\' value must be set in other.');
         }
     }
 }

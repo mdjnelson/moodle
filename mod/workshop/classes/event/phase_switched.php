@@ -89,18 +89,4 @@ class phase_switched extends \core\event\base {
     public function get_url() {
         return new \moodle_url('/mod/workshop/view.php', array('id' => $this->contextinstanceid));
     }
-
-    /**
-     * Custom validation.
-     *
-     * @throws \coding_exception
-     * @return void
-     */
-    protected function validate_data() {
-        parent::validate_data();
-
-        if (empty($this->other['workshopphase'])) {
-            throw new \coding_exception('The \'workshopphase\' value must be set in other.');
-        }
-    }
 }

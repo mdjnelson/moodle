@@ -88,22 +88,4 @@ class user_list_viewed extends base {
     protected function get_legacy_logdata() {
         return array($this->courseid, 'user', 'view all', 'index.php?id=' . $this->courseid, '');
     }
-
-    /**
-     * Custom validation.
-     *
-     * @throws \coding_exception
-     * @return void
-     */
-    protected function validate_data() {
-        parent::validate_data();
-
-        if (!isset($this->other['courseshortname'])) {
-            throw new \coding_exception('The \'courseshortname\' value must be set in other.');
-        }
-
-        if (!isset($this->other['coursefullname'])) {
-            throw new \coding_exception('The \'coursefullname\' value must be set in other.');
-        }
-    }
 }
