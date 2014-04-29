@@ -29,13 +29,6 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The assignsubmission_file assessable uploaded event class.
  *
- * @property-read array $other {
- *      Extra information about event.
- *
- *      - array pathnamehashes: uploaded files path name hash.
- *      - string content: empty string.
- * }
- *
  * @package    assignsubmission_file
  * @since      Moodle 2.6
  * @copyright  2013 Frédéric Massart

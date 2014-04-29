@@ -32,10 +32,8 @@ defined('MOODLE_INTERNAL') || die();
  * @property-read array $other {
  *      Extra information about event.
  *
- *      - array pathnamehashes: uploaded files path name hashes.
- *      - string content: post discussion message.
  *      - int discussionid: id of discussion.
- *      - string triggeredfrom: name of the function from where event is triggred.
+ *      - string triggeredfrom: name of the function from where event was triggered.
  * }
  *
  * @package    mod_forum

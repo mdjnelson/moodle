@@ -32,8 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * @property-read array $other {
  *      Extra information about event.
  *
- *      - array pathnamehashes: uploaded files path name hashes.
- *      - string content: string.
  *      - string format: content format.
  * }
  *

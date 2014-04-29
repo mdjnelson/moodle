@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @property-read array $other {
  *      Extra information about event.
  *
- *      - int submitterid: id of submitter (null when trigged by CLI script).
+ *      - int submitterid: (optional) id of submitter (null when trigged by CLI script).
  *      - int quizid: the id of the quiz.
  * }
  *
