@@ -62,10 +62,10 @@ class notes_viewed extends base {
      */
     public function get_description() {
         if (!empty($this->relateduserid)) {
-            return "The notes for the user with the id '$this->relateduserid' was viewed by the user with the id '$this->userid'.";
+            return "The user with the id '$this->userid' viewed the notes for the user with the id '$this->relateduserid'.";
         }
 
-        return "The notes for the course with the id '$this->courseid' was viewed by the user with id '$this->userid'.";
+        return "The user with the id '$this->userid' viewed the notes for the course with the id '$this->courseid'.";
     }
 
     /**
