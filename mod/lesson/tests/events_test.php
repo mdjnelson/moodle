@@ -54,14 +54,14 @@ class mod_lesson_events_testcase extends advanced_testcase {
     }
 
     /**
-     * Test the essay attempt viewed event.
+     * Test the essay attempt grade viewed event.
      *
      * There is no external API for viewing an essay attempt, so the unit test will simply
      * create and trigger the event and ensure the legacy log data is returned as expected.
      */
-    public function test_essay_attempt_viewed() {
-        // Create a essays list viewed event
-        $event = \mod_lesson\event\essay_attempt_viewed::create(array(
+    public function test_essay_attempt_grade_viewed() {
+        // Create an essay attempt grade viewed event
+        $event = \mod_lesson\event\essay_attempt_grade_viewed::create(array(
             'objectid' => $this->lesson->id,
             'relateduserid' => 3,
             'context' => context_module::instance($this->lesson->properties()->cmid),
@@ -75,7 +75,7 @@ class mod_lesson_events_testcase extends advanced_testcase {
         $event = reset($events);
 
         // Check that the event data is valid.
-        $this->assertInstanceOf('\mod_lesson\event\essay_attempt_viewed', $event);
+        $this->assertInstanceOf('\mod_lesson\event\essay_attempt_grade_viewed', $event);
         $this->assertEquals(context_module::instance($this->lesson->properties()->cmid), $event->get_context());
         $expected = array($this->course->id, 'lesson', 'view grade', 'essay.php?id=' . $this->lesson->properties()->cmid .
             '&mode=grade&attemptid=1', get_string('manualgrading', 'lesson'), $this->lesson->properties()->cmid);

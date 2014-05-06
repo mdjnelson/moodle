@@ -381,8 +381,8 @@ switch ($mode) {
         echo html_writer::table($table);
         break;
     case 'grade':
-        // Trigger the essay grade viewed event.
-        $event = \mod_lesson\event\essay_attempt_viewed::create(array(
+        // Trigger the essay attempt grade viewed event.
+        $event = \mod_lesson\event\essay_attempt_grade_viewed::create(array(
             'objectid' => $attempt->id,
             'relateduserid' => $attempt->userid,
             'context' => $context,

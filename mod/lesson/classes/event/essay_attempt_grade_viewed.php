@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_lesson essay attempt viewed event.
+ * The mod_lesson essay attempt grade viewed event.
  *
  * @package    mod_lesson
  * @copyright  2013 Mark Nelson <markn@moodle.com>
@@ -27,14 +27,14 @@ namespace mod_lesson\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_lesson essay attempt viewed event class.
+ * The mod_lesson essay attempt grade viewed event class.
  *
  * @package    mod_lesson
  * @since      Moodle 2.7
  * @copyright  2013 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later.
  */
-class essay_attempt_viewed extends \core\event\base {
+class essay_attempt_grade_viewed extends \core\event\base {
 
     /**
      * Set basic properties for the event.
@@ -51,7 +51,7 @@ class essay_attempt_viewed extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventessayattemptviewed', 'mod_lesson');
+        return get_string('eventessayattemptgradeviewed', 'mod_lesson');
     }
 
     /**
