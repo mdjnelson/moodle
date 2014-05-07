@@ -90,4 +90,18 @@ class user_profile_viewed extends base {
         return array($this->courseid, 'user', 'view', 'view.php?id=' . $this->relateduserid . '&course=' .
             $this->courseid, $this->relateduserid);
     }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception when validation does not pass.
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->relateduserid)) {
+            throw new \coding_exception('The \'relateduserid\' must be set.');
+        }
+    }
 }
