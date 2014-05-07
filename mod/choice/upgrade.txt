@@ -1,0 +1,8 @@
+This files describes API changes in /mod/choice/*,
+information provided here is intended especially for developers.
+
+=== 2.7 ===
+
+* The validation of the following events is now stricter:
+    - \mod_choice\event\answer_submitted
+    - \mod_choice\event\answer_updated
