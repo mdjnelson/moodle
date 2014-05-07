@@ -137,4 +137,30 @@ class user_graded extends base {
 
         return array($this->courseid, 'grade', 'update', $url, $info);
     }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception when validation does not pass.
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->relateduserid)) {
+            throw new \coding_exception('The \'relateduserid\' must be set.');
+        }
+
+        if (!isset($this->other['itemid'])) {
+            throw new \coding_exception('The \'itemid\' value must be set in other.');
+        }
+
+        if (!isset($this->other['overridden'])) {
+            throw new \coding_exception('The \'overridden\' value must be set in other.');
+        }
+
+        if (!isset($this->other['finalgrade'])) {
+            throw new \coding_exception('The \'finalgrade\' value must be set in other.');
+        }
+    }
 }

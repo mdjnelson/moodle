@@ -82,4 +82,22 @@ class note_deleted extends base {
         $logurl->set_anchor('note-' . $this->objectid);
         return array($this->courseid, 'notes', 'delete', $logurl, 'delete note');
     }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->relateduserid)) {
+            throw new \coding_exception('The \'relateduserid\' must be set.');
+        }
+
+        if (!isset($this->other['publishstate'])) {
+            throw new \coding_exception('The \'publishstate\' value must be set in other.');
+        }
+    }
 }

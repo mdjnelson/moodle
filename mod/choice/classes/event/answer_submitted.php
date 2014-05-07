@@ -110,5 +110,9 @@ class answer_submitted extends \core\event\base {
         if (!isset($this->other['choiceid'])) {
             throw new \coding_exception('The \'choiceid\' value must be set in other.');
         }
+
+        if (!isset($this->other['optionid'])) {
+            throw new \coding_exception('The \'optionid\' value must be set in other.');
+        }
     }
 }

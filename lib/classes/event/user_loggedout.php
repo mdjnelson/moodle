@@ -105,4 +105,18 @@ class user_loggedout extends base {
         return array(SITEID, 'user', 'logout', 'view.php?id='.$this->objectid.'&course='.SITEID, $this->objectid, 0,
             $this->objectid);
     }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception when validation does not pass.
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->other['sessionid'])) {
+            throw new \coding_exception('The \'sessionid\' value must be set in other.');
+        }
+    }
 }

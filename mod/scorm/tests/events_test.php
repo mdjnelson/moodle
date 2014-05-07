@@ -235,7 +235,7 @@ class mod_scorm_event_testcase extends advanced_testcase {
              'objectid' => 2,
              'context' => context_module::instance($this->eventcm->id),
              'courseid' => $this->eventcourse->id,
-             'other' => array('loadedcontent' => 'url_to_content_that_was_laoded.php')
+             'other' => array('instanceid' => 1, 'loadedcontent' => 'url_to_content_that_was_laoded.php')
         ));
 
         // Trigger and capture the event.

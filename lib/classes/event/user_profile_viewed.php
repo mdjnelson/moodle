@@ -90,4 +90,26 @@ class user_profile_viewed extends base {
         return array($this->other['courseid'], 'user', 'view', 'view.php?id=' . $this->relateduserid . '&course=' .
             $this->other['courseid'], $this->relateduserid);
     }
+
+    /**
+     * Custom validation.
+     *
+     * @throws \coding_exception when validation does not pass.
+     * @return void
+     */
+    protected function validate_data() {
+        parent::validate_data();
+
+        if (!isset($this->relateduserid)) {
+            throw new \coding_exception('The \'relateduserid\' must be set.');
+        }
+
+        if (!isset($this->other['courseshortname'])) {
+            throw new \coding_exception('The \'courseshortname\' value must be set in other.');
+        }
+
+        if (!isset($this->other['coursefullname'])) {
+            throw new \coding_exception('The \'coursefullname\' value must be set in other.');
+        }
+    }
 }
