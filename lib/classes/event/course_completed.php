@@ -53,8 +53,7 @@ class course_completed extends base {
                 'objectid' => $completion->id,
                 'relateduserid' => $completion->userid,
                 'context' => \context_course::instance($completion->course),
-                'courseid' => $completion->course,
-                'other' => array('relateduserid' => $completion->userid), // Deprecated since 2.7, please use property relateduserid.
+                'courseid' => $completion->course
             )
         );
         $event->add_record_snapshot('course_completions', $completion);
@@ -124,6 +123,10 @@ class course_completed extends base {
     protected function validate_data() {
         parent::validate_data();
 
-        // TODO: MDL-45319 add validation of relateduserid and other['relateduserid'].
+        if (isset($this->other['relateduserid'])) {
+            debugging('The \'relateduserid\' value in the other array has been deprecated. Please set and use the event property \'relateduserid\' instead.',
+                DEBUG_DEVELOPER);
+            $this->relateduserid = $this->other['relateduserid'];
+        }
     }
 }
