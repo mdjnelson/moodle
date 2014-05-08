@@ -122,5 +122,17 @@ class role_assigned extends base {
         if (!isset($this->relateduserid)) {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
+
+        if (!isset($this->other['id'])) {
+            throw new \coding_exception('The \'id\' value must be set in other.');
+        }
+
+        if (!isset($this->other['component'])) {
+            throw new \coding_exception('The \'component\' value must be set in other.');
+        }
+
+        if (!isset($this->other['itemid'])) {
+            throw new \coding_exception('The \'itemid\' value must be set in other.');
+        }
     }
 }

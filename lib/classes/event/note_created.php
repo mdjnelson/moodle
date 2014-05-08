@@ -105,5 +105,9 @@ class note_created extends base {
         if (!isset($this->relateduserid)) {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
+
+        if (!isset($this->other['publishstate'])) {
+            throw new \coding_exception('The \'publishstate\' value must be set in other.');
+        }
     }
 }

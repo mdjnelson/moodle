@@ -103,5 +103,13 @@ class user_profile_viewed extends base {
         if (!isset($this->relateduserid)) {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
+
+        if (!isset($this->other['courseshortname'])) {
+            throw new \coding_exception('The \'courseshortname\' value must be set in other.');
+        }
+
+        if (!isset($this->other['coursefullname'])) {
+            throw new \coding_exception('The \'coursefullname\' value must be set in other.');
+        }
     }
 }

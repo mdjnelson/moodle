@@ -103,5 +103,13 @@ class submission_assessed extends \core\event\base {
         if (!isset($this->relateduserid)) {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
+
+        if (!isset($this->other['workshopid'])) {
+            throw new \coding_exception('The \'workshopid\' value must be set in other.');
+        }
+
+        if (!isset($this->other['submissionid'])) {
+            throw new \coding_exception('The \'submissionid\' value must be set in other.');
+        }
     }
 }

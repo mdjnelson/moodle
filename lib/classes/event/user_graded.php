@@ -150,5 +150,17 @@ class user_graded extends base {
         if (!isset($this->relateduserid)) {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
+
+        if (!isset($this->other['itemid'])) {
+            throw new \coding_exception('The \'itemid\' value must be set in other.');
+        }
+
+        if (!isset($this->other['overridden'])) {
+            throw new \coding_exception('The \'overridden\' value must be set in other.');
+        }
+
+        if (!isset($this->other['finalgrade'])) {
+            throw new \coding_exception('The \'finalgrade\' value must be set in other.');
+        }
     }
 }
