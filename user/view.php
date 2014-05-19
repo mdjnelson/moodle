@@ -192,6 +192,7 @@ if ($user->deleted) {
 $event = \core\event\user_profile_viewed::create(array(
     'objectid' => $USER->id,
     'relateduserid' => $user->id,
+    'courseid' => $course->id,
     'context' => $usercontext,
     'other' => array(
         'courseid' => $course->id,
