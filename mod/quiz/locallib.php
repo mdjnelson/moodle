@@ -321,8 +321,12 @@ function quiz_attempt_save_started($quizobj, $quba, $attempt) {
  *
  * @param object $attempt
  * @param quiz   $quizobj
+ * @deprecated since 2.8
  */
 function quiz_fire_attempt_started_event($attempt, $quizobj) {
+    debugging("quiz_fire_attempt_started_event is deprecated. Please trigger " .
+        "the event outside of this function.", DEBUG_DEVELOPER);
+
     // Trigger event.
     $eventdata = array();
     $eventdata['context'] = $quizobj->get_context();
