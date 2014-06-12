@@ -260,6 +260,8 @@ class auth_plugin_db extends auth_plugin_base {
     function sync_users(progress_trace $trace, $do_updates=false) {
         global $CFG, $DB;
 
+        require_once($CFG->dirroot . '/user/lib.php');
+
         // List external users.
         $userlist = $this->get_userlist();
 
@@ -381,9 +383,13 @@ class auth_plugin_db extends auth_plugin_base {
             foreach($add_users as $user) {
                 $username = $user;
                 if ($this->config->removeuser == AUTH_REMOVEUSER_SUSPEND) {
-                    if ($old_user = $DB->get_record('user', array('username'=>$username, 'deleted'=>0, 'suspended'=>1, 'mnethostid'=>$CFG->mnet_localhost_id, 'auth'=>$this->authtype))) {
-                        $DB->set_field('user', 'suspended', 0, array('id'=>$old_user->id));
-                        $trace->output(get_string('auth_dbreviveduser', 'auth_db', array('name'=>$username, 'id'=>$old_user->id)), 1);
+                    if ($olduser = $DB->get_record('user', array('username'=> $username, 'deleted' => 0, 'suspended' => 1,
+                            'mnethostid' => $CFG->mnet_localhost_id, 'auth' => $this->authtype))) {
+                        $updateuser = new stdClass();
+                        $updateuser->id = $olduser->id;
+                        $updateuser->suspended = 0;
+                        user_update_user($updateuser);
+                        $trace->output(get_string('auth_dbreviveduser', 'auth_db', array('name' => $username, 'id' => $olduser->id)), 1);
                         continue;
                     }
                 }
@@ -521,8 +527,10 @@ class auth_plugin_db extends auth_plugin_base {
 
         // Ensure userid is not overwritten.
         $userid = $user->id;
-        $updated = false;
+        $needsupdate = false;
 
+        $updateuser = new stdClass();
+        $updateuser->id = $userid;
         if ($newinfo = $this->get_userinfo($username)) {
             $newinfo = truncate_userinfo($newinfo);
 
@@ -539,14 +547,15 @@ class auth_plugin_db extends auth_plugin_base {
 
                 if (!empty($this->config->{'field_updatelocal_' . $key})) {
                     if (isset($user->{$key}) and $user->{$key} != $value) { // Only update if it's changed.
-                        $DB->set_field('user', $key, $value, array('id'=>$userid));
-                        $updated = true;
+                        $needsupdate = true;
+                        $updateuser->$key = $value;
                     }
                 }
             }
         }
-        if ($updated) {
-            $DB->set_field('user', 'timemodified', time(), array('id'=>$userid));
+        if ($needsupdate) {
+            require_once($CFG->dirroot . '/user/lib.php');
+            user_update_user($updateuser);
         }
         return $DB->get_record('user', array('id'=>$userid, 'deleted'=>0));
     }
