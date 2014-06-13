@@ -96,4 +96,11 @@ class auth_db_events_testcase extends advanced_testcase {
         // to test the other details of the event as that is done extensively in user/tests/userlib_test.php
         $this->assertInstanceOf('\core\event\user_updated', $event);
     }
+
+    /**
+     * Tests that the location in the auth_db API that creates a user trigger a user_updated event.
+     */
+    public function test_user_created() {
+
+    }
 }
