@@ -1133,7 +1133,7 @@ class core_plugin_manager {
             'tool' => array(
                 'assignmentupgrade', 'availabilityconditions', 'behat', 'capability', 'customlang',
                 'dbtransfer', 'generator', 'health', 'innodb', 'installaddon',
-                'langimport', 'log', 'multilangupgrade', 'phpunit', 'profiling',
+                'langimport', 'log', 'multilangupgrade', 'monitor', 'phpunit', 'profiling',
                 'replace', 'spamcleaner', 'task', 'timezoneimport',
                 'unittest', 'uploadcourse', 'uploaduser', 'unsuproles', 'xmldb'
             ),
