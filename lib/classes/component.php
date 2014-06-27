@@ -761,6 +761,235 @@ $cache = '.var_export($cache, true).';
     }
 
     /**
+     * Checks if given class in autoloaded location is a real class
+     *
+     * @param string $classname
+     * @param string $classfile
+     * @param string $parentclass optional name of the parent class
+     * @param bool $nonabstractonly if true will return only non-abstract classes
+     * @return bool
+     */
+    protected static function check_class($classname, $classfile, $parentclass = null, $nonabstractonly = false) {
+        global $CFG;
+        if (!class_exists($classname, false)) {
+            if (!file_exists($classfile)) {
+                return false;
+            }
+            // Some deprecated event classes show debugging message on loading the file, this will hide such debugging messages.
+            // TODO MDL-46214: think of better way of deprecating events.
+            $debuglevel          = $CFG->debug;
+            $debugdisplay        = $CFG->debugdisplay;
+            $debugdeveloper      = $CFG->debugdeveloper;
+            $CFG->debug          = 0;
+            $CFG->debugdisplay   = false;
+            $CFG->debugdeveloper = false;
+            require_once($classfile);
+            // Now enable developer debugging as event information has been retrieved.
+            $CFG->debug          = $debuglevel;
+            $CFG->debugdisplay   = $debugdisplay;
+            $CFG->debugdeveloper = $debugdeveloper;
+            if (!class_exists($classname, false)) {
+                return false;
+            }
+        }
+
+        if ($parentclass || $nonabstractonly) {
+            $testClass = new ReflectionClass($classname);
+            if ($parentclass && !$testClass->isSubclassOf($parentclass)) {
+                return false;
+            }
+            if ($nonabstractonly && $testClass->isAbstract()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Resolves the plugintype and returns the list of plugins
+     *
+     * This is a help method to resolve user input
+     *
+     * @param string|array $plugintype ('mod', 'mod_assign', '*', or array of several names/types)
+     * @param bool $indexbytype adds nesting level in the return array
+     * @return array if $indexbytype==false: pluginfullname=>plugindir
+     *          if $indexbytype==true: plugintype=>pluginname=>plugindir
+     */
+    protected static function resolve_plugin_type($plugintype, $indexedbytype = false) {
+        $plugins = array();
+        if (is_array($plugintype)) {
+            // Argument $plugintype is an array, call self recursively for all elements.
+            foreach ($plugintype as $oneplugintype) {
+                $list = self::resolve_plugin_type($oneplugintype, $indexedbytype);
+                if ($indexedbytype) {
+                    foreach ($list as $type => $subplugins) {
+                        $plugins[$type] = isset($plugins[$type]) ? $plugins[$type] : array();
+                        foreach ($subplugins as $plugin => $dir) {
+                            $plugins[$type][$plugin] = $dir;
+                        }
+                    }
+                } else {
+                    $plugins = array_merge($plugins, $list);
+                }
+            }
+            return $plugins;
+        }
+
+        if ($plugintype === '*') {
+            // All plugin types were requested.
+            $plugins = self::$plugins;
+        } else if (array_key_exists($plugintype, self::$plugins)) {
+            // Plugin type was requested.
+            $plugins = array($plugintype => self::$plugins[$plugintype]);
+        } else {
+            // Individual plugin was requested.
+            list($type, $plugin) = self::normalize_component($plugintype);
+            if (!empty(self::$plugins[$type][$plugin])) {
+                $plugins = array($type => array($plugin => self::$plugins[$type][$plugin]));
+            }
+        }
+        if ($indexedbytype || empty($plugins)) {
+            return $plugins;
+        }
+        $flatlist = array();
+        foreach ($plugins as $type => $subplugins) {
+            foreach ($subplugins as $name => $dir) {
+                $flatlist[$type.'_'.$name] = $dir;
+            }
+        }
+        return $flatlist;
+    }
+
+    /**
+     * Resolves the component identifiers and returns the list of components
+     *
+     * @param string|array $componenttype ('core', 'core_course', '*', or array of several subsystems)
+     * @return string[] array of componentname=>componentdir
+     */
+    protected static function resolve_subsystem_type($componenttype) {
+        global $CFG;
+        $components = array();
+        if (is_array($componenttype)) {
+            // Argument $componenttype is an array, call self recursively for all elements.
+            foreach ($componenttype as $type) {
+                $components = array_merge($components, self::resolve_subsystem_type($type));
+            }
+            return $components;
+        }
+
+        if ($componenttype === '*') {
+            // All components were requested
+            $components['core'] = $CFG->libdir;
+            foreach (self::$subsystems as $subsystem => $dir) {
+                if ($dir) {
+                    $components['core_'.$subsystem] = $dir;
+                }
+            }
+        } else if ($componenttype === 'core') {
+            $components['core'] = $CFG->libdir;
+        } else {
+            // Individual component was requested.
+            list($type, $plugin) = self::normalize_component($componenttype);
+            if (($type === 'core') && !empty(self::$subsystems[$plugin])) {
+                $components['core_'.$plugin] = self::$subsystems[$plugin];
+            }
+        }
+        return $components;
+    }
+
+    /**
+     * Returns the list of classes in plugins or core subsystems in the specified autoloaded location
+     *
+     * This function does not recurse into subfolders
+     *
+     * @param array $resolvedcomponentslist array componenttype=>componentdir where we need to search
+     * @param string $relativepath relative path inside /classes/ directory
+     * @param string $parentclass optional name of the parent class
+     * @param bool $nonabstractonly if true will return only non-abstract classes
+     * @return string[][] list of class names componenttype=>classfilepath=>classname
+     */
+    protected static function find_classes_in_components($resolvedcomponentslist, $relativepath = '', $parentclass = null, $nonabstractonly = false) {
+        self::init();
+        $relativepath = rtrim(DIRECTORY_SEPARATOR . 'classes'. DIRECTORY_SEPARATOR .
+                ltrim($relativepath, DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
+        foreach ($resolvedcomponentslist as $component => $dir) {
+            if ($dir) {
+                $dirs[$dir . $relativepath] = $component;
+            }
+        }
+
+        $classes = array();
+        foreach (self::$classmap as $classname => $classfile) {
+            if (isset($dirs[dirname($classfile)]) && self::check_class($classname, $classfile, $parentclass, $nonabstractonly)) {
+                $fullpluginname = $dirs[dirname($classfile)];
+                if (!isset($classes[$fullpluginname])) {
+                    $classes[$fullpluginname] = array();
+                }
+                $classes[$fullpluginname][$classfile] = $classname;
+            }
+        }
+        return $classes;
+    }
+
+    /**
+     * Finds all classes in plugins in the specified autoloaded location.
+     *
+     * This function does not recurse into subfolders.
+     *
+     * Examples:
+     *   core_component::find_classes_in_plugins('mod', 'event', 'core\base\event', true);
+     *   core_component::find_classes_in_plugins('mod_forum', 'event');
+     *   core_component::find_classes_in_plugins(array('mod', 'block'), 'reporting');
+     *   core_component::find_classes_in_plugins('*', 'navigation');
+     *
+     * @param string|array $plugintype one of the following:
+     *          plugin type, i.e. 'mod', 'block' for all plugins of this type;
+     *          plugin name, i.e. 'mod_assign', 'block_course_overview', etc.;
+     *          '*' for any of above;
+     *          can also be an array or individual identifiers (list of plugin names or list of plugin types)
+     * @param string $relativepath relative path inside /classes/ directory
+     * @param string $parentclass optional name of the parent class
+     * @param bool $nonabstractonly if true will return only non-abstract classes
+     * @return string[][] list of class names pluginname=>classfilepath=>classname
+     */
+    public static function find_classes_in_plugins($plugintype, $relativepath = '', $parentclass = null, $nonabstractonly = false) {
+        $resolvedcomponentslist = self::resolve_plugin_type($plugintype, true);
+        $flatlist = array();
+        foreach ($resolvedcomponentslist as $type => $subplugins) {
+            foreach ($subplugins as $name => $dir) {
+                $flatlist[$type.'_'.$name] = $dir;
+            }
+        }
+
+        return self::find_classes_in_components($flatlist, $relativepath, $parentclass, $nonabstractonly);
+    }
+
+    /**
+     * Finds all classes in core or core subsystems in the specified autoloaded location.
+     *
+     * This function does not recurse into subfolders.
+     *
+     * Examples:
+     *   core_component::find_classes_in_plugins('core', 'event', 'core\base\event', true);
+     *   core_component::find_classes_in_plugins('*');
+     *   core_component::find_classes_in_plugins(array('core_course', 'core_availability')); // If it ever makes sense.
+     *
+     * @param string|array $componenttype one of the following:
+     *          'core' for only lib/classes location;
+     *          subsystem name, i.e. 'core_course', 'core_availability', etc.;
+     *          '*' for any of above;
+     *          can also be an array or individual subsystem names
+     * @param string $relativepath relative path inside /classes/ directory
+     * @param string $parentclass optional name of the parent class
+     * @param bool $nonabstractonly if true will return only non-abstract classes
+     * @return string[][] list of class names componenttype=>classfilepath=>classname
+     */
+    public static function find_classes_in_subsystems($componenttype, $relativepath = '', $parentclass = null, $nonabstractonly = false) {
+        $resolvedcomponentslist = self::resolve_subsystem_type($componenttype);
+        return self::find_classes_in_components($resolvedcomponentslist, $relativepath, $parentclass, $nonabstractonly);
+    }
+
+    /**
      * Get a list of all the plugins of a given type that contain a particular file.
      *
      * @param string $plugintype the type of plugin, e.g. 'mod' or 'report'.
