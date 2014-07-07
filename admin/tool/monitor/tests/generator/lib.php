@@ -45,7 +45,8 @@ class tool_monitor_generator extends testing_module_generator {
      * Function to generate rule data.
      *
      * @param \stdClass|array $record data to insert as rule entry.
-     * @return \tool_monitor\rule object.
+     *
+     * @return \tool_monitor\rule An instance of rule class.
      */
     public function create_rule($record = null) {
         global $USER;
@@ -100,7 +101,8 @@ class tool_monitor_generator extends testing_module_generator {
      *
      * @throws coding_exception if $record->ruleid or $record->userid not present.
      * @param \stdClass|array $record data to insert as subscription entry.
-     * @return int subscription ID.
+     *
+     * @return \tool_monitor\subscription An instance of the subscription class.
      */
     public function create_subscription($record = null) {
 
@@ -120,15 +122,17 @@ class tool_monitor_generator extends testing_module_generator {
             throw new coding_exception('$record->userid must be present in tool_monitor_generator::create_subscription()');
         }
 
-        return \tool_monitor\subscription_manager::create_subscription($record->ruleid, $record->courseid,
+        $sid = \tool_monitor\subscription_manager::create_subscription($record->ruleid, $record->courseid,
                 $record->cmid, $record->userid);
+        return \tool_monitor\subscription_manager::get_subscription($sid);
     }
 
     /**
      * Function to generate event entries.
      *
      * @param \stdClass|array $record data to insert as event entry.
-     * @return \stdClass $record object with event id.
+     *
+     * @return \stdClass $record An object representing the newly created event entry.
      */
     public function create_event_entries($record = null) {
         global $DB, $CFG;
@@ -166,12 +170,13 @@ class tool_monitor_generator extends testing_module_generator {
      * Function to generate history data.
      *
      * @throws coding_exception if $record->sid or $record->userid not present.
-     * @param \stdClass $record data to insert as history entry.
-     * @return \stdClass $record object with history id.
+     * @param \stdClass|array $record data to insert as history entry.
+     *
+     * @return \stdClass $record An object representing the newly created history entry.
      */
     public function create_history($record = null) {
         global $DB;
-
+        $record = (object)(array)$record;
         if (!isset($record->sid)) {
             throw new coding_exception('subscription ID must be present in tool_monitor_generator::create_history() $record');
         }
