@@ -4381,7 +4381,10 @@ class assign {
         $result = true;
         if ($submission->status != ASSIGN_SUBMISSION_STATUS_REOPENED) {
             foreach ($team as $member) {
-                $membersubmission = $this->get_user_submission($member->id, false, $submission->attemptnumber);
+                $membersubmission = $this->get_user_submission($member->id, true, $submission->attemptnumber);
+                // Update the newly-created submission in the database.
+                $membersubmission->status = $submission->status;
+                $this->update_submission($membersubmission, 0, $updatetime, false);
 
                 // If no submission found for team member and member is active then everyone has not submitted.
                 if (!$membersubmission || $membersubmission->status != ASSIGN_SUBMISSION_STATUS_SUBMITTED
