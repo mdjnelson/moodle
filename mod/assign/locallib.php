@@ -4381,7 +4381,10 @@ class assign {
         $result = true;
         if ($submission->status != ASSIGN_SUBMISSION_STATUS_REOPENED) {
             foreach ($team as $member) {
-                $membersubmission = $this->get_user_submission($member->id, false, $submission->attemptnumber);
+                $membersubmission = $this->get_user_submission($member->id, true, $submission->attemptnumber);
+                // Update the newly-created submission in the database.
+                $membersubmission->status = $submission->status;
+                $this->update_submission($membersubmission, 0, $updatetime, false);
 
                 // If no submission found for team member and member is active then everyone has not submitted.
                 if (!$membersubmission || $membersubmission->status != ASSIGN_SUBMISSION_STATUS_SUBMITTED
@@ -5024,6 +5027,13 @@ class assign {
             $completion = new completion_info($this->get_course());
             if ($completion->is_enabled($this->get_course_module()) && $instance->completionsubmit) {
                 $completion->update_state($this->get_course_module(), COMPLETION_COMPLETE, $userid);
+                // Update completion status for group members if this is a group submission.
+                if ($instance->teamsubmission) {
+                    $team = $this->get_submission_group_members($submission->groupid, true);
+                    foreach ($team as $member) {
+                        $completion->update_state($this->get_course_module(), COMPLETION_COMPLETE, $member->id);
+                    }
+                }
             }
 
             if (!empty($data->submissionstatement) && $USER->id == $userid) {
@@ -5706,6 +5716,13 @@ class assign {
         $completion = new completion_info($this->get_course());
         if ($completion->is_enabled($this->get_course_module()) && $instance->completionsubmit) {
             $completion->update_state($this->get_course_module(), $complete, $USER->id);
+            // Update completion status for group members if this is a group submission.
+            if ($instance->teamsubmission) {
+                $team = $this->get_submission_group_members($submission->groupid, true);
+                foreach ($team as $member) {
+                    $completion->update_state($this->get_course_module(), $complete, $member->id);
+                }
+            }
         }
 
         if (!$instance->submissiondrafts) {
@@ -5820,6 +5837,13 @@ class assign {
         $completion = new completion_info($this->get_course());
         if ($completion->is_enabled($this->get_course_module()) && $instance->completionsubmit) {
             $completion->update_state($this->get_course_module(), $complete, $userid);
+            // Update completion status for group members if this is a group submission.
+            if ($instance->teamsubmission) {
+                $team = $this->get_submission_group_members($submission->groupid, true);
+                foreach ($team as $member) {
+                    $completion->update_state($this->get_course_module(), $complete, $member->id);
+                }
+            }
         }
 
         if (!$instance->submissiondrafts) {
