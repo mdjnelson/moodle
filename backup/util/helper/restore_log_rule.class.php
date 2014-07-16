@@ -152,6 +152,11 @@ class restore_log_rule implements processable {
             return false;
         }
 
+        // Ensure the URL does not exceed the '100' char limit in the log table.
+        if (!empty($log->url)) {
+            $log->url = core_text::substr($log->url, 0, 100);
+        }
+
         // Finally, set module and action
         $log->module = $this->modulewrite;
         $log->action = $this->actionwrite;
