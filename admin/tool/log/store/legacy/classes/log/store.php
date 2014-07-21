@@ -26,9 +26,10 @@ namespace logstore_legacy\log;
 
 defined('MOODLE_INTERNAL') || die();
 
-class store implements \tool_log\log\store, \core\log\sql_select_reader {
+class store implements \tool_log\log\store, \core\log\sql_select_reader, \core\log\backup {
     use \tool_log\helper\store,
-        \tool_log\helper\reader;
+        \tool_log\helper\reader,
+        \tool_log\helper\backup;
 
     public function __construct(\tool_log\log\manager $manager) {
         $this->helper_setup($manager);
@@ -309,5 +310,40 @@ class store implements \tool_log\log\store, \core\log\sql_select_reader {
             $return .= $replace;
         }
         return $return;
+    }
+
+    /**
+     * Returns the structure to be processed by the \backup_step.
+     *
+     * The function behaves the same as define_structure() defined by the backup process in core.
+     *
+     * @see \backup_structure_step::define_structure
+     * @return \backup_nested_element
+     * @throws \backup_step_exception
+     */
+    public function backup_define_structure() {
+        // Check that we are indeed backing up something.
+        if (empty($this->itembackup)) {
+            throw new \backup_step_exception('no_item_backup_in_progress');
+        }
+
+        // Define each element separately.
+        $logs = new \backup_nested_element($this->component . '_logs');
+
+        $log = new \backup_nested_element('log', array('id'), array('time', 'userid', 'ip', 'module',
+            'action', 'url', 'info'));
+
+        // Build the tree.
+        $logs->add_child($log);
+
+        if ($this->itembackup == LOG_STORE_COURSE_LOGS) {
+            // Define sources (all the records belonging to the course - cmid equal to 0).
+            $log->set_source_table('log', array('course' => \backup::VAR_COURSEID, 'cmid' => \backup_helper::is_sqlparam(0)));
+        } else { // Must be an activity.
+            // Define sources.
+            $log->set_source_table('log', array('cmid' => \backup::VAR_MODID));
+        }
+
+        return $logs;
     }
 }
