@@ -1360,38 +1360,79 @@ class backup_block_instance_structure_step extends backup_structure_step {
 }
 
 /**
+ * The abstract parent class used by steps that backup any logs.
+ */
+abstract class backup_logs_structure_step extends backup_structure_step {
+
+    /**
+     * @var \tool_log\log\store the store we are currently using to backup.
+     */
+    protected $store = null;
+
+    /**
+     * Returns the name of the log store function responsible for the backup process of this step.
+     *
+     * @returns string the function name
+     */
+    abstract protected function get_log_store_logging_function();
+
+    protected function execute_condition() {
+        if (!is_null($this->store)) {
+            if (method_exists($this->store, 'backup_execute_condition')) {
+                return $this->store->backup_execute_condition();
+            }
+        }
+
+        // If we got here then the log store doesn't define this, so execute the parent behaviour.
+        return parent::execute_condition();
+    }
+
+    protected function define_structure() {
+        if (!is_null($this->store)) {
+            if (method_exists($this->store, 'backup_define_structure')) {
+                return $this->store->backup_define_structure();
+            }
+        }
+
+        // If we get here then define_structure was called but we have nothing to return,
+        // so throw an exception as we must return one \backup_nested_element.
+        throw new \backup_step_exception('missing_backup_define_structure_in_log_store');
+    }
+
+    public function execute() {
+        // Get the log manager.
+        $manager = get_log_manager();
+        // Get the enabled logging stores.
+        $stores = $manager->get_enabled_backup_logstores();
+        foreach ($stores as $store) {
+            // Set the store variable.
+            $this->store = $store;
+            $functionname = $this->get_log_store_logging_function();
+            $return = $store->$functionname($this);
+            $this->store = null;
+
+            return $return;
+        }
+    }
+
+    /**
+     * Execute the common behavaiour for backing up a step.
+     */
+    public function execute_common_behaviour() {
+        return parent::execute();
+    }
+}
+
+/**
  * structure step in charge of constructing the logs.xml file for all the log records found
  * in course. Note that we are sending to backup ALL the log records having cmid = 0. That
  * includes some records that won't be restoreable (like 'upload', 'calendar'...) but we do
  * that just in case they become restored some day in the future
  */
-class backup_course_logs_structure_step extends backup_structure_step {
+class backup_course_logs_structure_step extends backup_logs_structure_step {
 
-    protected function define_structure() {
-
-        // Define each element separated
-
-        $logs = new backup_nested_element('logs');
-
-        $log = new backup_nested_element('log', array('id'), array(
-            'time', 'userid', 'ip', 'module',
-            'action', 'url', 'info'));
-
-        // Build the tree
-
-        $logs->add_child($log);
-
-        // Define sources (all the records belonging to the course, having cmid = 0)
-
-        $log->set_source_table('log', array('course' => backup::VAR_COURSEID, 'cmid' => backup_helper::is_sqlparam(0)));
-
-        // Annotations
-        // NOTE: We don't annotate users from logs as far as they MUST be
-        //       always annotated by the course (enrol, ras... whatever)
-
-        // Return the root element (logs)
-
-        return $logs;
+    protected function get_log_store_logging_function() {
+        return 'backup_course_logs';
     }
 }
 
@@ -1399,33 +1440,10 @@ class backup_course_logs_structure_step extends backup_structure_step {
  * structure step in charge of constructing the logs.xml file for all the log records found
  * in activity
  */
-class backup_activity_logs_structure_step extends backup_structure_step {
+class backup_activity_logs_structure_step extends backup_logs_structure_step {
 
-    protected function define_structure() {
-
-        // Define each element separated
-
-        $logs = new backup_nested_element('logs');
-
-        $log = new backup_nested_element('log', array('id'), array(
-            'time', 'userid', 'ip', 'module',
-            'action', 'url', 'info'));
-
-        // Build the tree
-
-        $logs->add_child($log);
-
-        // Define sources
-
-        $log->set_source_table('log', array('cmid' => backup::VAR_MODID));
-
-        // Annotations
-        // NOTE: We don't annotate users from logs as far as they MUST be
-        //       always annotated by the activity (true participants).
-
-        // Return the root element (logs)
-
-        return $logs;
+    protected function get_log_store_logging_function() {
+        return 'backup_activity_logs';
     }
 }
 
