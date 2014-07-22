@@ -25,10 +25,11 @@
 namespace logstore_database\log;
 defined('MOODLE_INTERNAL') || die();
 
-class store implements \tool_log\log\writer, \core\log\sql_select_reader {
+class store implements \tool_log\log\writer, \core\log\sql_select_reader, \core\log\backup {
     use \tool_log\helper\store,
         \tool_log\helper\reader,
-        \tool_log\helper\buffered_writer {
+        \tool_log\helper\buffered_writer,
+        \tool_log\helper\backup {
         dispose as helper_dispose;
     }
 
@@ -236,5 +237,58 @@ class store implements \tool_log\log\writer, \core\log\sql_select_reader {
             $this->extdb->dispose();
         }
         $this->extdb = null;
+    }
+
+    /**
+     * Returns the structure to be processed by the \backup_step.
+     *
+     * The function behaves the same as define_structure() defined by the backup process in core.
+     *
+     * @see \backup_structure_step::define_structure
+     * @return \backup_nested_element
+     * @throws \backup_step_exception
+     */
+    public function backup_define_structure() {
+        // Check that we are indeed backing up something.
+        if (empty($this->itembackup)) {
+            throw new \backup_step_exception('no_item_backup_in_progress');
+        }
+
+        if (!$this->init()) {
+            // We need to throw an exception here as define_structure() must return a
+            // \backup_nested_element object containing the logs, which we can't in this case.
+            throw new \backup_step_exception('can_not_access_external_db');
+        }
+
+        if (!$dbtable = $this->get_config('dbtable')) {
+            // We need to throw an exception here as define_structure() must return a
+            // \backup_nested_element object containing the logs, which we can't in this case.
+            throw new \backup_step_exception('can_not_access_external_db');
+        }
+
+        // Define each element separately.
+        $logs = new \backup_nested_element($this->component . '_logs');
+
+        $log = new \backup_nested_element('log', array('id'), array(
+            'eventname', 'component', 'action', 'target', 'objecttable', 'objectid',
+            'crud', 'edulevel', 'contextid', 'contextlevel', 'contextinstanceid',
+            'userid', 'courseid', 'relateduserid', 'anonymous', 'other', 'timecreated',
+            'origin', 'ip', 'realuserid'));
+
+        // Set the source database to the external one.
+        $log->set_source_db($this->extdb);
+
+        // Build the tree.
+        $logs->add_child($log);
+
+        if ($this->itembackup == LOG_STORE_COURSE_LOGS) {
+            // Define sources (all the records belonging to the course).
+            $log->set_source_table($dbtable, array('courseid' => \backup::VAR_COURSEID));
+        } else { // Must be an activity.
+            // Define sources.
+            $log->set_source_table($dbtable, array('contextinstanceid' => \backup::VAR_MODID));
+        }
+
+        return $logs;
     }
 }

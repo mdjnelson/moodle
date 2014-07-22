@@ -40,6 +40,7 @@ class backup_nested_element extends base_nested_element implements processable {
     protected $counter;   // Number of instances of this element that have been processed
     protected $results;  // Logs the results we encounter during the process.
     protected $logs;     // Some log messages that could be retrieved later.
+    protected $dbtouse; // Stores the \moodle_database we are using.
 
     /**
      * Constructor - instantiates one backup_nested_element, specifying its basic info.
@@ -49,6 +50,8 @@ class backup_nested_element extends base_nested_element implements processable {
      * @param array  $final_elements this element will handle (optional, defaults to null)
      */
     public function __construct($name, $attributes = null, $final_elements = null) {
+        global $DB;
+
         parent::__construct($name, $attributes, $final_elements);
         $this->var_array = null;
         $this->table     = null;
@@ -61,6 +64,7 @@ class backup_nested_element extends base_nested_element implements processable {
         $this->counter   = 0;
         $this->results  = array();
         $this->logs     = array();
+        $this->dbtouse = $DB;
     }
 
     /**
@@ -188,6 +192,15 @@ class backup_nested_element extends base_nested_element implements processable {
         return $this->results;
     }
 
+    /**
+     * Sets the \moodle_database to use.
+     *
+     * @param \moodle_database $db
+     */
+    public function set_source_db($db) {
+        $this->dbtouse = $db;
+    }
+
     public function set_source_array($arr) {
         // TODO: Only elements having final elements can set source
         $this->var_array = $arr;
@@ -258,6 +271,15 @@ class backup_nested_element extends base_nested_element implements processable {
 
     public function get_source_array() {
         return $this->var_array;
+    }
+
+    /**
+     * Returns the \moodle_database to use.
+     *
+     * @return \moodle_database $db
+     */
+    public function get_source_db() {
+        return $this->dbtouse;
     }
 
     public function get_source_table() {
