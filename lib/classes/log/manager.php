@@ -59,4 +59,11 @@ interface manager {
      *      require logstores.
      */
     public function get_supported_logstores($component);
+
+    /**
+     * Returns an array of the log stores which are enabled and support backup.
+     *
+     * @return \tool_log\log\store[] the list of stores
+     */
+    public function get_enabled_backup_logstores();
 }

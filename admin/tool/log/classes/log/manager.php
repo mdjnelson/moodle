@@ -175,6 +175,25 @@ class manager implements \core\log\manager {
         return $return;
     }
 
+    public function get_enabled_backup_logstores() {
+        // The logging stores to return.
+        $logstores = array();
+        // Get the enabled stores.
+        $allstores = get_config('tool_log', 'enabled_stores');
+        $allstores = explode(',', $allstores);
+        foreach ($allstores as $store) {
+            $classname = "\\$store\\log\\store";
+            if (class_exists($classname)) {
+                $instance = new $classname($this);
+                if ($instance instanceof \core\log\backup) {
+                    $logstores[] = $instance;
+                }
+            }
+        }
+
+        return $logstores;
+    }
+
     /**
      * Intended for store management, do not use from reports.
      *
