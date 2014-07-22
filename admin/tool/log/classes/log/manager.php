@@ -36,6 +36,9 @@ class manager implements \core\log\manager {
     /** @var \tool_log\log\store[] $stores list of all enabled stores */
     protected $stores;
 
+    /** @var \tool_log\log\store[] $stores list of all enabled stores that support backup */
+    protected $backupstores;
+
     /**
      * Delayed initialisation of singleton.
      */
@@ -175,6 +178,34 @@ class manager implements \core\log\manager {
         return $return;
     }
 
+    public function get_enabled_backup_logstores() {
+        global $CFG;
+
+        $this->init();
+
+        if (isset($this->backupstores)) {
+            return $this->backupstores;
+        }
+
+        $this->backupstores = array();
+        foreach ($this->stores as $component => $store) {
+            $name = explode('_', $component);
+            $name = $name[1];
+            if (plugin_supports('logstore', $name, FEATURE_BACKUP_MOODLE2)) {
+                // Check that we have the necessary files.
+                $backuptaskfile = $CFG->dirroot . '/admin/tool/log/store/' . $name . '/backup/moodle2/backup_' .
+                    $name . '_logstore_task.class.php';
+                $restoretaskfile = $CFG->dirroot . '/admin/tool/log/store/' . $name . '/backup/moodle2/restore_' .
+                    $name . '_logstore_task.class.php';
+                if (is_readable($backuptaskfile) && is_readable($restoretaskfile)) {
+                    $this->backupstores[$component] = $store;
+                }
+            }
+        }
+
+        return $this->backupstores;
+    }
+
     /**
      * Intended for store management, do not use from reports.
      *
@@ -197,6 +228,7 @@ class manager implements \core\log\manager {
         $this->stores = null;
         $this->readers = null;
         $this->writers = null;
+        $this->backupstores = null;
     }
 
     /**

@@ -38,4 +38,8 @@ class dummy_manager implements manager {
     public function get_supported_logstores($component) {
         return array();
     }
+
+    public function get_enabled_backup_logstores() {
+        return array();
+    }
 }
