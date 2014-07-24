@@ -59,7 +59,7 @@ abstract class restore_structure_step extends restore_step {
         parent::__construct($name, $task);
     }
 
-    final public function execute() {
+    public function execute() {
 
         if (!$this->execute_condition()) { // Check any condition to execute this
             return;

@@ -2534,6 +2534,108 @@ class restore_course_completion_structure_step extends restore_structure_step {
     }
 }
 
+/**
+ * The abstract parent class used by steps that backup any logs.
+ */
+abstract class restore_logs_structure_step extends restore_structure_step {
+
+    /**
+     * @var \tool_log\log\store the store we are currently using to restore.
+     */
+    protected $store = null;
+
+    /**
+     * Returns the name of the log store function responsible for restoring this step.
+     *
+     * @returns string the function name
+     */
+    abstract protected function get_log_store_logging_function();
+
+    protected function execute_condition() {
+        if (!is_null($this->store)) {
+            if (method_exists($this->store, 'restore_execute_condition')) {
+                return $this->store->restore_execute_condition($this);
+            }
+        }
+
+        // If we got here then the log store doesn't define this, so execute the parent behaviour.
+        return parent::execute_condition();
+    }
+
+    protected function define_structure() {
+        if (!is_null($this->store)) {
+            if (method_exists($this->store, 'restore_define_structure')) {
+                return $this->store->restore_define_structure();
+            }
+        }
+
+        // If we get here then define_structure was called but we have nothing to return,
+        // so throw an exception as we must return one \restore_nested_element.
+        throw new \backup_step_exception('missing_restore_define_structure_in_log_store');
+    }
+
+    public function execute() {
+        // Get the log manager.
+        $manager = get_log_manager();
+        // Get the enabled logging stores.
+        $stores = $manager->get_enabled_backup_logstores();
+        foreach ($stores as $store) {
+            // Set the store variable.
+            $this->store = $store;
+            $functionname = $this->get_log_store_logging_function();
+            $return = $store->$functionname($this);
+            $this->store = null;
+
+            return $return;
+        }
+    }
+
+    /**
+     * Execute the common behavaiour for backing up a step.
+     */
+    public function execute_common_behaviour() {
+        return parent::execute();
+    }
+
+    protected function process_log($data) {
+        if (!is_null($this->store)) {
+            if (method_exists($this->store, 'restore_log')) {
+                return $this->store->restore_log($data, $this);
+            }
+        }
+    }
+
+    protected function after_execute() {
+        if (!is_null($this->store)) {
+            if (method_exists($this->store, 'restore_after_execute')) {
+                $this->store->restore_after_execute($this);
+            }
+        }
+
+        // If we got here then the log store doesn't define this, so execute the parent behaviour.
+        parent::after_execute();
+    }
+
+    protected function after_restore() {
+        if (!is_null($this->store)) {
+            if (method_exists($this->store, 'restore_after_restore')) {
+                $this->store->restore_after_restore($this);
+            }
+        }
+
+        // If we got here then the log store doesn't define this, so execute the parent behaviour.
+        parent::after_restore();
+    }
+
+    /**
+     * Helper function to return the filename.
+     *
+     * It is protected in the parent class so we need this function to obtain it.
+     */
+    public function get_filename() {
+        return $this->filename;
+    }
+}
 
 /**
  * This structure step restores course logs (cmid = 0), delegating
@@ -2550,78 +2652,10 @@ class restore_course_completion_structure_step extends restore_structure_step {
  * NOTE: All the missing actions (not able to be restored) are sent to logs for
  * debugging purposes
  */
-class restore_course_logs_structure_step extends restore_structure_step {
+class restore_course_logs_structure_step extends restore_logs_structure_step {
 
-    /**
-     * Conditionally decide if this step should be executed.
-     *
-     * This function checks the following parameter:
-     *
-     *   1. the course/logs.xml file exists
-     *
-     * @return bool true is safe to execute, false otherwise
-     */
-    protected function execute_condition() {
-
-        // Check it is included in the backup
-        $fullpath = $this->task->get_taskbasepath();
-        $fullpath = rtrim($fullpath, '/') . '/' . $this->filename;
-        if (!file_exists($fullpath)) {
-            // Not found, can't restore course logs
-            return false;
-        }
-
-        return true;
-    }
-
-    protected function define_structure() {
-
-        $paths = array();
-
-        // Simple, one plain level of information contains them
-        $paths[] = new restore_path_element('log', '/logs/log');
-
-        return $paths;
-    }
-
-    protected function process_log($data) {
-        global $DB;
-
-        $data = (object)($data);
-
-        $data->time = $this->apply_date_offset($data->time);
-        $data->userid = $this->get_mappingid('user', $data->userid);
-        $data->course = $this->get_courseid();
-        $data->cmid = 0;
-
-        // For any reason user wasn't remapped ok, stop processing this
-        if (empty($data->userid)) {
-            return;
-        }
-
-        // Everything ready, let's delegate to the restore_logs_processor
-
-        // Set some fixed values that will save tons of DB requests
-        $values = array(
-            'course' => $this->get_courseid());
-        // Get instance and process log record
-        $data = restore_logs_processor::get_instance($this->task, $values)->process_log_record($data);
-
-        // If we have data, insert it, else something went wrong in the restore_logs_processor
-        if ($data) {
-            if (empty($data->url)) {
-                $data->url = '';
-            }
-            if (empty($data->info)) {
-                $data->info = '';
-            }
-            // Store the data in the legacy log table if we are still using it.
-            $manager = get_log_manager();
-            if (method_exists($manager, 'legacy_add_to_log')) {
-                $manager->legacy_add_to_log($data->course, $data->module, $data->action, $data->url,
-                    $data->info, $data->cmid, $data->userid);
-            }
-        }
+    protected function get_log_store_logging_function() {
+        return 'restore_course_logs';
     }
 }
 
@@ -2629,48 +2663,10 @@ class restore_course_logs_structure_step extends restore_structure_step {
  * This structure step restores activity logs, extending {@link restore_course_logs_structure_step}
  * sharing its same structure but modifying the way records are handled
  */
-class restore_activity_logs_structure_step extends restore_course_logs_structure_step {
+class restore_activity_logs_structure_step extends restore_logs_structure_step {
 
-    protected function process_log($data) {
-        global $DB;
-
-        $data = (object)($data);
-
-        $data->time = $this->apply_date_offset($data->time);
-        $data->userid = $this->get_mappingid('user', $data->userid);
-        $data->course = $this->get_courseid();
-        $data->cmid = $this->task->get_moduleid();
-
-        // For any reason user wasn't remapped ok, stop processing this
-        if (empty($data->userid)) {
-            return;
-        }
-
-        // Everything ready, let's delegate to the restore_logs_processor
-
-        // Set some fixed values that will save tons of DB requests
-        $values = array(
-            'course' => $this->get_courseid(),
-            'course_module' => $this->task->get_moduleid(),
-            $this->task->get_modulename() => $this->task->get_activityid());
-        // Get instance and process log record
-        $data = restore_logs_processor::get_instance($this->task, $values)->process_log_record($data);
-
-        // If we have data, insert it, else something went wrong in the restore_logs_processor
-        if ($data) {
-            if (empty($data->url)) {
-                $data->url = '';
-            }
-            if (empty($data->info)) {
-                $data->info = '';
-            }
-            // Store the data in the legacy log table if we are still using it.
-            $manager = get_log_manager();
-            if (method_exists($manager, 'legacy_add_to_log')) {
-                $manager->legacy_add_to_log($data->course, $data->module, $data->action, $data->url,
-                    $data->info, $data->cmid, $data->userid);
-            }
-        }
+    protected function get_log_store_logging_function() {
+        return 'restore_activity_logs';
     }
 }
 
