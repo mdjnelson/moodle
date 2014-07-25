@@ -346,4 +346,52 @@ class store implements \tool_log\log\store, \core\log\sql_select_reader, \core\l
 
         return $logs;
     }
+
+    /**
+     * Handles restoring a log element from the backup.
+     *
+     * The function behaves the same as the function process_* defined by the restore process in core.
+     *
+     * @param array $data the data from the backup
+     * @param \restore_logs_structure_step $step
+     * @see \restore_logs_structure_step::process_log
+     */
+    public function restore_log($data, $step) {
+        $data = (object) ($data);
+
+        // Set the data we are going to use to insert into the log table.
+        $data->time = $step->apply_date_offset($data->time);
+        $data->userid = $step->get_mappingid('user', $data->userid);
+        $data->course = $step->get_task()->get_courseid();
+        $data->cmid = ($this->itembackup == LOG_STORE_ACTIVITY_LOGS) ? $step->get_task()->get_moduleid() : 0;
+
+        // The user was not re-mapped, stop processing.
+        if (empty($data->userid)) {
+            return;
+        }
+
+        // Set some fixed values.
+        if ($this->itembackup == LOG_STORE_ACTIVITY_LOGS) {
+            $values = array('course' => $step->get_task()->get_courseid(),
+                'course_module' => $step->get_task()->get_moduleid(),
+                $step->get_task()->get_modulename() => $step->get_task()->get_activityid());
+        } else {
+            $values = array('course' => $step->get_task()->get_courseid());
+        }
+
+        // Get instance and process log record.
+        $data = \restore_logs_processor::get_instance($step->get_task(), $values)->process_log_record($data);
+
+        // If we have data, insert it, else something went wrong in the restore_logs_processor.
+        if (!empty($data)) {
+            if (empty($data->url)) {
+                $data->url = '';
+            }
+            if (empty($data->info)) {
+                $data->info = '';
+            }
+            $this->legacy_add_to_log($data->course, $data->module, $data->action, $data->url,
+                $data->info, $data->cmid, $data->userid);
+        }
+    }
 }
