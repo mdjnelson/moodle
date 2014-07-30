@@ -291,4 +291,59 @@ class store implements \tool_log\log\writer, \core\log\sql_select_reader, \core\
 
         return $logs;
     }
+
+    /**
+     * Handles restoring a log element from the backup.
+     *
+     * The function behaves the same as the function process_* defined by the restore process in core.
+     *
+     * @param array $data the data from the backup
+     * @param \restore_logs_structure_step $step
+     * @see \restore_logs_structure_step::process_log
+     */
+    public function restore_log($data, $step) {
+        // Ensure we can actually connect to the external DB before proceeding.
+        if (!$this->init()) {
+            return;
+        }
+
+        if (!$dbtable = $this->get_config('dbtable')) {
+            return;
+        }
+
+        $data = (object) ($data);
+
+        // Get the userid.
+        $data->userid = $step->get_mappingid('user', $data->userid);
+
+        // The user was not re-mapped, stop processing.
+        if (empty($data->userid)) {
+            return;
+        }
+
+        // Update the data we are going to use and insert into the log table.
+        if (!empty($data->objecttable) && !empty($data->objectid)) {
+            $data->objectid = $step->get_mappingid($data->objecttable, $data->objectid);
+        }
+        if (!empty($data->courseid)) {
+            $data->courseid = $step->get_task()->get_courseid();
+        }
+        $data->contextid = $step->get_mappingid('context', $data->contextid);
+        // Now we need to map the contextinstanceid.
+        if ($data->contextlevel == CONTEXT_COURSE) {
+            // If the contextlevel is equal to CONTEXT_COURSE then the contextinstanceid is equal to the course id.
+            $data->contextinstanceid = $step->get_task()->get_courseid();
+        } else if ($data->contextlevel == CONTEXT_MODULE) {
+            // If the contextlevel is equal to CONTEXT_MODULE then the contextinstanceid is equal to the course module id.
+            $data->contextinstanceid = $step->get_mappingid('course_module', $data->contextinstanceid);
+        }
+        if (!empty($data->relateduserid)) {
+            $data->relateduserid = $step->get_mappingid('user', $data->relateduserid);
+        }
+        if (!empty($data->realuserid)) {
+            $data->realuserid = $step->get_mappingid('user', $data->realuserid);
+        }
+
+        $this->extdb->insert_record($dbtable, $data);
+    }
 }
