@@ -69,6 +69,17 @@ foreach ($blocks as $block => $blockdir) {
     }
 }
 
+// Load all the required files for the log stores.
+$manager = get_log_manager();
+$stores = $manager->get_enabled_backup_logstores();
+foreach ($stores as $component => $store) {
+    $name = explode('_', $component);
+    $name = $name[1];
+    $taskpath = $CFG->dirroot . '/admin/tool/log/store/' . $name . '/backup/moodle2/backup_' .
+        $name . '_logstore_task.class.php';
+    require_once($taskpath);
+}
+
 /**
  * Abstract class defining the static method in charge of building the whole
  * backup plan, based in @backup_controller preferences.
@@ -122,7 +133,6 @@ abstract class backup_plan_builder {
      * Build one 1-activity backup
      */
     static protected function build_activity_plan($controller, $id) {
-
         $plan = $controller->get_plan();
 
         // Add the activity task, responsible for outputting
@@ -144,6 +154,16 @@ abstract class backup_plan_builder {
             }
         } catch (backup_task_exception $e) {
             $controller->log(get_string('error_course_module_not_found', 'backup', $id), backup::LOG_WARNING);
+        }
+
+        // Add the log tasks.
+        $manager = get_log_manager();
+        $stores = $manager->get_enabled_backup_logstores();
+        foreach ($stores as $component => $store) {
+            $name = explode('_', $component);
+            $name = $name[1];
+            $class = 'backup_' . $name . '_logstore_task';
+            $plan->add_task(new $class('activity_logs', $id));
         }
     }
 
@@ -173,7 +193,6 @@ abstract class backup_plan_builder {
      * Build one 1-course backup
      */
     static protected function build_course_plan($controller, $id) {
-
         $plan = $controller->get_plan();
 
         // Add the course task, responsible for outputting
@@ -190,6 +209,16 @@ abstract class backup_plan_builder {
         $blockids = backup_plan_dbops::get_blockids_from_courseid($id);
         foreach ($blockids as $blockid) {
             $plan->add_task(backup_factory::get_backup_block_task($controller->get_format(), $blockid));
+        }
+
+        // Add the log tasks.
+        $manager = get_log_manager();
+        $stores = $manager->get_enabled_backup_logstores();
+        foreach ($stores as $component => $store) {
+            $name = explode('_', $component);
+            $name = $name[1];
+            $class = 'backup_' . $name . '_logstore_task';
+            $plan->add_task(new $class('course_logs'));
         }
     }
 }

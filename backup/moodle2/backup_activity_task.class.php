@@ -162,11 +162,6 @@ abstract class backup_activity_task extends backup_task {
             $this->add_step(new backup_userscompletion_structure_step('activity_userscompletion', 'completion.xml'));
         }
 
-        // Generate the logs file (conditionally)
-        if ($this->get_setting_value('logs')) {
-            $this->add_step(new backup_activity_logs_structure_step('activity_logs', 'logs.xml'));
-        }
-
         // Generate the calendar events file (conditionally)
         if ($this->get_setting_value('calendarevents')) {
             $this->add_step(new backup_calendarevents_structure_step('activity_calendar', 'calendar.xml'));
