@@ -857,7 +857,16 @@ class grade_grade extends grade_object {
         $this->finalgrade  = grade_floatval($this->finalgrade);
         $this->rawgrademin = grade_floatval($this->rawgrademin);
         $this->rawgrademax = grade_floatval($this->rawgrademax);
-        return parent::update($source);
+        $success = parent::update($source);
+
+        if ($success) {
+            // Make sure the grade item is loaded before we trigger the event.
+            $this->load_grade_item();
+            // Trigger a grade updated event.
+            \core\event\grade_updated::create_from_grade($this)->trigger();
+        }
+
+        return $success;
     }
 
     /**
