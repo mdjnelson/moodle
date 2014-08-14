@@ -833,9 +833,16 @@ class grade_grade extends grade_object {
      * @return int The new grade_grade ID if successful, false otherwise
      */
     public function insert($source=null) {
-        // TODO: dategraded hack - do not update times, they are used for submission and grading (MDL-31379)
-        //$this->timecreated = $this->timemodified = time();
-        return parent::insert($source);
+        $gradeid = parent::insert($source);
+
+        if ($gradeid) {
+            // Make sure the grade item is loaded before we trigger the event.
+            $this->load_grade_item();
+            // Trigger a grade created event.
+            \core\event\grade_created::create_from_grade($this)->trigger();
+        }
+
+        return $gradeid;
     }
 
     /**
