@@ -76,6 +76,17 @@ foreach ($blocks as $block => $blockdir) {
     }
 }
 
+// Load all the required files for the log stores.
+$manager = get_log_manager();
+$stores = $manager->get_enabled_backup_logstores();
+foreach ($stores as $component => $store) {
+    $name = explode('_', $component);
+    $name = $name[1];
+    $taskpath = $CFG->dirroot . '/admin/tool/log/store/' . $name . '/backup/moodle2/restore_' .
+        $name . '_logstore_task.class.php';
+    require_once($taskpath);
+}
+
 /**
  * Abstract class defining the static method in charge of building the whole
  * restore plan, based in @restore_controller preferences.
@@ -153,6 +164,15 @@ abstract class restore_plan_builder {
             $plan->set_missing_modules();
         }
 
+        // Add the log tasks.
+        $manager = get_log_manager();
+        $stores = $manager->get_enabled_backup_logstores();
+        foreach ($stores as $component => $store) {
+            $name = explode('_', $component);
+            $name = $name[1];
+            $class = 'restore_' . $name . '_logstore_task';
+            $plan->add_task(new $class('activity_logs', $infoactivity->modulename, $activityid));
+        }
     }
 
     /**
@@ -210,6 +230,16 @@ abstract class restore_plan_builder {
         // For the given course, add as many section tasks as necessary
         foreach ($info->sections as $sectionid => $section) {
             self::build_section_plan($controller, $sectionid);
+        }
+
+        // Add the log tasks.
+        $manager = get_log_manager();
+        $stores = $manager->get_enabled_backup_logstores();
+        foreach ($stores as $component => $store) {
+            $name = explode('_', $component);
+            $name = $name[1];
+            $class = 'restore_' . $name . '_logstore_task';
+            $plan->add_task(new $class('course_logs'));
         }
     }
 }
