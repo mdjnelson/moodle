@@ -175,7 +175,7 @@ class tablelog extends \table_sql implements \renderable {
      * @return string HTML to display
      */
     public function col_timemodified(\stdClass $history) {
-        return userdate($history->timemodified, '%d/%m/%Y %H:%M');
+        return userdate($history->timemodified);
     }
 
     /**
