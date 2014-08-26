@@ -68,10 +68,10 @@ class mod_scorm_event_testcase extends advanced_testcase {
         scorm_delete_attempt(2, $this->eventscorm, 4);
         $events = $sink->get_events();
         $sink->close();
-        $event = reset($events);
+        $event = $events[0];
 
         // Verify data.
-        $this->assertCount(1, $events);
+        $this->assertCount(3, $events);
         $this->assertInstanceOf('\mod_scorm\event\attempt_deleted', $event);
         $this->assertEquals($USER->id, $event->userid);
         $this->assertEquals(context_module::instance($this->eventcm->id), $event->get_context());
