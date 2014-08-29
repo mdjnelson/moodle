@@ -94,6 +94,20 @@ class tablelog extends \table_sql implements \renderable {
         $this->page = $page;
         $this->filters = (object)$filters;
         $this->gradeitems = \grade_item::fetch_all(array('courseid' => $this->courseid));
+
+        // Get the deleted grade items.
+        $deletedgradeitemstmp = \grade_item_history::fetch_all(array('courseid' => $this->courseid,
+            'action' => GRADE_HISTORY_DELETE));
+
+        // We want to set the key to the old id, not the id in the grade_histories to ensure we do not override any results.
+        $deletedgradeitems = array();
+        foreach ($deletedgradeitemstmp as $deletedgradeitem) {
+            $deletedgradeitems[$deletedgradeitem->oldid] = $deletedgradeitem;
+        }
+
+        // Combine the results with the existing grade items.
+        $this->gradeitems = $this->gradeitems + $deletedgradeitems;
+
         $this->cms = get_fast_modinfo($this->courseid);
         $this->useridfield = 'userid';
 
@@ -274,38 +288,39 @@ class tablelog extends \table_sql implements \renderable {
     /**
      * Builds the sql and param list needed, based on the user selected filters.
      *
+     * @param string $suffix string used to add a unique identifier to the params.
      * @return array containing sql to use and an array of params.
      */
-    protected function get_filters_sql_and_params() {
+    protected function get_filters_sql_and_params($suffix = '') {
         global $DB;
 
         $coursecontext = $this->context;
-        $filter = 'gi.courseid = :courseid';
+        $filter = 'gi.courseid = :courseid' . $suffix;
         $params = array(
-            'courseid' => $coursecontext->instanceid,
+            'courseid' . $suffix => $coursecontext->instanceid,
         );
 
         if (!empty($this->filters->itemid)) {
-            $filter .= ' AND ggh.itemid = :itemid';
-            $params['itemid'] = $this->filters->itemid;
+            $filter .= ' AND ggh.itemid = :itemid' . $suffix;
+            $params['itemid' . $suffix] = $this->filters->itemid;
         }
         if (!empty($this->filters->userids)) {
             $list = explode(',', $this->filters->userids);
-            list($insql, $plist) = $DB->get_in_or_equal($list, SQL_PARAMS_NAMED);
+            list($insql, $plist) = $DB->get_in_or_equal($list, SQL_PARAMS_NAMED, $suffix);
             $filter .= " AND ggh.userid $insql";
             $params += $plist;
         }
         if (!empty($this->filters->datefrom)) {
-            $filter .= " AND ggh.timemodified >= :datefrom";
-            $params += array('datefrom' => $this->filters->datefrom);
+            $filter .= " AND ggh.timemodified >= :datefrom" . $suffix;
+            $params += array('datefrom' . $suffix => $this->filters->datefrom);
         }
         if (!empty($this->filters->datetill)) {
-            $filter .= " AND ggh.timemodified <= :datetill";
-            $params += array('datetill' => $this->filters->datetill);
+            $filter .= " AND ggh.timemodified <= :datetill" . $suffix;
+            $params += array('datetill' . $suffix => $this->filters->datetill);
         }
         if (!empty($this->filters->grader)) {
-            $filter .= " AND ggh.usermodified = :grader";
-            $params += array('grader' => $this->filters->grader);
+            $filter .= " AND ggh.usermodified = :grader" . $suffix;
+            $params += array('grader' . $suffix => $this->filters->grader);
         }
 
         return array($filter, $params);
@@ -364,12 +379,23 @@ class tablelog extends \table_sql implements \renderable {
 
         list($where, $params) = $this->get_filters_sql_and_params();
 
+        // Get the $where and $params for the deleted items.
+        list($deletedwhere, $deletedparams) = $this->get_filters_sql_and_params('deleted');
+
         $sql =  "SELECT $select
                    FROM {grade_grades_history} ggh
               LEFT JOIN {grade_items} gi ON gi.id = ggh.itemid
                    JOIN {user} u ON u.id = ggh.userid
                    JOIN {user} ug ON ug.id = ggh.usermodified
-                  WHERE $where";
+                  WHERE $where
+                  UNION
+                 SELECT $select
+                   FROM {grade_grades_history} ggh
+              LEFT JOIN {grade_items_history} gi ON gi.oldid = ggh.itemid
+                   JOIN {user} u ON u.id = ggh.userid
+                   JOIN {user} ug ON ug.id = ggh.usermodified
+                  WHERE $deletedwhere";
+
 
         // As prevgrade is a dynamic field, we need to wrap the query. This is the only filtering
         // that should be defined outside the method self::get_filters_sql_and_params().
@@ -386,7 +412,7 @@ class tablelog extends \table_sql implements \renderable {
             $sql .= " ORDER BY " . $this->get_sql_sort();
         }
 
-        return array($sql, $params);
+        return array($sql, $params + $deletedparams);
     }
 
     /**

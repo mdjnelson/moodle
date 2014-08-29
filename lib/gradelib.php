@@ -29,6 +29,7 @@ require_once($CFG->libdir . '/grade/constants.php');
 
 require_once($CFG->libdir . '/grade/grade_category.php');
 require_once($CFG->libdir . '/grade/grade_item.php');
+require_once($CFG->libdir . '/grade/grade_item_history.php');
 require_once($CFG->libdir . '/grade/grade_grade.php');
 require_once($CFG->libdir . '/grade/grade_scale.php');
 require_once($CFG->libdir . '/grade/grade_outcome.php');

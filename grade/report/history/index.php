@@ -48,9 +48,15 @@ if (!isset($USER->grade_last_report)) {
 }
 $USER->grade_last_report[$course->id] = 'history';
 
+// Get all the current grade items in the course.
 $select = "itemtype != 'course' AND itemname != '' AND courseid = :courseid";
 $itemids = $DB->get_records_select_menu('grade_items', $select, array('courseid' => $course->id), 'itemname ASC', 'id, itemname');
-$itemids = array(0 => get_string('allgradeitems', 'gradereport_history')) + $itemids;
+// Get all the deleted grade items that were in the course.
+$deletedselect = $select . ' AND action = :action';
+$deleteditems = $DB->get_records_select_menu('grade_items_history', $deletedselect, array('action' => GRADE_HISTORY_DELETE,
+    'courseid' => $course->id), 'itemname ASC', 'oldid, itemname');
+// Combine the current and deleted grade items.
+$itemids = array(0 => get_string('allgradeitems', 'gradereport_history')) + $itemids + $deleteditems;
 
 $output = $PAGE->get_renderer('gradereport_history');
 $graders = \gradereport_history\helper::get_graders($course->id);
