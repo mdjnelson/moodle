@@ -78,10 +78,6 @@ if (!empty($ruleid)) {
 $mform = new tool_monitor\rule_form(null, array('eventlist' => $eventlist, 'pluginlist' => $pluginlist, 'rule' => $rule,
         'courseid' => $courseid));
 
-echo $OUTPUT->header();
-$mform->set_data($rule);
-$mform->display();
-
 if ($mformdata = $mform->get_data()) {
     $rule = \tool_monitor\rule_manager::clean_ruledata_form($mformdata);
 
@@ -92,5 +88,10 @@ if ($mformdata = $mform->get_data()) {
     }
 
     redirect($manageurl);
+} else {
+    echo $OUTPUT->header();
+    $mform->set_data($rule);
+    $mform->display();
+    echo $OUTPUT->footer();
 }
-echo $OUTPUT->footer();
+
