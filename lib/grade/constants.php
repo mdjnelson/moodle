@@ -253,3 +253,18 @@ define('GRADE_NAVMETHOD_TABS', 1);
  * GRADE_NAVMETHOD_TABS - Display both a drop down and tabs to allow navigation within the gradebook
  */
 define('GRADE_NAVMETHOD_COMBO', 2);
+
+/**
+ * GRADE_CREATED_EVENT - Used to flag a grade that a grade_created event needs to be triggered.
+ */
+define('GRADE_EVENT_CREATED', 1);
+
+/**
+ * GRADE_UPDATED_EVENT - Used to flag a grade that a grade_updated event needs to be triggered.
+ */
+define('GRADE_EVENT_UPDATED', 2);
+
+/**
+ * GRADE_DELETED_EVENT - Used to flag a grade that a grade_deleted event needs to be triggered.
+ */
+define('GRADE_EVENT_DELETED', 3);

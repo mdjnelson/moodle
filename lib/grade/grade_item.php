@@ -1722,6 +1722,10 @@ class grade_item extends grade_object {
         // end of hack alert
 
         if (empty($grade->id)) {
+            // We need to trigger an event to say that the grade was created.
+            if (!is_null($grade->finalgrade)) {
+                $grade->triggerevent = GRADE_EVENT_CREATED;
+            }
             $result = (bool)$grade->insert($source);
 
         } else if (grade_floats_different($grade->finalgrade,  $oldgrade->finalgrade)
@@ -1734,6 +1738,14 @@ class grade_item extends grade_object {
                 or $grade->timecreated    != $oldgrade->timecreated  // part of hack above
                 or $grade->timemodified   != $oldgrade->timemodified // part of hack above
                 ) {
+            // We need to trigger an event to say that the grade was created/updated/deleted.
+            if (is_null($oldgrade->finalgrade) && !is_null($grade->finalgrade)) {
+                $grade->triggerevent = GRADE_EVENT_CREATED;
+            } else if (!is_null($oldgrade->finalgrade) && is_null($grade->finalgrade)) {
+                $grade->triggerevent = GRADE_EVENT_DELETED;
+            } else if (grade_floats_different($grade->finalgrade, $oldgrade->finalgrade)) {
+                $grade->triggerevent = GRADE_EVENT_UPDATED;
+            }
             $result = $grade->update($source);
         } else {
             return $result;
