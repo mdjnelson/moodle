@@ -1762,6 +1762,7 @@
         <FIELD NAME="feedbackformat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="format of feedback text"/>
         <FIELD NAME="information" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="optiona information"/>
         <FIELD NAME="informationformat" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="format of information text"/>
+        <FIELD NAME="triggerevent" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If this flag is set, then a grade_* event will be triggered after the grading process has finished"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the time this grade was first created"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="the time this grade was last modified"/>
       </FIELDS>

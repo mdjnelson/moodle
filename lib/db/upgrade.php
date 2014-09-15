@@ -3790,5 +3790,18 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2014082900.02);
     }
 
+    if ($oldversion < 2014091800.01) {
+        // Add a column to the grade_grades table to identify which grades we need to trigger an event for.
+        $table = new xmldb_table('grade_grades');
+        $field = new xmldb_field('triggerevent', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'informationformat');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_main_savepoint(true, 2014091800.01);
+    }
+
     return true;
 }
