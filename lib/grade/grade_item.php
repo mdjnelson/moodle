@@ -1573,12 +1573,21 @@ class grade_item extends grade_object {
             $grade->timemodified = time(); // hack alert - date graded
             $result = (bool)$grade->insert($source);
 
+            // If the grade insert was successful and the final grade was not null then trigger a grade_created event.
+            if ($result && !is_null($grade->finalgrade)) {
+                \core\event\grade_created::create_from_grade($grade)->trigger();
+            }
         } else if (grade_floats_different($grade->finalgrade, $oldgrade->finalgrade)
                 or $grade->feedback       !== $oldgrade->feedback
                 or $grade->feedbackformat != $oldgrade->feedbackformat
                 or ($oldgrade->overridden == 0 and $grade->overridden > 0)) {
             $grade->timemodified = time(); // hack alert - date graded
             $result = $grade->update($source);
+
+            // If the grade update was successful and the actual grade has changed then trigger a grade_updated event.
+            if ($result && grade_floats_different($grade->finalgrade, $oldgrade->finalgrade)) {
+                \core\event\grade_updated::create_from_grade($grade)->trigger();
+            }
         } else {
             // no grade change
             return $result;
@@ -1724,6 +1733,10 @@ class grade_item extends grade_object {
         if (empty($grade->id)) {
             $result = (bool)$grade->insert($source);
 
+            // If the grade insert was successful and the final grade was not null then trigger a grade_created event.
+            if ($result && !is_null($grade->finalgrade)) {
+                \core\event\grade_created::create_from_grade($grade)->trigger();
+            }
         } else if (grade_floats_different($grade->finalgrade,  $oldgrade->finalgrade)
                 or grade_floats_different($grade->rawgrade,    $oldgrade->rawgrade)
                 or grade_floats_different($grade->rawgrademin, $oldgrade->rawgrademin)
@@ -1735,6 +1748,11 @@ class grade_item extends grade_object {
                 or $grade->timemodified   != $oldgrade->timemodified // part of hack above
                 ) {
             $result = $grade->update($source);
+
+            // If the grade update was successful and the actual grade has changed then trigger a grade_updated event.
+            if ($result && grade_floats_different($grade->finalgrade, $oldgrade->finalgrade)) {
+                \core\event\grade_updated::create_from_grade($grade)->trigger();
+            }
         } else {
             return $result;
         }
