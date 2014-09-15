@@ -1383,6 +1383,42 @@ function grade_cron() {
     }
     $rs->close();
 
+    // Get all the grade items we need to trigger an event for.
+    $sql = "SELECT *
+             FROM {grade_grades} gg
+            WHERE triggerevent = :created
+               OR triggerevent = :updated
+               OR triggerevent = :deleted";
+    if ($dbgrades = $DB->get_records_sql($sql, array('created' => GRADE_EVENT_CREATED,
+        'updated' => GRADE_EVENT_UPDATED, 'deleted' => GRADE_EVENT_DELETED))) {
+        foreach ($dbgrades as $dbgrade) {
+            // Create a grade_grade object.
+            $arrgrade = (array) $dbgrade;
+            $grade = new grade_grade($arrgrade);
+            $grade->load_grade_item();
+            // Trigger an event.
+            if ($dbgrade->triggerevent == GRADE_EVENT_CREATED) {
+                // Trigger a grade created event.
+                \core\event\grade_created::create_from_grade($grade)->trigger();
+            } else if ($dbgrade->triggerevent == GRADE_EVENT_UPDATED) {
+                // Trigger a grade updated event.
+                \core\event\grade_updated::create_from_grade($grade)->trigger();
+            } else if ($dbgrade->triggerevent == GRADE_EVENT_DELETED) {
+                // Trigger a grade deleted event.
+                \core\event\grade_deleted::create_from_grade($grade)->trigger();
+            }
+        }
+
+        // Now set all the flags back to 0.
+        $sql = "UPDATE {grade_grades}
+                   SET triggerevent = 0
+                 WHERE triggerevent = :created
+                    OR triggerevent = :updated
+                    OR triggerevent = :deleted";
+        $DB->execute($sql, array('created' => GRADE_EVENT_CREATED, 'updated' => GRADE_EVENT_UPDATED,
+            'deleted' => GRADE_EVENT_DELETED));
+    }
+
     //TODO: do not run this cleanup every cron invocation
     // cleanup history tables
     if (!empty($CFG->gradehistorylifetime)) {  // value in days
