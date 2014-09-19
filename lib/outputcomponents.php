@@ -471,6 +471,36 @@ class help_icon implements renderable {
     }
 }
 
+/**
+ * Data structure representing a custom help icon.
+ *
+ * @copyright 2014 Mark Nelson <markn@moodle.com>
+ * @since Moodle 2.8
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class custom_help_icon implements renderable {
+
+    /**
+     * @var string The title of the help page.
+     */
+    public $title = null;
+
+    /**
+     * @var string The help text we are going to display on the page.
+     */
+    public $text = null;
+
+    /**
+     * Constructor
+     *
+     * @param string $text the text to display
+     * @param string $title the title of the page
+     */
+    public function __construct($text, $title = '') {
+        $this->title = $title;
+        $this->text = $text;
+    }
+}
 
 /**
  * Data structure representing an icon.

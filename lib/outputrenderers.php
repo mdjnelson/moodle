@@ -2210,6 +2210,57 @@ class core_renderer extends renderer_base {
     }
 
     /**
+     * Returns HTML to display a custom help icon.
+     *
+     * Theme developers: DO NOT OVERRIDE! Please override function
+     * {@link core_renderer::render_custom_help_icon()} instead.
+     *
+     * @param string $text the text to display
+     * @param string $title the title of the page
+     * @return string HTML fragment
+     */
+    public function custom_help_icon($text, $title = '') {
+        $icon = new custom_help_icon($text, $title);
+        return $this->render($icon);
+    }
+
+    /**
+     * Implementation of custom help icon rendering.
+     *
+     * @param custom_help_icon $helpicon a custom help icon instance
+     * @return string HTML fragment
+     */
+    protected function render_custom_help_icon(custom_help_icon $helpicon) {
+        global $CFG;
+
+        // Get the help image icon.
+        $src = $this->pix_url('help');
+
+        if (!empty($helpicon->title)) {
+            $title = $helpicon->title;
+        } else {
+            $title = get_string('help');
+        }
+
+        $alt = get_string('helpwiththis');
+
+        $attributes = array('src' => $src, 'alt' => $alt, 'class' => 'iconhelp');
+        $output = html_writer::empty_tag('img', $attributes);
+
+        // Create the link around it - we need https on loginhttps pages.
+        $url = new moodle_url($CFG->httpswwwroot . '/customhelp.php', array('title' => $title, 'text' => $helpicon->text));
+
+        // Note: This title is displayed only if JS is disabled, otherwise the link will have the new ajax tooltip.
+        $title = get_string('helpprefix2', '', trim($title, ". \t"));
+
+        $attributes = array('href' => $url, 'title' => $title, 'aria-haspopup' => 'true', 'target' => '_blank');
+        $output = html_writer::tag('a', $output, $attributes);
+
+        // Now finally do the span.
+        return html_writer::tag('span', $output, array('class' => 'customhelptooltip'));
+    }
+
+    /**
      * Returns HTML to display a scale help icon.
      *
      * @param int $courseid
