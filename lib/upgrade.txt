@@ -13,6 +13,8 @@ information provided here is intended especially for developers.
 * New function cm_info::create($cm) can be used when you need a cm_info
   object, but have a $cm which might only be a standard database record.
 * $CFG->enablegroupmembersonly no longer exists.
+* Added an extra parameter to the function get_formatted_help_string() (default null) which is used to specify
+  additional string parameters.
 
 DEPRECATIONS:
 * completion_info->get_incomplete_criteria() is deprecated and will be removed in Moodle 3.0.
