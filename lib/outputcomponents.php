@@ -445,6 +445,12 @@ class help_icon implements renderable {
     public $linktext = null;
 
     /**
+     * @var string|object|array $a An object, string or number that can be used
+     *      within translation strings
+     */
+    public $a = null;
+
+    /**
      * Constructor
      *
      * @param string $identifier string for help page title,

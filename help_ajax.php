@@ -30,11 +30,17 @@ require_once(__DIR__ . '/config.php');
 $identifier = required_param('identifier', PARAM_STRINGID);
 $component  = required_param('component', PARAM_COMPONENT);
 $lang       = optional_param('lang', 'en', PARAM_LANG);
+$params     = optional_param('stringparams', null, PARAM_RAW);
 
 // We don't actually modify the session here as we have NO_MOODLE_COOKIES set.
 $SESSION->lang = $lang;
 $PAGE->set_url('/help_ajax.php');
 $PAGE->set_context(context_system::instance());
 
-$data = get_formatted_help_string($identifier, $component, true);
+// If we have parameters then we need to decode them before we use them.
+if (!is_null($params)) {
+    $params = json_decode($params);
+}
+
+$data = get_formatted_help_string($identifier, $component, true, $params);
 echo json_encode($data);

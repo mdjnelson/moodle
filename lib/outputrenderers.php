@@ -2154,11 +2154,17 @@ class core_renderer extends renderer_base {
      * @param string $identifier The keyword that defines a help page
      * @param string $component component name
      * @param string|bool $linktext true means use $title as link text, string means link text value
+     * @param string|object|array $a An object, string or number that can be used
+     *      within translation strings
      * @return string HTML fragment
      */
-    public function help_icon($identifier, $component = 'moodle', $linktext = '') {
+    public function help_icon($identifier, $component = 'moodle', $linktext = '', $a = null) {
         $icon = new help_icon($identifier, $component);
         $icon->diag_strings();
+        // Check if we passed any other values to use in the string.
+        if (!is_null($a)) {
+            $icon->a = $a;
+        }
         if ($linktext === true) {
             $icon->linktext = get_string($icon->identifier, $icon->component);
         } else if (!empty($linktext)) {
@@ -2196,8 +2202,14 @@ class core_renderer extends renderer_base {
             $output .= $helpicon->linktext;
         }
 
-        // now create the link around it - we need https on loginhttps pages
-        $url = new moodle_url($CFG->httpswwwroot.'/help.php', array('component' => $helpicon->component, 'identifier' => $helpicon->identifier, 'lang'=>current_language()));
+        // Now create the link around it - we need https on loginhttps pages.
+        $urlparams = array('component' => $helpicon->component,
+            'identifier' => $helpicon->identifier, 'lang' => current_language());
+        if (!is_null($helpicon->a)) {
+            // We need to encode this as it could be an object.
+            $urlparams['stringparams'] = json_encode($helpicon->a);
+        }
+        $url = new moodle_url($CFG->httpswwwroot.'/help.php', $urlparams);
 
         // note: this title is displayed only if JS is disabled, otherwise the link will have the new ajax tooltip
         $title = get_string('helpprefix2', '', trim($title, ". \t"));

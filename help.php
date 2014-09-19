@@ -33,6 +33,7 @@ require_once(dirname(__FILE__) . '/config.php');
 $identifier = required_param('identifier', PARAM_STRINGID);
 $component  = required_param('component', PARAM_COMPONENT);
 $lang       = optional_param('lang', 'en', PARAM_LANG);
+$params     = optional_param('stringparams', null, PARAM_RAW);
 
 // We don't actually modify the session here as we have NO_MOODLE_COOKIES set.
 $SESSION->lang = $lang;
@@ -41,7 +42,12 @@ $PAGE->set_url('/help.php');
 $PAGE->set_pagelayout('popup');
 $PAGE->set_context(context_system::instance());
 
-$data = get_formatted_help_string($identifier, $component, false);
+// If we have parameters then we need to decode them before we use them.
+if (!is_null($params)) {
+    $params = json_decode($params);
+}
+
+$data = get_formatted_help_string($identifier, $component, false, $params);
 echo $OUTPUT->header();
 if (!empty($data->heading)) {
     echo $OUTPUT->heading($data->heading, 1, 'helpheading');
