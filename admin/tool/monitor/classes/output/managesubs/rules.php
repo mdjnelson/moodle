@@ -86,7 +86,16 @@ class rules extends \table_sql implements \renderable {
      * @return string html used to display the column field.
      */
     public function col_name(\tool_monitor\rule $rule) {
-        return $rule->get_name($this->context);
+        global $PAGE;
+
+        $name = $rule->get_name($this->context);
+
+        // Get the details for this rule.
+        $helpicon = new \tool_monitor\output\helpicon\renderable('rule', $rule->id);
+        $renderer = $PAGE->get_renderer('tool_monitor', 'helpicon');
+        $helpicon = $renderer->render($helpicon);
+
+        return $name . $helpicon;
     }
 
     /**
