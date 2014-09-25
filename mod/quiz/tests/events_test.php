@@ -97,8 +97,8 @@ class mod_quiz_events_testcase extends advanced_testcase {
         $sink->close();
 
         // Validate the event.
-        $this->assertCount(1, $events);
-        $event = $events[0];
+        $this->assertCount(2, $events);
+        $event = $events[1];
         $this->assertInstanceOf('\mod_quiz\event\attempt_submitted', $event);
         $this->assertEquals('quiz_attempts', $event->objecttable);
         $this->assertEquals($quizobj->get_context(), $event->get_context());
