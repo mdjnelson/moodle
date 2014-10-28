@@ -29,6 +29,7 @@ $string['allevents'] = 'All events';
 $string['allmodules'] = 'All instances';
 $string['area'] = 'Area';
 $string['areatomonitor'] = 'Area to monitor';
+$string['cachedef_rules'] = 'This stores the list of event monitor rules on the site';
 $string['core'] = 'Core';
 $string['currentsubscriptions'] = 'Your current subscriptions';
 $string['defaultmessagetemplate'] = 'The rule "{rulename}" you have subscribed to has occurred - please find further details at {link}';
@@ -90,4 +91,3 @@ $string['subhelp_help'] = 'This subscription listens for when the event \'{$a->e
 $string['subscribeto'] = 'Subscribe to rule "{$a}"';
 $string['taskcleanevents'] = 'Removes any unnecessary event monitor events';
 $string['unsubscribe'] = 'Unsubscribe';
-

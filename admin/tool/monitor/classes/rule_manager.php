@@ -67,6 +67,10 @@ class rule_manager {
             );
             $event = \tool_monitor\event\rule_created::create($params);
             $event->trigger();
+
+            // Let's invalidate the cache.
+            $cache = \cache::make('tool_monitor', 'rules');
+            $cache->delete($courseid);
         }
 
         return new rule($ruledata);
@@ -143,6 +147,10 @@ class rule_manager {
             $event = \tool_monitor\event\rule_deleted::create($params);
             $event->add_record_snapshot('tool_monitor_rules', $rule);
             $event->trigger();
+
+            // Let's invalidate the cache.
+            $cache = \cache::make('tool_monitor', 'rules');
+            $cache->delete($courseid);
         }
 
         return $success;
@@ -205,6 +213,10 @@ class rule_manager {
             );
             $event = \tool_monitor\event\rule_updated::create($params);
             $event->trigger();
+
+            // Let's invalidate the cache.
+            $cache = \cache::make('tool_monitor', 'rules');
+            $cache->delete($courseid);
         }
 
         return $success;
@@ -224,6 +236,51 @@ class rule_manager {
         $select = "courseid = ? OR courseid = ?";
         return self::get_instances($DB->get_records_select('tool_monitor_rules', $select, array(0, $courseid), null, '*',
                 $limitfrom, $limitto));
+    }
+
+    /**
+     * Get all the event names for a course id.
+     *
+     * @param int $courseid course id of the rule.
+     *
+     * @return array List of the events applicable for a course id, also includes system wide rules.
+     */
+    public static function get_all_event_names_by_courseid($courseid) {
+        global $DB;
+
+        // Check if we can return these from cache.
+        $cache = \cache::make('tool_monitor', 'rules');
+
+        $siterules = $cache->get(0);
+        // If we do not have the site rules in the cache then return them from the DB.
+        if ($siterules === false) {
+            $dbsiterules = $DB->get_records('tool_monitor_rules', array('courseid' => 0), '', 'id, eventname');
+            // Set the array for the cache.
+            $siterules = array();
+            foreach ($dbsiterules as $rule) {
+                $siterules[$rule->eventname] = $rule->eventname;
+            }
+            $cache->set(0, $siterules);
+        }
+
+        // If the course id is empty, then we are viewing the site rules only, so no need to return the site rules.
+        if (empty($courseid)) {
+            return $siterules;
+        }
+
+        $courserules = $cache->get($courseid);
+        // If we do not have the course rules in the cache then return them from the DB.
+        if ($courserules === false) {
+            $dbcourserules = $DB->get_records('tool_monitor_rules', array('courseid' => $courseid), '', 'id, eventname');
+            // Set the array for the cache.
+            $courserules = array();
+            foreach ($dbcourserules as $rule) {
+                $courserules[$rule->eventname] = $rule->eventname;
+            }
+            $cache->set($courseid, $courserules);
+        }
+
+        return $courserules + $siterules;
     }
 
     /**
