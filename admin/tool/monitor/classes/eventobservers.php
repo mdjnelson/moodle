@@ -221,6 +221,15 @@ class eventobservers {
 
         // Flush the buffer to the db.
         $events = $this->buffer;
+
+        // Remove any events we do not need.
+        foreach ($events as $key => $event) {
+            $applicableevents = \tool_monitor\rule_manager::get_all_event_names_by_courseid($event->courseid);
+            if (!isset($applicableevents[$event->eventname])) {
+                unset($events[$key]);
+            }
+        }
+
         $DB->insert_records('tool_monitor_events', $events); // Insert the whole chunk into the database.
         $this->buffer = array();
         $this->count = 0;
