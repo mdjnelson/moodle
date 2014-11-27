@@ -818,10 +818,14 @@ class assign_grading_table extends table_sql implements renderable {
             $grade .= $link . $separator;
         }
 
-        $grade .= $this->display_grade($row->grade,
-                                       $this->quickgrading && !$gradingdisabled,
-                                       $row->userid,
-                                       $row->timemarked);
+        // Only display the grade if there is an entry in the gradebook.
+        $gradebookgrade = $this->get_gradebook_data_for_user($row->userid);
+        if ($gradebookgrade) {
+            $grade .= $this->display_grade($row->grade,
+                                           $this->quickgrading && !$gradingdisabled,
+                                           $row->userid,
+                                           $row->timemarked);
+        }
 
         return $grade;
     }
