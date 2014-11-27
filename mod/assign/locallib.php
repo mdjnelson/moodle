@@ -49,6 +49,10 @@ define('ASSIGN_ATTEMPT_REOPEN_METHOD_UNTILPASS', 'untilpass');
 // Special value means allow unlimited attempts.
 define('ASSIGN_UNLIMITED_ATTEMPTS', -1);
 
+// Grading states.
+define('ASSIGN_GRADING_STATUS_GRADED', 'graded');
+define('ASSIGN_GRADING_STATUS_NOT_GRADED', 'notgraded');
+
 // Marking workflow states.
 define('ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED', 'notmarked');
 define('ASSIGN_MARKING_WORKFLOW_STATE_INMARKING', 'inmarking');
@@ -1904,8 +1908,9 @@ class assign {
         }
 
         if ($result) {
-            $this->gradebook_item_update(null, $grade);
-            \mod_assign\event\submission_graded::create_from_grade($this, $grade)->trigger();
+            if ($this->gradebook_item_update(null, $grade)) {
+                \mod_assign\event\submission_graded::create_from_grade($this, $grade)->trigger();
+            }
         }
         return $result;
     }
@@ -2941,8 +2946,10 @@ class assign {
         if ($this->can_view_submission($userid)) {
             $gradelocked = ($flags && $flags->locked) || $this->grading_disabled($userid);
             $extensionduedate = null;
+            $workflowstate = '';
             if ($flags) {
                 $extensionduedate = $flags->extensionduedate;
+                $workflowstate = $flags->workflowstate;
             }
             $showedit = $this->submissions_open($userid) && ($this->is_any_submission_plugin_enabled());
             $viewfullnames = has_capability('moodle/site:viewfullnames', $this->get_course_context());
@@ -2973,7 +2980,9 @@ class assign {
                                                              $this->is_blind_marking(),
                                                              '',
                                                              $instance->attemptreopenmethod,
-                                                             $instance->maxattempts);
+                                                             $instance->maxattempts,
+                                                             self::get_grading_status($this->get_instance()->markingworkflow,
+                                                                 $workflowstate, $grade));
             $o .= $this->get_renderer()->render($submissionstatus);
         }
 
@@ -3287,7 +3296,6 @@ class assign {
         require_once($CFG->dirroot . '/mod/assign/gradeform.php');
 
         // Only load this if it is.
-
         $o .= $this->view_grading_table();
 
         $o .= $this->view_footer();
@@ -3828,11 +3836,15 @@ class assign {
             $showsubmit = ($showsubmit && $this->show_submit_button($submission, $teamsubmission));
 
             $extensionduedate = null;
+            $workflowstate = '';
             if ($flags) {
                 $extensionduedate = $flags->extensionduedate;
+                $workflowstate = $flags->workflowstate;
             }
             $viewfullnames = has_capability('moodle/site:viewfullnames', $this->get_course_context());
 
+            $gradingstatus = self::get_grading_status($this->get_instance()->markingworkflow,
+                $workflowstate, $grade);
             $submissionstatus = new assign_submission_status($instance->allowsubmissionsfromdate,
                                                               $instance->alwaysshowdescription,
                                                               $submission,
@@ -3859,7 +3871,8 @@ class assign {
                                                               $this->is_blind_marking(),
                                                               $gradingcontrollerpreview,
                                                               $instance->attemptreopenmethod,
-                                                              $instance->maxattempts);
+                                                              $instance->maxattempts,
+                                                              $gradingstatus);
             if (has_capability('mod/assign:submit', $this->get_context(), $user)) {
                 $o .= $this->get_renderer()->render($submissionstatus);
             }
@@ -3892,10 +3905,7 @@ class assign {
                 }
             }
 
-            $gradereleased = true;
-            if ($this->get_instance()->markingworkflow &&
-                (empty($grade) || $flags->workflowstate != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED)) {
-                $gradereleased = false;
+            if ($gradingstatus != ASSIGN_GRADING_STATUS_GRADED || $gradingstatus != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
                 $emptyplugins = true; // Don't show feedback plugins until released either.
             }
 
@@ -4232,10 +4242,19 @@ class assign {
         if ($this->is_blind_marking()) {
             return false;
         }
-        // If marking workflow is enabled and grade is not released then don't send to gradebook yet.
-        if ($this->get_instance()->markingworkflow && !empty($grade)) {
-            $flags = $this->get_user_flags($grade->userid, false);
-            if (empty($flags->workflowstate) || $flags->workflowstate != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
+
+        // If marking workflow is enabled and grade is not released then remove any grade that may exist in the gradebook.
+        if ($this->get_instance()->markingworkflow) {
+            $workflowstate = '';
+            if ($flags = $this->get_user_flags($grade->userid, false)) {
+                $workflowstate = $flags->workflowstate;
+            }
+            $gradingstatus = self::get_grading_status($this->get_instance()->markingworkflow, $workflowstate, $grade);
+            if ($gradingstatus != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
+                // Remove the grade (if it exists) from the gradebook as it is not 'final'.
+                grade_update('mod/assign', $this->get_instance()->course, 'mod', 'assign', $this->get_instance()->id,
+                    0, $gradebook, array('deleted' => 1));
+
                 return false;
             }
         }
@@ -4267,7 +4286,7 @@ class assign {
         $assign->cmidnumber = $this->get_course_module()->idnumber;
         // Set assign gradebook feedback plugin status (enabled and visible).
         $assign->gradefeedbackenabled = $this->is_gradebook_feedback_enabled();
-        return assign_grade_item_update($assign, $gradebookgrade);
+        return assign_grade_item_update($assign, $gradebookgrade) == GRADE_UPDATE_OK;
     }
 
     /**
@@ -7169,6 +7188,27 @@ class assign {
 
         // Gradebook feedback plugin is either not visible/enabled.
         return false;
+    }
+
+    /**
+     * Returns the grading status.
+     *
+     * @param bool $markingworkflow true if we are using a marking workflow, false otherwise
+     * @param string $workflowstate the workflow state
+     * @param stdClass $grade the grade record
+     * @return string returns the grading status
+     */
+    public static function get_grading_status($markingworkflow, $workflowstate, $grade) {
+        if ($markingworkflow) {
+            if (empty($workflowstate)) {
+                return ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED;
+            }
+            return $workflowstate;
+        } else if (!empty($grade) && $grade->grade !== null && $grade->grade >= 0) {
+            return ASSIGN_GRADING_STATUS_GRADED;
+        } else {
+            return ASSIGN_GRADING_STATUS_NOT_GRADED;
+        }
     }
 }
 
