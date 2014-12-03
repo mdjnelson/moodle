@@ -1285,7 +1285,7 @@ class mod_assign_locallib_testcase extends mod_assign_base_testcase {
         // Should have feedback but no grade.
         $this->setUser($this->students[0]);
         $output = $assign->view_student_summary($this->students[0], true);
-        $this->assertNotEquals(false, strpos($output, 'Feedback'), 'Show feedback even if there is no grade');
+        $this->assertEquals(false, strpos($output, 'Feedback'), 'Do not show feedback when there is no grade');
         $this->assertEquals(false, strpos($output, 'Grade'), 'Do not show grade when there is no grade.');
         $this->assertEquals(false, strpos($output, 'Graded on'), 'Do not show graded date when there is no grade.');
 

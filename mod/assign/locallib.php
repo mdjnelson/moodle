@@ -4242,9 +4242,12 @@ class assign {
             $gradingstatus = self::get_grading_status(true, $workflowstate, $grade);
             if ($gradingstatus != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
                 // Remove the grade (if it exists) from the gradebook as it is not 'final'.
-                grade_update('mod/assign', $this->get_instance()->course, 'mod', 'assign', $this->get_instance()->id,
-                    0, $gradebook, array('deleted' => 1));
-
+                $item = $this->get_grade_item();
+                if ($grades = grade_grade::fetch_all(array('userid' => $grade->userid, 'itemid' => $item->id))) {
+                    foreach ($grades as $grade) {
+                        $grade->delete('mod/assign');
+                    }
+                }
                 return false;
             }
         }
