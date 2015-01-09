@@ -867,11 +867,14 @@ class assign_grading_table extends table_sql implements renderable {
     public function col_timesubmitted(stdClass $row) {
         $o = '-';
 
-        $group = false;
-        $submission = false;
-        $this->get_group_and_submission($row->id, $group, $submission, -1);
-        if ($group && $submission && $submission->timemodified) {
-            $o = userdate($submission->timemodified);
+        if ($this->assignment->get_instance()->teamsubmission) {
+            $group = false;
+            $submission = false;
+            $this->get_group_and_submission($row->id, $group, $submission, -1);
+
+            if ($submission && $submission->status != ASSIGN_SUBMISSION_STATUS_NEW) {
+                $o = userdate($submission->timemodified);
+            }
         } else if ($row->timesubmitted) {
             $o = userdate($row->timesubmitted);
         }
@@ -895,12 +898,18 @@ class assign_grading_table extends table_sql implements renderable {
             $due = $row->extensionduedate;
         }
 
-        $group = false;
-        $submission = false;
-        $this->get_group_and_submission($row->id, $group, $submission, -1);
-        if ($group && $submission) {
-            $timesubmitted = $submission->timemodified;
-            $status = $submission->status;
+        if ($this->assignment->get_instance()->teamsubmission) {
+            $group = false;
+            $submission = false;
+            $this->get_group_and_submission($row->id, $group, $submission, -1);
+
+            if ($submission && $submission->status != ASSIGN_SUBMISSION_STATUS_NEW) {
+                $timesubmitted = $submission->timemodified;
+                $status = $submission->status;
+            } else {
+                $timesubmitted = '';
+                $status = '';
+            }
         } else {
             $timesubmitted = $row->timesubmitted;
             $status = $row->status;
