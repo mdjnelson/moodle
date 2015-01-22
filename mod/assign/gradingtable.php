@@ -149,19 +149,28 @@ class assign_grading_table extends table_sql implements renderable {
         $fields .= 'uf.workflowstate as workflowstate, ';
         $fields .= 'uf.allocatedmarker as allocatedmarker ';
 
-        $from = '{user} u
-                         LEFT JOIN {assign_submission} s ON
-                            u.id = s.userid AND
-                            s.assignment = :assignmentid1 AND
-                            s.latest = 1
-                         LEFT JOIN {assign_grades} g ON
-                            u.id = g.userid AND
-                            g.assignment = :assignmentid2 AND
-                            g.attemptnumber = s.attemptnumber
-                         LEFT JOIN {assign_user_flags} uf ON u.id = uf.userid AND uf.assignment = :assignmentid3';
+        if ($this->assignment->get_instance()->teamsubmission) {
+            $from = '{user} u
+               LEFT JOIN {assign_submission} s
+                      ON s.userid = 0
+                     AND s.groupid = 0
+                     AND s.assignment = :assignmentid1
+                     AND s.latest = 1 ';
+        } else {
+            $from = '{user} u
+               LEFT JOIN {assign_submission} s
+                      ON u.id = s.userid
+                     AND s.assignment = :assignmentid1
+                     AND s.latest = 1 ';
+        }
 
-        $userparams = array();
-        $userindex = 0;
+        $from .= 'LEFT JOIN {assign_grades} g
+                         ON u.id = g.userid
+                        AND g.assignment = :assignmentid2
+                        AND g.attemptnumber = s.attemptnumber
+                  LEFT JOIN {assign_user_flags} uf
+                         ON u.id = uf.userid
+                        AND uf.assignment = :assignmentid3';
 
         list($userwhere, $userparams) = $DB->get_in_or_equal($users, SQL_PARAMS_NAMED, 'user');
         $where = 'u.id ' . $userwhere;
