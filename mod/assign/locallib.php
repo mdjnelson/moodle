@@ -4328,6 +4328,7 @@ class assign {
                 $this->get_grading_status($grade->userid) != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
             // Remove the grade (if it exists) from the gradebook as it is not 'final'.
             $grade->grade = -1;
+            $grade->feedbacktext = '';
         }
 
         if ($submission != null) {
@@ -4353,6 +4354,7 @@ class assign {
         if ($this->grading_disabled($gradebookgrade['userid'])) {
             return false;
         }
+
         $assign = clone $this->get_instance();
         $assign->cmidnumber = $this->get_course_module()->idnumber;
         // Set assign gradebook feedback plugin status (enabled and visible).
