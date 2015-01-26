@@ -616,5 +616,38 @@ function xmldb_assign_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014122600, 'assign');
     }
 
+    if ($oldversion < 2015012900) {
+        require_once($CFG->dirroot . '/mod/assign/lib.php');
+        require_once($CFG->dirroot . '/mod/assign/locallib.php');
+
+        // Go through all the submissions for assignments using marking workflow and remove
+        // any feedback for assignments where the workflow state is not set to released.
+        $sql = "SELECT s.id as subid, s.userid, uf.workflowstate, cm.id as cmidnumber, a.*
+                  FROM {assign_submission} s
+             LEFT JOIN {assign_user_flags} uf
+                    ON uf.userid = s.userid
+            INNER JOIN {assign} a
+                    ON a.id = s.assignment
+            INNER JOIN {course_modules} cm
+                    ON cm.instance = a.id
+            INNER JOIN {modules} m
+                    ON m.id = cm.module
+                 WHERE a.markingworkflow = :markingworkflow
+                   AND uf.assignment = a.id
+                   AND m.name = :modulename
+                   AND uf.workflowstate != :releasedstate";
+        if ($submissions = $DB->get_records_sql($sql, array('markingworkflow' => 1, 'modulename' => 'assign',
+            'releasedstate' => ASSIGN_MARKING_WORKFLOW_STATE_RELEASED))) {
+            foreach ($submissions as $submission) {
+                $grade = new stdClass();
+                $grade->userid = $submission->userid;
+                $grade->feedback = '';
+                assign_grade_item_update($submission, $grade);
+            }
+        }
+
+        upgrade_mod_savepoint(true, 2015012900, 'assign');
+    }
+
     return true;
 }
