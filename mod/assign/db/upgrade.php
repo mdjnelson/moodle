@@ -616,5 +616,42 @@ function xmldb_assign_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014122600, 'assign');
     }
 
+    if ($oldversion < 2015020100) {
+        require_once($CFG->dirroot . '/mod/assign/lib.php');
+        require_once($CFG->dirroot . '/mod/assign/locallib.php');
+
+        // Go through all the assignments that are using a marking workflow.
+        if ($assigns = $DB->get_records('assign', array('markingworkflow' => 1))) {
+            foreach ($assigns as $assign) {
+                // Get all the users with feedback comments that do not have their marking workflow state as 'released'.
+                $sql = "SELECT ac.id, ag.userid, uf.workflowstate
+                          FROM {assignfeedback_comments} ac
+                    INNER JOIN {assign_grades} ag
+                            ON ac.grade = ag.id
+                     LEFT JOIN {assign_user_flags} uf
+                            ON ag.userid = uf.userid
+                         WHERE ac.assignment = :assignid
+                           AND uf.assignment = :assignid2
+                           AND uf.workflowstate != :released";
+                if ($users = $DB->get_records_sql($sql, array('assignid' => $assign->id, 'assignid2' => $assign->id,
+                        'released' => ASSIGN_MARKING_WORKFLOW_STATE_RELEASED))) {
+                    // Get the cmidnumber for the assignment as it's required in assign_grade_item_update().
+                    $mod = get_coursemodule_from_instance('assign', $assign->id, $assign->course);
+                    $cm = context_module::instance($mod->id);
+                    $assign->cmidnumber = $cm->id;
+                    // Loop through the users and remove the feedback from the gradebook that should not be there.
+                    foreach ($users as $user) {
+                        $grade = new stdClass();
+                        $grade->userid = $user->userid;
+                        $grade->feedback = '';
+                        assign_grade_item_update($assign, $grade);
+                    }
+                }
+            }
+        }
+
+        upgrade_mod_savepoint(true, 2015020100, 'assign');
+    }
+
     return true;
 }
