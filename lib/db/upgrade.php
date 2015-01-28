@@ -4124,22 +4124,6 @@ function xmldb_main_upgrade($oldversion) {
 
     }
 
-    if ($oldversion < 2015012600.00) {
-
-        // If the site is using internal and external storage, or just external
-        // storage, and the external path specified is empty we change the setting
-        // to internal only. That is how the backup code is handling this
-        // misconfiguration.
-        $storage = (int) get_config('backup_auto_storage', 'backup');
-        $folder = get_config('backup_auto_destination', 'backup');
-        if ($storage !== 0 && empty($folder)) {
-            set_config('backup_auto_storage', 0, 'backup');
-        }
-
-        // Main savepoint reached.
-        upgrade_main_savepoint(true, 2015012600.00);
-    }
-
     if ($oldversion < 2015012600.01) {
 
         // Convert calendar_lookahead to nearest new value.
@@ -4161,5 +4145,22 @@ function xmldb_main_upgrade($oldversion) {
         // Main savepoint reached.
         upgrade_main_savepoint(true, 2015012600.01);
     }
+
+    if ($oldversion < 2015012600.02) {
+
+        // If the site is using internal and external storage, or just external
+        // storage, and the external path specified is empty we change the setting
+        // to internal only. That is how the backup code is handling this
+        // misconfiguration.
+        $storage = get_config('backup', 'backup_auto_storage');
+        $folder = get_config('backup', 'backup_auto_destination');
+        if ($storage !== 0 && empty($folder)) {
+            set_config('backup_auto_storage', 0, 'backup');
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2015012600.02);
+    }
+
     return true;
 }
