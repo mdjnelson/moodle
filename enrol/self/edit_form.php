@@ -38,7 +38,8 @@ class enrol_self_edit_form extends moodleform {
 
         $mform->addElement('header', 'header', get_string('pluginname', 'enrol_self'));
 
-        $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'));
+        $nameattribs = array('size' => '20', 'maxlength' => '255');
+        $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'), $nameattribs);
         $mform->setType('name', PARAM_TEXT);
 
         $options = array(ENROL_INSTANCE_ENABLED  => get_string('yes'),
@@ -51,7 +52,8 @@ class enrol_self_edit_form extends moodleform {
         $mform->addHelpButton('customint6', 'newenrols', 'enrol_self');
         $mform->disabledIf('customint6', 'status', 'eq', ENROL_INSTANCE_DISABLED);
 
-        $mform->addElement('passwordunmask', 'password', get_string('password', 'enrol_self'));
+        $passattribs = array('size' => '20', 'maxlength' => '50');
+        $mform->addElement('passwordunmask', 'password', get_string('password', 'enrol_self'), $passattribs);
         $mform->addHelpButton('password', 'password', 'enrol_self');
         if (empty($instance->id) and $plugin->get_config('requirepassword')) {
             $mform->addRule('password', get_string('required'), 'required', null, 'client');
