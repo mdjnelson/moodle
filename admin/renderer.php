@@ -1398,7 +1398,7 @@ class core_admin_renderer extends plugin_renderer_base {
      * @return string HTML to output.
      */
     public function environment_check_table($result, $environment_results) {
-        global $CFG;
+        global $DB, $CFG;
 
         // Table headers
         $servertable = new html_table();//table for server checks
@@ -1442,16 +1442,25 @@ class core_admin_renderer extends plugin_renderer_base {
                 $error_code = $environment_result->getErrorCode();
                 // Process Report field
                 $rec = new stdClass();
-                // Something has gone wrong at parsing time
+
+                // Check if there is an error code.
                 if ($error_code) {
-                    $stringtouse = 'environmentxmlerror';
-                    $rec->error_code = $error_code;
                     $status = get_string('error');
                     $errorline = true;
-                    $continue = false;
-                }
-
-                if ($continue) {
+                    if ($error_code == DB_STORAGE_ENGINE_NOT_SUPPORTED) {
+                        $rec->storageengine = $DB->get_dbengine();
+                        // Check if we are performing a fresh install.
+                        if (!core_tables_exist()) {
+                            $stringtouse = 'cannotinstallusingstorageengine';
+                        } else { // Ok, must be doing an upgrade.
+                            $stringtouse = 'cannotupgradeusingstorageengine';
+                        }
+                    } else { // Something has gone wrong at parsing time.
+                        $stringtouse = 'environmentxmlerror';
+                        $rec->error_code = $error_code;
+                        $continue = false;
+                    }
+                } else {
                     if ($rec->needed = $environment_result->getNeededVersion()) {
                         // We are comparing versions
                         $rec->current = $environment_result->getCurrentVersion();

@@ -75,6 +75,9 @@ defined('MOODLE_INTERNAL') || die();
     /** XML Processing Error */
     define('INCORRECT_FEEDBACK_FOR_OPTIONAL',   17);
 
+    // Define database errors.
+    define('DB_STORAGE_ENGINE_NOT_SUPPORTED', 18);
+
 /// Define algorithm used to select the xml file
     /** To select the newer file available to perform checks */
     define('ENV_SELECT_NEWER',                   0);
@@ -132,7 +135,8 @@ function check_moodle_environment($version, $env_select = ENV_SELECT_NEWER) {
  * @return array errors
  */
 function environment_get_errors($environment_results) {
-    global $CFG;
+    global $DB;
+
     $errors = array();
 
     // Iterate over each environment_result
@@ -142,62 +146,69 @@ function environment_get_errors($environment_results) {
         $status = $environment_result->getStatus();
         $error_code = $environment_result->getErrorCode();
 
-        $a = new stdClass();
+        $rec = new stdClass();
         if ($error_code) {
-            $a->error_code = $error_code;
-            $errors[] = array($info, get_string('environmentxmlerror', 'admin', $a));
-            return $errors;
-        }
-
-        /// Calculate the status value
-        if ($environment_result->getBypassStr() != '') {
-            // not interesting
-            continue;
-        } else if ($environment_result->getRestrictStr() != '') {
-            // error
+            if ($error_code == DB_STORAGE_ENGINE_NOT_SUPPORTED) {
+                $rec->storageengine = $DB->get_dbengine();
+                // Check if we are performing a fresh install.
+                if (!core_tables_exist()) {
+                    $stringtouse = 'cannotinstallusingstorageengine';
+                } else { // Ok, must be doing an upgrade.
+                    $stringtouse = 'cannotupgradeusingstorageengine';
+                }
+            } else { // XML parsing error.
+                $rec->error_code = $error_code;
+                $errors[] = array($info, get_string('environmentxmlerror', 'admin', $rec));
+                return $errors;
+            }
         } else {
-            if ($status) {
-                // ok
+            // Skip the information we do not need to display.
+            if ($environment_result->getBypassStr() != '') {
+                // Not interesting.
                 continue;
+            } else if ($environment_result->getRestrictStr() != '') {
+                // Error.
             } else {
-                if ($environment_result->getLevel() == 'optional') {
-                    // just a warning
+                if ($status) {
+                    // Ok.
                     continue;
                 } else {
-                    // error
+                    if ($environment_result->getLevel() == 'optional') {
+                        // Just a warning.
+                        continue;
+                    }
                 }
             }
-        }
 
-        // We are comparing versions
-        $rec = new stdClass();
-        if ($rec->needed = $environment_result->getNeededVersion()) {
-            $rec->current = $environment_result->getCurrentVersion();
-            if ($environment_result->getLevel() == 'required') {
-                $stringtouse = 'environmentrequireversion';
+            // We are comparing versions.
+            if ($rec->needed = $environment_result->getNeededVersion()) {
+                $rec->current = $environment_result->getCurrentVersion();
+                if ($environment_result->getLevel() == 'required') {
+                    $stringtouse = 'environmentrequireversion';
+                } else {
+                    $stringtouse = 'environmentrecommendversion';
+                }
+            // We are checking installed & enabled things.
+            } else if ($environment_result->getPart() == 'custom_check') {
+                if ($environment_result->getLevel() == 'required') {
+                    $stringtouse = 'environmentrequirecustomcheck';
+                } else {
+                    $stringtouse = 'environmentrecommendcustomcheck';
+                }
+            } else if ($environment_result->getPart() == 'php_setting') {
+                if ($status) {
+                    $stringtouse = 'environmentsettingok';
+                } else if ($environment_result->getLevel() == 'required') {
+                    $stringtouse = 'environmentmustfixsetting';
+                } else {
+                    $stringtouse = 'environmentshouldfixsetting';
+                }
             } else {
-                $stringtouse = 'environmentrecommendversion';
-            }
-        // We are checking installed & enabled things
-        } else if ($environment_result->getPart() == 'custom_check') {
-            if ($environment_result->getLevel() == 'required') {
-                $stringtouse = 'environmentrequirecustomcheck';
-            } else {
-                $stringtouse = 'environmentrecommendcustomcheck';
-            }
-        } else if ($environment_result->getPart() == 'php_setting') {
-            if ($status) {
-                $stringtouse = 'environmentsettingok';
-            } else if ($environment_result->getLevel() == 'required') {
-                $stringtouse = 'environmentmustfixsetting';
-            } else {
-                $stringtouse = 'environmentshouldfixsetting';
-            }
-        } else {
-            if ($environment_result->getLevel() == 'required') {
-                $stringtouse = 'environmentrequireinstall';
-            } else {
-                $stringtouse = 'environmentrecommendinstall';
+                if ($environment_result->getLevel() == 'required') {
+                    $stringtouse = 'environmentrequireinstall';
+                } else {
+                    $stringtouse = 'environmentrecommendinstall';
+                }
             }
         }
         $report = get_string($stringtouse, 'admin', $rec);
@@ -980,8 +991,7 @@ function environment_check_unicode($version, $env_select) {
  * @return object results encapsulated in one environment_result object
  */
 function environment_check_database($version, $env_select) {
-
-    global $DB;
+    global $CFG, $DB;
 
     $result = new environment_results('database');
 
@@ -1054,10 +1064,33 @@ function environment_check_database($version, $env_select) {
     } else {
         $result->setStatus(false);
     }
+
     $result->setLevel($level);
     $result->setCurrentVersion($current_version);
     $result->setNeededVersion($needed_version);
     $result->setInfo($current_vendor . ' (' . $dbinfo['description'] . ')');
+
+    // Check if MySQL is the DB family (this will also be the same for MariaDB).
+    if ($DB->get_dbfamily() == 'mysql') {
+        // Get the database engine we will either be using to install the tables, or what we are currently using.
+        $engine = $DB->get_dbengine();
+        // Check if MyISAM is the storage engine that will be used, if so, do not proceed and display an error.
+        if ($engine == 'MyISAM') {
+            // This is required for when we perform CLI install/upgrades.
+            require_once($CFG->dirroot . '/lib/upgradelib.php');
+            // Check if we are doing a fresh install.
+            if (!core_tables_exist()) {
+                $result->setFeedbackStr('cannotinstallusingstorageengine_desc');
+            } else { // We must be doing an upgrade.
+                $url = new moodle_url('/admin/tool/innodb/index.php');
+                $a = new stdClass();
+                $a->link = $url->out();
+                $result->setFeedbackStr(array('cannotupgradeusingstorageengine_desc', 'admin', $a));
+            }
+            $result->setStatus(false);
+            $result->setErrorCode(DB_STORAGE_ENGINE_NOT_SUPPORTED);
+        }
+    }
 
 /// Do any actions defined in the XML file.
     process_environment_result($vendorsxml[$current_vendor], $result);
