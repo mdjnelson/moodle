@@ -99,7 +99,13 @@ $string['calendartype'] = 'Calendar type';
 $string['calendartype_desc'] = 'Choose a default calendar type for the whole site. This setting can be overridden in the course settings or by users in their personal profile.';
 $string['calendar_weekend'] = 'Weekend days';
 $string['cannotdeletemodfilter'] = 'You cannot uninstall the \'{$a->filter}\' because it is part of the \'{$a->module}\' module.';
+$string['cannotinstallusingstorageenginemyisam'] = '<p>Cannot create the database.</p>
+<p>The database storage engine is set to \'MyISAM\' which is no longer supported.</p>
+<p>The site administrator should verify the database configuration.</p>';
 $string['cannotuninstall'] = '{$a} can not be uninstalled.';
+$string['cannotupgradeusingstorageenginemyisam'] = '<p>Cannot perform upgrade.</p>
+<p>One or more of your tables is using the storage engine \'MyISAM\' which is no longer supported.</p>
+<p>The site administrator should verify the database configuration.</p>';
 $string['cfgwwwrootslashwarning'] = 'You have defined $CFG->wwwroot incorrectly in your config.php file. You have included a \'/\' character at the end. Please remove it, or you will experience strange bugs like <a href=\'http://tracker.moodle.org/browse/MDL-11061\'>MDL-11061</a>.';
 $string['cfgwwwrootwarning'] = 'You have defined $CFG->wwwroot incorrectly in your config.php file. It does not match the URL you are using to access this page. Please correct it, or you will experience strange bugs like <a href=\'http://tracker.moodle.org/browse/MDL-11061\'>MDL-11061</a>.';
 $string['clamfailureonupload'] = 'On clam AV failure';

@@ -1054,10 +1054,29 @@ function environment_check_database($version, $env_select) {
     } else {
         $result->setStatus(false);
     }
+
     $result->setLevel($level);
     $result->setCurrentVersion($current_version);
     $result->setNeededVersion($needed_version);
     $result->setInfo($current_vendor . ' (' . $dbinfo['description'] . ')');
+
+    // Check if MySQL is the DB family (this will also be the same for MariaDB).
+    if ($DB->get_dbfamily() == 'mysql') {
+        // Get the database engine we will either be using to install the tables, or what we are currently using.
+        $engine = $DB->get_dbengine();
+        // Check if MyISAM is the storage engine that will be used, if so, do not proceed and display an error.
+        if ($engine == 'MyISAM') {
+            // Check if we are performing a fresh install.
+            if (!core_tables_exist()) {
+                $str = 'cannotinstallusingstorageenginemyisam';
+            } else { // Ok, must be doing an upgrade.
+                $str = 'cannotupgradeusingstorageenginemyisam';
+            }
+            $result->setStatus(false);
+            $result->setFeedbackStr($str);
+            return $result;
+        }
+    }
 
 /// Do any actions defined in the XML file.
     process_environment_result($vendorsxml[$current_vendor], $result);
