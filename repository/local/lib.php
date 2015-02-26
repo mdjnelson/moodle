@@ -45,7 +45,7 @@ class repository_local extends repository {
         global $CFG, $USER, $OUTPUT;
         $ret = array();
         $ret['dynload'] = true;
-        $ret['nosearch'] = true;
+        $ret['nosearch'] = false;
         $ret['nologin'] = true;
         $ret['list'] = array();
 
@@ -106,6 +106,55 @@ class repository_local extends repository {
             }
         }
         return $ret;
+    }
+
+    /**
+     * Search through the server files given specific text.
+     *
+     * @param string $searchtext search key word
+     * @param string $page no paging is used in repository_local
+     * @return mixed see {@link repository::get_listing()}
+     */
+    public function search($searchtext, $page = '') {
+        $ret = array();
+        $ret['dynload'] = true;
+        $ret['nosearch'] = false;
+        $ret['nologin'] = true;
+        $ret['path'] = array(); // No path as we are performing a search throughout the site.
+
+        $browser = get_file_browser();
+        $fileinfo = $browser->get_file_info(context_system::instance());
+        $ret['list'] = $this->search_server_files($fileinfo, $searchtext);
+
+        return $ret;
+    }
+
+    /**
+     * Go through all the directories and perform a search for a file containing the specified text.
+     *
+     * @param file_info $fileinfo
+     * @param string $searchtext search key word
+     * @return mixed see {@link repository::get_listing()}
+     */
+    private function search_server_files(file_info $fileinfo, $searchtext) {
+        static $files = array();
+
+        $list = $fileinfo->get_children();
+        foreach ($list as $fileinfo) {
+            if ($fileinfo->is_directory()) {
+                $this->search_server_files($fileinfo, $searchtext);
+            } else {
+                $filename = $fileinfo->get_visible_name();
+                $extension = core_text::strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                if (!empty($extension)) {
+                    $pos = core_text::strpos($filename, $searchtext);
+                    if ($pos !== false) {
+                        $files[] = $this->get_node($fileinfo);
+                    }
+                }
+            }
+        }
+        return $files;
     }
 
     /**
