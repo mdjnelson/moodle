@@ -127,7 +127,7 @@ class view {
                                      'question_name_column', 'edit_action_column', 'copy_action_column',
                                      'preview_action_column', 'delete_action_column',
                                      'creator_name_column', 'created_time_column',
-                                     'modifier_name_column');
+                                     'modifier_name_column', 'modified_time_column');
         } else {
              $questionbankcolumns = explode(',', $CFG->questionbankcolumns);
         }

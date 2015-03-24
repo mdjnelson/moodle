@@ -192,6 +192,7 @@ $string['invalidgrade'] = 'Grades ({$a}) do not match grade options - question s
 $string['invalidpenalty'] = 'Invalid penalty';
 $string['invalidwizardpage'] = 'Incorrect or no wizard page specified!';
 $string['lastmodifiedby'] = 'Last modified by';
+$string['lastmodifiedon'] = 'Last modified on';
 $string['lasttry'] = 'Last try';
 $string['linkedfiledoesntexist'] = 'Linked file {$a} doesn\'t exist';
 $string['makechildof'] = 'Make child of \'{$a}\'';
