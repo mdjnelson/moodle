@@ -524,7 +524,9 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="useridfrom" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="useridfromdeleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="useridto" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="useridtodeleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="subject" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The message subject"/>
         <FIELD NAME="fullmessage" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="fullmessageformat" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The format of the full message"/>
@@ -540,14 +542,16 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="useridto" UNIQUE="false" FIELDS="useridto"/>
-        <INDEX NAME="useridfromto" UNIQUE="false" FIELDS="useridfrom, useridto"/>
+        <INDEX NAME="useridfromtodeleted" UNIQUE="false" FIELDS="useridfrom, useridfromdeleted, useridto, useridtodeleted"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="message_read" COMMENT="Stores all messages that have been read">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="useridfrom" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="useridfromdeleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="useridto" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="useridtodeleted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="subject" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The message subject"/>
         <FIELD NAME="fullmessage" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="fullmessageformat" TYPE="int" LENGTH="4" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The format of the full message"/>
@@ -564,7 +568,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="useridto" UNIQUE="false" FIELDS="useridto"/>
-        <INDEX NAME="useridfromto" UNIQUE="false" FIELDS="useridfrom, useridto"/>
+        <INDEX NAME="useridfromtodeleted" UNIQUE="false" FIELDS="useridfrom, useridfromdeleted, useridto, useridtodeleted"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="message_contacts" COMMENT="Maintains lists of relationships between users">
