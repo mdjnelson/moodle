@@ -76,6 +76,7 @@ $string['contexterror'] = 'You shouldn\'t have got here if you\'re not moving a 
 $string['copy'] = 'Copy from {$a} and change links.';
 $string['created'] = 'Created';
 $string['createdby'] = 'Created by';
+$string['createdon'] = 'Created on';
 $string['createdmodifiedheader'] = 'Created / last saved';
 $string['createnewquestion'] = 'Create a new question ...';
 $string['cwrqpfs'] = 'Random questions selecting questions from sub categories.';

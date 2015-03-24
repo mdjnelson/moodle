@@ -126,7 +126,7 @@ class view {
             $questionbankcolumns = array('checkbox_column', 'question_type_column',
                                      'question_name_column', 'edit_action_column', 'copy_action_column',
                                      'preview_action_column', 'delete_action_column',
-                                     'creator_name_column',
+                                     'creator_name_column', 'created_time_column',
                                      'modifier_name_column');
         } else {
              $questionbankcolumns = explode(',', $CFG->questionbankcolumns);
