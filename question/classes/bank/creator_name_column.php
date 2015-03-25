@@ -37,7 +37,7 @@ class creator_name_column extends column_base {
         if (!empty($question->creatorfirstname) && !empty($question->creatorlastname)) {
             $u = new \stdClass();
             $u = username_load_fields_from_object($u, $question, 'creator');
-            echo fullname($u);
+            echo fullname($u) . '<br>' . userdate($question->timecreated, get_string('strftimedatetime', 'langconfig'));
         }
     }
 
@@ -51,6 +51,7 @@ class creator_name_column extends column_base {
         foreach ($allnames as $allname) {
             $requiredfields[] = 'uc.' . $allname . ' AS creator' . $allname;
         }
+        $requiredfields[] = 'q.timecreated';
         return $requiredfields;
     }
 
@@ -58,6 +59,7 @@ class creator_name_column extends column_base {
         return array(
             'firstname' => array('field' => 'uc.firstname', 'title' => get_string('firstname')),
             'lastname' => array('field' => 'uc.lastname', 'title' => get_string('lastname')),
+            'timecreated' => array('field' => 'q.timecreated', 'title' => get_string('date'))
         );
     }
 }
