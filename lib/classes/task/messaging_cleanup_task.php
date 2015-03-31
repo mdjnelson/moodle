@@ -53,6 +53,18 @@ class messaging_cleanup_task extends scheduled_task {
             $DB->delete_records_select('message_read', 'notification=1 AND timeread<:notificationdeletetime', $params);
         }
 
-    }
+        // Remove any messages that were deleted by both users over a certain amount of time.
+        if (!empty($CFG->messagingdeletedelay)) {
+            $deletetime = $timenow - $CFG->messagingdeletedelay;
+            $params = array('deletetime' => $deletetime, 'deletetime2' => $deletetime);
 
+            // Note - there really shouldn't be any entries in the 'message' table as if there is a value
+            // greater than 0 for 'useridtodeleted' then it has been read. However, to be safe we will remove
+            // any entries from here that may exist as well.
+            $sql = "((useridfromdeleted > 0 AND useridfromdeleted < :deletetime) AND
+                     (useridtodeleted > 0 AND useridtodeleted < :deletetime2))";
+            $DB->delete_records_select('message', $sql, $params);
+            $DB->delete_records_select('message_read', $sql, $params);
+        }
+    }
 }
