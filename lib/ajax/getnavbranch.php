@@ -102,20 +102,40 @@ try {
 
     // Remove links to categories if required.
     if (!$linkcategories) {
+        // Create a moodle_url from the returnurl - if it exists.
+        $objreturnurl = null;
+        if ($returnurl) {
+            $objreturnurl = new moodle_url($returnurl);
+        }
         foreach ($branch->find_all_of_type(navigation_node::TYPE_CATEGORY) as $category) {
             $category->action = null;
-            foreach ($category->find_all_of_type(navigation_node::TYPE_COURSE) as $course) {
-                $course->action->param('returnurl', $returnurl);
+            if ($objreturnurl) {
+                foreach ($category->find_all_of_type(navigation_node::TYPE_COURSE) as $course) {
+                    // Do not add the return URL if it's the same base URL.
+                    if (!$course->action->compare($objreturnurl, URL_MATCH_BASE)) {
+                        $course->action->param('returnurl', $returnurl);
+                    }
+                }
             }
         }
         foreach ($branch->find_all_of_type(navigation_node::TYPE_MY_CATEGORY) as $category) {
             $category->action = null;
-            foreach ($category->find_all_of_type(navigation_node::TYPE_COURSE) as $course) {
-                $course->action->param('returnurl', $returnurl);
+            if ($objreturnurl) {
+                foreach ($category->find_all_of_type(navigation_node::TYPE_COURSE) as $course) {
+                    // Do not add the return URL if it's the same base URL.
+                    if (!$course->action->compare($objreturnurl, URL_MATCH_BASE)) {
+                        $course->action->param('returnurl', $returnurl);
+                    }
+                }
             }
         }
-        foreach ($branch->find_all_of_type(navigation_node::TYPE_COURSE) as $course) {
-            $course->action->param('returnurl', $returnurl);
+        if ($objreturnurl) {
+            foreach ($branch->find_all_of_type(navigation_node::TYPE_COURSE) as $course) {
+                // Do not add the return URL if it's the same base URL.
+                if (!$course->action->compare($objreturnurl, URL_MATCH_BASE)) {
+                    $course->action->param('returnurl', $returnurl);
+                }
+            }
         }
     }
 
