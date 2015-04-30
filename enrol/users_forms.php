@@ -170,6 +170,7 @@ class enrol_users_filter_form extends moodleform {
         foreach($allgroups as $gid => $unused) {
             $groupsmenu[$gid] = $allgroups[$gid]->name;
         }
+        $groupsmenu[-1] = get_string('nogroup', 'enrol');
         if (count($groupsmenu) > 1) {
             $mform->addElement('select', 'filtergroup', get_string('group'), $groupsmenu);
         }
