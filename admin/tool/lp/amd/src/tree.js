@@ -17,23 +17,25 @@
  * Implement an accessible aria tree widget, from a nested unordered list.
  * Based on http://oaa-accessibility.org/example/41/
  *
- * @module     core/tree
+ * @module     tool_lp/tree
  * @package    core
  * @copyright  2015 Damyon Wiese <damyon@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'core/url'], function($, url) {
     // Private variables and functions.
+    /** @var {String} expandedImage The html for an expanded tree node twistie. */
     var expandedImage = $('<img alt="" src="' + url.imageUrl('t/expanded') + '"/>');
+    /** @var {String} collapsedImage The html for a collapsed tree node twistie. */
     var collapsedImage = $('<img alt="" src="' + url.imageUrl('t/collapsed') + '"/>');
 
     /**
      * Constructor
      *
-     * @param {string} selector
+     * @param {String} selector
      * @param {function} selectCallback Called when the active node is changed.
      */
-    var tree = function(selector, selectCallback) {
+    var Tree = function(selector, selectCallback) {
         this.treeRoot = $(selector);
 
         this.items = this.treeRoot.find('li');
@@ -56,19 +58,19 @@ define(['jquery', 'core/url'], function($, url) {
             right:    39,
             down:     40,
             asterisk: 106
-        }
+        };
 
         this.init();
 
         this.bindEventHandlers();
-
     };
     // Public variables and functions.
 
     /**
      * Init this tree
+     * @method init
      */
-    tree.prototype.init = function() {
+    Tree.prototype.init = function() {
         this.parents.attr('aria-expanded', 'true');
         this.parents.prepend(expandedImage.clone());
 
@@ -81,11 +83,12 @@ define(['jquery', 'core/url'], function($, url) {
     };
 
     /**
-     * expandGroup() is a member function to expand a collapsed group
+     * Expand a collapsed group.
      *
+     * @method expandGroup
      * @param {Object} item is the jquery id of the parent item of the group
      */
-    tree.prototype.expandGroup = function(item) {
+    Tree.prototype.expandGroup = function(item) {
         // Find the first child ul node.
         var group = item.children('ul');
 
@@ -100,7 +103,13 @@ define(['jquery', 'core/url'], function($, url) {
         this.visibleItems = this.treeRoot.find('li:visible');
     };
 
-    tree.prototype.collapseGroup = function(item) {
+    /**
+     * Collapse an expanded group.
+     *
+     * @method collapseGroup
+     * @param {Object} item is the jquery id of the parent item of the group
+     */
+    Tree.prototype.collapseGroup = function(item) {
         var group = item.children('ul');
 
         // Collapse the group.
@@ -114,9 +123,13 @@ define(['jquery', 'core/url'], function($, url) {
         this.visibleItems = this.treeRoot.find('li:visible');
     };
 
-    tree.prototype.toggleGroup = function(item) {
-        var group = item.children('ul');
-
+    /**
+     * Expand or collapse a group.
+     *
+     * @method toggleGroup
+     * @param {Object} item is the jquery id of the parent item of the group
+     */
+    Tree.prototype.toggleGroup = function(item) {
         if (item.attr('aria-expanded') == 'true') {
             this.collapseGroup(item);
         } else {
@@ -124,13 +137,26 @@ define(['jquery', 'core/url'], function($, url) {
         }
     };
 
-    tree.prototype.updateFocus = function(item) {
+    /**
+     * Set the focus to this item.
+     *
+     * @method updateFocus
+     * @param {Object} item is the jquery id of the parent item of the group
+     */
+    Tree.prototype.updateFocus = function(item) {
         this.items.attr('aria-selected', 'false').attr('tabindex', '-1');
         item.attr('aria-selected', 'true').attr('tabindex', 0);
         this.selectCallback(item);
     };
 
-    tree.prototype.handleKeyDown = function(item, e) {
+    /**
+     * Handle a key down event - ie navigate the tree.
+     *
+     * @method handleKeyDown
+     * @param {Object} item is the jquery id of the parent item of the group
+     * @param {Event} e The event.
+     */
+    Tree.prototype.handleKeyDown = function(item, e) {
         var currentIndex = this.visibleItems.index(item);
 
         if ((e.altKey || e.ctrlKey) || (e.shiftKey && e.keyCode != this.keys.tab)) {
@@ -237,7 +263,14 @@ define(['jquery', 'core/url'], function($, url) {
         return true;
     };
 
-    tree.prototype.handleKeyPress = function(item, e) {
+    /**
+     * Handle a key press event - ie navigate the tree.
+     *
+     * @method handleKeyPress
+     * @param {Object} item is the jquery id of the parent item of the group
+     * @param {Event} e The event.
+     */
+    Tree.prototype.handleKeyPress = function(item, e) {
         if (e.altKey || e.ctrlKey || e.shiftKey) {
             // Do nothing.
             return true;
@@ -259,7 +292,7 @@ define(['jquery', 'core/url'], function($, url) {
             }
             default : {
                 var chr = String.fromCharCode(e.which);
-                var bMatch = false;
+                var match = false;
                 var itemIndex = this.visibleItems.index(item);
                 var itemCount = this.visibleItems.length;
                 var currentIndex = itemIndex + 1;
@@ -281,7 +314,7 @@ define(['jquery', 'core/url'], function($, url) {
                     }
 
                     if (titleChr.toLowerCase() == chr) {
-                        bMatch = true;
+                        match = true;
                         break;
                     }
 
@@ -292,7 +325,7 @@ define(['jquery', 'core/url'], function($, url) {
                     }
                 }
 
-                if (bMatch == true) {
+                if (match === true) {
                     this.activeItem = this.visibleItems.eq(currentIndex);
                     this.activeItem.focus();
                 }
@@ -304,7 +337,14 @@ define(['jquery', 'core/url'], function($, url) {
         return true;
     };
 
-    tree.prototype.handleDblClick = function(item, e) {
+    /**
+     * Handle a double click (expand/collapse).
+     *
+     * @method handleDblClick
+     * @param {Object} item is the jquery id of the parent item of the group
+     * @param {Event} e The event.
+     */
+    Tree.prototype.handleDblClick = function(item, e) {
 
         if (e.altKey || e.ctrlKey || e.shiftKey) {
             // Do nothing.
@@ -324,7 +364,14 @@ define(['jquery', 'core/url'], function($, url) {
         return false;
     };
 
-    tree.prototype.handleClick = function(item, e) {
+    /**
+     * Handle a click (select).
+     *
+     * @method handleClick
+     * @param {Object} item is the jquery id of the parent item of the group
+     * @param {Event} e The event.
+     */
+    Tree.prototype.handleClick = function(item, e) {
 
         if (e.altKey || e.ctrlKey || e.shiftKey) {
             // Do nothing.
@@ -340,13 +387,27 @@ define(['jquery', 'core/url'], function($, url) {
         return false;
     };
 
-    tree.prototype.handleBlur = function(item, e) {
+    /**
+     * Handle a blur event
+     *
+     * @method handleBlur
+     * @param {Object} item is the jquery id of the parent item of the group
+     * @param {Event} e The event.
+     */
+    Tree.prototype.handleBlur = function() {
         return true;
     };
 
-    tree.prototype.handleFocus = function(item, e) {
+    /**
+     * Handle a focus event
+     *
+     * @method handleFocus
+     * @param {Object} item is the jquery id of the parent item of the group
+     * @param {Event} e The event.
+     */
+    Tree.prototype.handleFocus = function(item) {
 
-        if (this.activeItem == null) {
+        if (this.activeItem === null) {
             this.activeItem = item;
         }
 
@@ -355,44 +416,45 @@ define(['jquery', 'core/url'], function($, url) {
         return true;
     };
 
-    tree.prototype.bindEventHandlers = function() {
+    /**
+     * Bind the event listeners we require.
+     *
+     * @method bindEventHandlers
+     */
+    Tree.prototype.bindEventHandlers = function() {
         var thisObj = this;
 
-        // bind a dblclick handler to the parent items
+        // Bind a dblclick handler to the parent items.
         this.parents.dblclick(function(e) {
             return thisObj.handleDblClick($(this), e);
         });
 
-        // bind a click handler
+        // Bind a click handler.
         this.items.click(function(e) {
             return thisObj.handleClick($(this), e);
         });
 
-        // bind a keydown handler
+        // Bind a keydown handler.
         this.items.keydown(function(e) {
             return thisObj.handleKeyDown($(this), e);
         });
 
-        // bind a keypress handler
+        // Bind a keypress handler.
         this.items.keypress(function(e) {
             return thisObj.handleKeyPress($(this), e);
         });
 
-        // bind a focus handler
+        // Bind a focus handler.
         this.items.focus(function(e) {
             return thisObj.handleFocus($(this), e);
         });
 
-        // bind a blur handler
+        // Bind a blur handler.
         this.items.blur(function(e) {
             return thisObj.handleBlur($(this), e);
         });
 
     };
 
-    tree.prototype.getActiveNode = function() {
-        return this.activeItem;
-    };
-
-    return /** @alias module:core/tree */ tree;
+    return /** @alias module:tool_lp/tree */ Tree;
 });
