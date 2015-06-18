@@ -228,6 +228,14 @@ $functions = array(
         'type'         => 'write',
         'capabilities' => 'tool/lp:templatemanage',
     ),
+    'tool_lp_add_competency_to_plan' => array(
+        'classname'   => 'tool_lp\external',
+        'methodname'  => 'add_competency_to_plan',
+        'classpath'   => '',
+        'description' => 'Add the competency to a plan',
+        'type'        => 'write',
+        'capabilities'=> 'tool/lp:planmanageall, tool/lp:planmanageown',
+    ),
     'tool_lp_remove_competency_from_course' => array(
         'classname'    => 'tool_lp\external',
         'methodname'   => 'remove_competency_from_course',
@@ -243,6 +251,14 @@ $functions = array(
         'description'  => 'Remove a competency from a template',
         'type'         => 'write',
         'capabilities' => 'tool/lp:templatemanage',
+    ),
+    'tool_lp_remove_competency_from_plan' => array(
+        'classname'   => 'tool_lp\external',
+        'methodname'  => 'remove_competency_from_plan',
+        'classpath'   => '',
+        'description' => 'Remove a competency from a plan',
+        'type'        => 'write',
+        'capabilities'=> 'tool/lp:planmanageall, tool/lp:planmanageown',
     ),
     'tool_lp_data_for_course_competencies_page' => array(
         'classname'    => 'tool_lp\external',
@@ -260,6 +276,14 @@ $functions = array(
         'type'         => 'read',
         'capabilities' => 'tool/lp:templateread',
     ),
+    'tool_lp_data_for_plan_competencies_page' => array(
+        'classname'   => 'tool_lp\external',
+        'methodname'  => 'data_for_plan_competencies_page',
+        'classpath'   => '',
+        'description' => 'Load the data for the plan competencies page template.',
+        'type'        => 'read',
+        'capabilities'=> 'tool/lp:planviewall, tool/lp:planviewown',
+    ),
     'tool_lp_reorder_course_competency' => array(
         'classname'    => 'tool_lp\external',
         'methodname'   => 'reorder_course_competency',
@@ -275,6 +299,14 @@ $functions = array(
         'description'  => 'Move a template competency to a new relative sort order.',
         'type'         => 'write',
         'capabilities' => 'tool/lp:templatemanage',
+    ),
+    'tool_lp_reorder_plan_competency' => array(
+        'classname'   => 'tool_lp\external',
+        'methodname'  => 'reorder_plan_competency',
+        'classpath'   => '',
+        'description' => 'Move a plan competency to a new relative sort order.',
+        'type'        => 'write',
+        'capabilities'=> 'tool/lp:planmanageall, tool/lp:planmanageown',
     ),
     'tool_lp_create_template' => array(
         'classname'    => 'tool_lp\external',

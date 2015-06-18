@@ -115,5 +115,21 @@
         <KEY NAME="competencyid" TYPE="foreign" FIELDS="competencyid" REFTABLE="tool_lp_competency" REFFIELDS="id" COMMENT="Competency foreign key."/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="tool_lp_plan_competency" COMMENT="Link a competency to a user learning plan.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="planid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The plan this competency is linked to."/>
+        <FIELD NAME="competencyid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The competency that is linked to this course."/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The time this link was created."/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The time this link was modified."/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user who modified this link."/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Relative sort order"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="planidlink" TYPE="foreign" FIELDS="planid" REFTABLE="tool_lp_plan" REFFIELDS="id" COMMENT="Plan foreign key."/>
+        <KEY NAME="competencyid" TYPE="foreign" FIELDS="competencyid" REFTABLE="tool_lp_competency" REFFIELDS="id" COMMENT="Competency foreign key."/>
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>

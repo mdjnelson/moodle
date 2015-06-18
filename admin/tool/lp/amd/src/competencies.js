@@ -211,12 +211,21 @@ define(['jquery',
             } else if (localthis.itemtype == 'template') {
                 requests = ajax.call([
                     { methodname: 'tool_lp_add_competency_to_template',
-                        args: { templateid: localthis.itemid, competencyid: localthis.selectedCompetency } },
+                      args: {templateid: localthis.itemid, competencyid: localthis.selectedCompetency } },
                     { methodname: 'tool_lp_data_for_template_competencies_page',
-                        args: { templateid: localthis.itemid } }
+                      args: {templateid: localthis.itemid } }
                 ]);
                 pagerender = 'tool_lp/template_competencies_page';
                 pageregion = 'templatecompetenciespage';
+            } else if (localthis.itemtype == 'plan') {
+                requests = ajax.call([
+                    { methodname: 'tool_lp_add_competency_to_plan',
+                      args: {planid: localthis.itemid, competencyid: localthis.selectedCompetency } },
+                    { methodname: 'tool_lp_data_for_plan_competencies_page',
+                      args: {planid: localthis.itemid } }
+                ]);
+                pagerender = 'tool_lp/plan_competencies_page';
+                pageregion = 'plancompetenciespage';
             } else {
                 return null;
             }
@@ -269,6 +278,17 @@ define(['jquery',
                 ]);
                 pagerender = 'tool_lp/template_competencies_page';
                 pageregion = 'templatecompetenciespage';
+            } else if (localthis.itemtype == 'plan') {
+                requests = ajax.call([
+                    { methodname: 'tool_lp_remove_competency_from_plan',
+                        args: { planid: localthis.itemid, competencyid: deleteid } },
+                    { methodname: 'tool_lp_data_for_plan_competencies_page',
+                        args: { planid: localthis.itemid } }
+                ]);
+                pagerender = 'tool_lp/plan_competencies_page';
+                pageregion = 'plancompetenciespage';
+            } else {
+                return null;
             }
 
             requests[1].done(function(context) {

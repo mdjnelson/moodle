@@ -1235,4 +1235,210 @@ class api {
 
         return $plan->delete();
     }
+
+    /**
+     * List all the competencies in a learning plan.
+     *
+     * @param int $planid The id of the plan to check.
+     * @return array of competencies
+     */
+    public static function list_competencies_in_plan($planid) {
+        global $USER;
+
+        $plan = \tool_lp\api::read_plan($planid);
+
+        $iscurrentuser = $plan->get_userid() == $USER->id;
+        $context = context_user::instance($plan->get_userid());
+
+        // Check that the user is a valid user.
+        $user = \core_user::get_user($plan->get_userid());
+        if (!$user || !\core_user::is_real_user($plan->get_userid())) {
+            throw new \moodle_exception('invaliduser', 'error');
+        }
+
+        if (!has_capability('tool/lp:planviewall', $context)) {
+            if ($iscurrentuser) {
+                require_capability('tool/lp:planviewown', $context);
+            } else {
+                throw new required_capability_exception($context, 'tool/lp:planviewall', 'nopermissions', '');
+            }
+        }
+
+        $onlyvisible = 1;
+
+        if (has_capability('tool/lp:planmanageall', $context)) {
+            $onlyvisible = 0;
+        } else if ($iscurrentuser && has_capability('tool/lp:planmanageown', $context)) {
+            $onlyvisible = 0;
+        }
+
+        // OK - all set.
+        $plan = new plan_competency();
+        return $plan->list_competencies($planid, $onlyvisible);
+    }
+
+    /**
+     * Add a competency to this plan.
+     *
+     * @param int $planid The id of the plan
+     * @param int $competencyid The id of the competency
+     * @return bool
+     */
+    public static function add_competency_to_plan($planid, $competencyid) {
+        global $USER;
+
+        $plan = \tool_lp\api::read_plan($planid);
+
+        $iscurrentuser = $plan->get_userid() == $USER->id;
+        $context = context_user::instance($plan->get_userid());
+
+        // Check that the user is a valid user.
+        $user = \core_user::get_user($plan->get_userid());
+        if (!$user || !\core_user::is_real_user($plan->get_userid())) {
+            throw new \moodle_exception('invaliduser', 'error');
+        }
+
+        if (!has_capability('tool/lp:planmanageall', $context)) {
+            if ($iscurrentuser) {
+                require_capability('tool/lp:planmanageown', $context);
+            } else {
+                throw new required_capability_exception($context, 'tool/lp:planmanageall', 'nopermissions', '');
+            }
+        }
+
+        $record = new stdClass();
+        $record->planid = $planid;
+        $record->competencyid = $competencyid;
+
+        $competency = new competency();
+        $competency->set_id($competencyid);
+        if (!$competency->read()) {
+            throw new coding_exception('The competency does not exist');
+        }
+
+        $plancompetency = new plan_competency();
+        $exists = $plancompetency->get_records(array('planid' => $planid, 'competencyid' => $competencyid));
+        if (!$exists) {
+            $plancompetency->from_record($record);
+            if ($plancompetency->create()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Remove a competency from a plan.
+     *
+     * @param int $planid The id of the plan
+     * @param int $competencyid The id of the competency
+     * @return bool
+     */
+    public static function remove_competency_from_plan($planid, $competencyid) {
+        global $USER;
+
+        $plan = \tool_lp\api::read_plan($planid);
+
+        $iscurrentuser = $plan->get_userid() == $USER->id;
+        $context = context_user::instance($plan->get_userid());
+
+        // Check that the user is a valid user.
+        $user = \core_user::get_user($plan->get_userid());
+        if (!$user || !\core_user::is_real_user($plan->get_userid())) {
+            throw new \moodle_exception('invaliduser', 'error');
+        }
+
+        if (!has_capability('tool/lp:planmanageall', $context)) {
+            if ($iscurrentuser) {
+                require_capability('tool/lp:planmanageown', $context);
+            } else {
+                throw new required_capability_exception($context, 'tool/lp:planmanageall', 'nopermissions', '');
+            }
+        }
+
+        $record = new stdClass();
+        $record->planid = $planid;
+        $record->competencyid = $competencyid;
+
+        $competency = new competency();
+        $competency->set_id($competencyid);
+        if (!$competency->read()) {
+            throw new coding_exception('The competency does not exist');
+        }
+
+        $plancompetency = new plan_competency();
+        $exists = $plancompetency->get_records(array('planid' => $planid, 'competencyid' => $competencyid));
+        if ($exists) {
+            $competency = array_pop($exists);
+            return $competency->delete();
+        }
+        return false;
+    }
+
+    /**
+     * Move the plan competency up or down in the display list.
+     *
+     * @param int $planid The plan id
+     * @param int $competencyidfrom The id of the competency we are moving.
+     * @param int $competencyidto The id of the competency we are moving to.
+     * @return boolean
+     */
+    public static function reorder_plan_competency($planid, $competencyidfrom, $competencyidto) {
+        // First we do a permissions check.
+        global $USER;
+
+        $plan = \tool_lp\api::read_plan($planid);
+
+        $iscurrentuser = $plan->get_userid() == $USER->id;
+        $context = context_user::instance($plan->get_userid());
+
+        // Check that the user is a valid user.
+        $user = \core_user::get_user($plan->get_userid());
+        if (!$user || !\core_user::is_real_user($plan->get_userid())) {
+            throw new \moodle_exception('invaliduser', 'error');
+        }
+
+        if (!has_capability('tool/lp:planmanageall', $context)) {
+            if ($iscurrentuser) {
+                require_capability('tool/lp:planmanageown', $context);
+            } else {
+                throw new required_capability_exception($context, 'tool/lp:planmanageall', 'nopermissions', '');
+            }
+        }
+
+        $down = true;
+        $plancompetency = new plan_competency();
+        $matches = $plancompetency->get_records(array('planid' => $planid, 'competencyid' => $competencyidfrom));
+        if (count($matches) == 0) {
+            throw new coding_exception('The link does not exist');
+        }
+
+        $competencyfrom = array_pop($matches);
+        $matches = $plancompetency->get_records(array('planid' => $planid, 'competencyid' => $competencyidto));
+        if (count($matches) == 0) {
+            throw new coding_exception('The link does not exist');
+        }
+
+        $competencyto = array_pop($matches);
+
+        $all = $plancompetency->get_records(array('planid' => $planid), 'sortorder', 'ASC', 0, 0);
+
+        if ($competencyfrom->get_sortorder() > $competencyto->get_sortorder()) {
+            // We are moving up, so put it before the "to" item.
+            $down = false;
+        }
+
+        foreach ($all as $id => $plancompetency) {
+            $sort = $plancompetency->get_sortorder();
+            if ($down && $sort > $competencyfrom->get_sortorder() && $sort <= $competencyto->get_sortorder()) {
+                $plancompetency->set_sortorder($plancompetency->get_sortorder() - 1);
+                $plancompetency->update();
+            } else if (!$down && $sort >= $competencyto->get_sortorder() && $sort < $competencyfrom->get_sortorder()) {
+                $plancompetency->set_sortorder($plancompetency->get_sortorder() + 1);
+                $plancompetency->update();
+            }
+        }
+        $competencyfrom->set_sortorder($competencyto->get_sortorder());
+        return $competencyfrom->update();
+    }
 }
