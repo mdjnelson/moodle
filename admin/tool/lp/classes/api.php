@@ -1072,9 +1072,10 @@ class api {
      * Lists user plans.
      *
      * @param int $userid
+     * @param int $status
      * @return \tool_lp\plan[]
      */
-    public static function list_user_plans($userid) {
+    public static function list_user_plans($userid, $status = null) {
         global $USER;
 
         $select = 'userid = :userid';
@@ -1089,9 +1090,14 @@ class api {
             require_capability('tool/lp:planviewown', $context);
         }
 
-        // Users that can manage plans can only see active and completed plans.
+        if ($status !== null) {
+            $select .= ' AND status = :status';
+            $params['status'] = $status;
+        }
+
+        // Users that can't manage plans can only see active and completed plans.
         if (!has_any_capability(array('tool/lp:planmanageall', 'tool/lp:planmanageown', 'tool/lp:plancreatedraft'), $context)) {
-            $select = ' AND status != :statusdraft';
+            $select .= ' AND status != :statusdraft';
             $params['statusdraft'] = plan::STATUS_DRAFT;
         }
 
@@ -1219,12 +1225,11 @@ class api {
         $manageplans = has_capability('tool/lp:planmanageall', $context);
         $manageownplan = has_capability('tool/lp:planmanageown', $context);
 
-        if ($USER->id == $plan->get_userid() && $USER->id != $plan->get_usermodified() &&
-                !$manageplans && !$manageownplan) {
-            // A normal user can only edit its plan if they created it.
+        if ($USER->id == $plan->get_userid() && !$manageplans && !$manageownplan) {
+            // A normal user can only edit their plan if they created it.
             throw new required_capability_exception($context, 'tool/lp:planmanageown', 'nopermissions', '');
         } else if ($USER->id != $plan->get_userid() && !$manageplans) {
-            // Other users needs to have tool/lp:planmanage.
+            // Other users needs to have tool/lp:planmanageall.
             throw new required_capability_exception($context, 'tool/lp:planmanageall', 'nopermissions', '');
         }
 

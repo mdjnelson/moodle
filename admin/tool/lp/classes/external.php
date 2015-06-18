@@ -3474,7 +3474,12 @@ class external extends external_api {
             'The user id',
             VALUE_REQUIRED
         );
-        $params = array('userid' => $userid);
+        $status = new external_value(
+            PARAM_INT,
+            'The plan status',
+            VALUE_REQUIRED
+        );
+        $params = array('userid' => $userid, 'status' => $status);
         return new external_function_parameters($params);
     }
 
@@ -3490,17 +3495,19 @@ class external extends external_api {
      * Loads the data required to render the plans_page template.
      *
      * @param int $userid User id.
+     * @param int $status The plan status.
      * @return boolean
      */
-    public static function data_for_plans_page($userid) {
+    public static function data_for_plans_page($userid, $status) {
         global $PAGE;
 
         $params = self::validate_parameters(self::data_for_plans_page_parameters(),
                                             array(
                                                 'userid' => $userid,
+                                                'status' => $status
                                             ));
 
-        $renderable = new \tool_lp\output\plans_page($params['userid']);
+        $renderable = new \tool_lp\output\plans_page($params['userid'], $params['status']);
         $renderer = $PAGE->get_renderer('tool_lp');
 
         return external_api::clean_returnvalue(self::data_for_plans_page_returns(), $renderable->export_for_template($renderer));
@@ -3520,7 +3527,8 @@ class external extends external_api {
             'pluginbaseurl' => new external_value(PARAM_LOCALURL, 'Url to the tool_lp plugin folder on this Moodle site'),
             'navigation' => new external_multiple_structure(
                 new external_value(PARAM_RAW, 'HTML for a navigation item that should be on this page')
-            )
+            ),
+            'tabs' => new external_value(PARAM_RAW, 'The HTML tabs to display on the page')
         ));
     }
 

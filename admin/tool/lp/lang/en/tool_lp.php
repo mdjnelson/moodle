@@ -108,6 +108,7 @@ $string['plantemplate_help'] = 'A learning plan created from a template will con
 $string['planupdated'] = 'Learning plan updated';
 $string['pluginname'] = 'Learning Plans';
 $string['proficient'] = 'Proficient';
+$string['requestapproval'] = 'Request Approval';
 $string['savechanges'] = 'Save changes';
 $string['scale'] = 'Scale';
 $string['scale_help'] = 'A scale determines how proficiency is measured in a competency. After selecting a scale, configure the scale, setting one of the scale values as default and marking all scale values that are deemed proficient.';

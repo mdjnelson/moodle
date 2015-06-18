@@ -25,6 +25,7 @@
 require_once(__DIR__ . '/../../../config.php');
 
 $userid = optional_param('userid', false, PARAM_INT);
+$status = optional_param('status', tool_lp\plan::STATUS_ACTIVE, PARAM_INT);
 
 require_login(null, false);
 if (isguestuser()) {
@@ -54,8 +55,9 @@ if (!has_capability('tool/lp:planviewall', $context)) {
 $url = new moodle_url('/admin/tool/lp/plans.php', array('userid' => $userid));
 
 $title = get_string('learningplans', 'tool_lp');
+
 $PAGE->set_context($context);
-$PAGE->set_pagelayout('admin');
+$PAGE->set_pagelayout('standard');
 $PAGE->set_url($url);
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
@@ -64,7 +66,7 @@ $output = $PAGE->get_renderer('tool_lp');
 echo $output->header();
 echo $output->heading($title);
 
-$page = new \tool_lp\output\plans_page($userid);
+$page = new \tool_lp\output\plans_page($userid, $status);
 echo $output->render($page);
 
 echo $output->footer();

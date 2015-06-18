@@ -27,6 +27,9 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification', 'core/str'
     /** @var {Number} planid The id of the plan */
     var planid = 0;
 
+    /** @var {Number} status The status of the plan */
+    var status = 0;
+
     /** @var {Number} userid The id of the user */
     var userid = 0;
 
@@ -37,7 +40,7 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification', 'core/str'
      * @param {string} newjs The new js to run.
      */
     var updatePage = function(newhtml, newjs) {
-        $('[data-region="plans"]').replaceWith(newhtml);
+        $('[data-region="manageplans"]').replaceWith(newhtml);
         templates.runTemplateJS(newjs);
     };
 
@@ -56,6 +59,9 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification', 'core/str'
      * Delete a plan and reload the page.
      */
     var doDelete = function() {
+        var selector = $('[data-region="manageplans"]');
+        userid = selector.attr('data-userid');
+        status = selector.attr('data-status');
 
         // We are chaining ajax requests here.
         var requests = ajax.call([{
@@ -63,7 +69,7 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification', 'core/str'
             args: { id: planid }
         }, {
             methodname: 'tool_lp_data_for_plans_page',
-            args: { userid: userid }
+            args: { userid: userid, status: status }
         }]);
         requests[1].done(reloadList).fail(notification.exception);
     };
@@ -74,7 +80,7 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification', 'core/str'
      */
     var confirmDelete = function(e) {
         e.preventDefault();
-        
+
         planid = $(this).attr('data-planid');
 
         var requests = ajax.call([{
@@ -102,21 +108,14 @@ define(['jquery', 'core/templates', 'core/ajax', 'core/notification', 'core/str'
     };
 
 
-    return {
-        // Public variables and functions.
+    return /** @alias module:tool_lp/plandelete */ {
 
         /**
-         * Initialise this plugin. Just attaches some event handlers to the delete entries in the menu.
+         * Expose the event handler for delete.
+         *
+         * @method deleteHandler
+         * @param {Event} e
          */
-        init: function() {
-            // Init this module.
-            $('[data-region="plans"]').on(
-                "click",
-                '[data-action="deleteplan"]',
-                confirmDelete
-            );
-            userid = $('[data-region="plans"]').attr('data-userid');
-        }
-
+        deleteHandler: confirmDelete
     };
 });

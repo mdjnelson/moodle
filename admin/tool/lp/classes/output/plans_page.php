@@ -47,28 +47,54 @@ class plans_page implements renderable, templatable {
     /** @var array|\tool_lp\plan[] $plans List of plans. */
     protected $plans = array();
 
+    /** @var int $status The status of the plans we are viewing. */
+    protected $status = null;
+
     /** @var context_user|null $context context.  */
     protected $context = null;
 
     /** @var int|null $userid Userid. */
     protected $userid = null;
 
+    /** @var string $tabs The tabs to show. */
+    var $tabs = array();
+
     /**
      * Construct this renderable.
      *
      * @param int $userid
+     * @param int $status the status of the plans we are viewing
      */
-    public function __construct($userid) {
+    public function __construct($userid, $status = null) {
         $this->userid = $userid;
-        $this->plans = api::list_user_plans($userid);
-
+        $this->plans = api::list_user_plans($userid, $status);
         $this->context = context_user::instance($userid);
+
+        if ($status === null) {
+            $this->status = plan::STATUS_ACTIVE;
+        } else {
+            $this->status = $status;
+        }
 
         $addplan = new single_button(
            new moodle_url('/admin/tool/lp/editplan.php', array('userid' => $userid)),
            get_string('addnewplan', 'tool_lp')
         );
         $this->navigation[] = $addplan;
+
+        // Build the tabs we are going to use.
+        $baseurl = (new moodle_url('/admin/tool/lp'))->out(true) . '/plans.php?userid=' . $userid;
+        $tabs = array();
+        $row = array();
+        $row[] = new \tabobject(plan::STATUS_ACTIVE, $baseurl . '&status=' . plan::STATUS_ACTIVE,
+            get_string('planstatusactive', 'tool_lp'));
+        $row[] = new \tabobject(plan::STATUS_DRAFT, $baseurl . '&status=' . plan::STATUS_DRAFT,
+            get_string('planstatusdraft', 'tool_lp'));
+        $row[] = new \tabobject(plan::STATUS_COMPLETE, $baseurl . '&status=' . plan::STATUS_COMPLETE,
+            get_string('planstatuscomplete', 'tool_lp'));
+        $tabs[] = $row;
+
+        $this->tabs = print_tabs($tabs, $this->status, null, null, true);
     }
 
     /**
@@ -81,19 +107,23 @@ class plans_page implements renderable, templatable {
         $data = new stdClass();
         $data->userid = $this->userid;
         $data->pluginbaseurl = (new moodle_url('/admin/tool/lp'))->out(true);
+        $data->plans = array();
 
         // Attach standard objects as mustache can not parse \tool_lp\plan objects.
         if ($this->plans) {
-            $data->plans = array();
             foreach ($this->plans as $plan) {
                 $data->plans[] = $plan->to_record();
             }
         }
 
+        $data->status = $this->status;
+
         $data->navigation = array();
         foreach ($this->navigation as $button) {
             $data->navigation[] = $output->render($button);
         }
+
+        $data->tabs = $this->tabs;
 
         return $data;
     }

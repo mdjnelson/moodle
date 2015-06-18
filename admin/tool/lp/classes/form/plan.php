@@ -50,6 +50,10 @@ class plan extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->setDefault('id', 0);
 
+        $mform->addElement('hidden', 'status');
+        $mform->setType('status', PARAM_INT);
+        $mform->setDefault('id', 0);
+
         $mform->addElement('hidden', 'userid', $this->_customdata['userid']);
         $mform->setType('userid', PARAM_INT);
 

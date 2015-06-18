@@ -27,6 +27,7 @@ require_once($CFG->libdir.'/adminlib.php');
 
 $userid = optional_param('userid', false, PARAM_INT);
 $id = optional_param('id', false, PARAM_INT);
+$status = optional_param('status', tool_lp\plan::STATUS_DRAFT, PARAM_INT);
 
 // Set up the page.
 if (empty($id)) {
@@ -86,12 +87,12 @@ if ($data) {
         require_sesskey();
         \tool_lp\api::create_plan($data);
         echo $output->notification(get_string('plancreated', 'tool_lp'), 'notifysuccess');
-        echo $output->continue_button('/admin/tool/lp/plans.php?userid=' . $userid);
+        echo $output->continue_button('/admin/tool/lp/plans.php?userid=' . $userid . '&status=' . $status);
     } else {
         require_sesskey();
         \tool_lp\api::update_plan($data);
         echo $output->notification(get_string('planupdated', 'tool_lp'), 'notifysuccess');
-        echo $output->continue_button('/admin/tool/lp/plans.php?userid=' . $userid);
+        echo $output->continue_button('/admin/tool/lp/plans.php?userid=' . $userid . '&status=' . $status);
     }
 } else {
     $form->display();
