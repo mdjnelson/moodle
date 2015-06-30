@@ -172,15 +172,15 @@ class mod_forum_post_form extends moodleform {
                 $groupcount++;
             }
 
-            $contextcheck = has_capability('mod/forum:movediscussions', $modulecontext) && empty($post->parent) && $groupcount > 1;
-            if ($contextcheck) {
-                if (has_capability('mod/forum:canposttomygroups', $modulecontext)
-                            && !isset($post->edit)) {
-                    $mform->addElement('checkbox', 'posttomygroups', get_string('posttomygroups', 'forum'));
-                    $mform->addHelpButton('posttomygroups', 'posttomygroups', 'forum');
-                    $mform->disabledIf('groupinfo', 'posttomygroups', 'checked');
-                }
+            $groupcheck = empty($post->parent) && $groupcount > 1;
+            if (has_capability('mod/forum:canposttomygroups', $modulecontext) && $groupcheck
+                    && !isset($post->edit)) {
+                $mform->addElement('checkbox', 'posttomygroups', get_string('posttomygroups', 'forum'));
+                $mform->addHelpButton('posttomygroups', 'posttomygroups', 'forum');
+                $mform->disabledIf('groupinfo', 'posttomygroups', 'checked');
+            }
 
+            if (has_capability('mod/forum:movediscussions', $modulecontext) && $groupcheck) {
                 foreach ($groupdata as $grouptemp) {
                     $groupinfo[$grouptemp->id] = $grouptemp->name;
                 }
