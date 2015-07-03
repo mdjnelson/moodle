@@ -558,7 +558,8 @@ class block_base {
         if (!empty($USER->id)
             && $page->context->contextlevel == CONTEXT_USER // Page belongs to a user
             && $page->context->instanceid == $USER->id // Page belongs to this user
-            && $page->pagetype == 'my-index') { // Ensure we are on the My Moodle page
+            && (($page->pagetype == 'my-index')
+                || ($page->pagetype == 'user-profile'))) { // Ensure we are on the user's dashboard or profile page.
 
             // If the block cannot be displayed on /my it is ok if the myaddinstance capability is not defined.
             $formats = $this->applicable_formats();
