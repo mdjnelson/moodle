@@ -50,11 +50,12 @@ class block_badges extends block_base {
 
     public function applicable_formats() {
         return array(
-                'admin' => false,
-                'site-index' => true,
-                'course-view' => true,
-                'mod' => false,
-                'my' => true
+            'admin' => false,
+            'site-index' => true,
+            'course-view' => true,
+            'mod' => false,
+            'my' => true,
+            'user-profile' => true
         );
     }
 
