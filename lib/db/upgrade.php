@@ -2045,5 +2045,56 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2016042600.01);
     }
 
+    if ($oldversion < 2016050401.00) {
+        // Define table disguises to be created.
+        $table = new xmldb_table('disguises');
+
+        // Adding fields to table disguises.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('type', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('lockdisguise', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('showrealidentity', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('disabledisguisefrom', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('loganonymously', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('mode', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('configdata', XMLDB_TYPE_TEXT, null, null, null, null, null);
+
+        // Adding keys to table disguises.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for disguises.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define field disguiseid to be added to context.
+        $table = new xmldb_table('context');
+        $field = new xmldb_field('disguiseid', XMLDB_TYPE_INTEGER, '10', null, true, null, 0, 'depth');
+
+        // Conditionally launch add field disguiseid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define key context-disguiseid (foreign) to be added to context.
+        $table = new xmldb_table('context');
+        $key = new xmldb_key('context-disguiseid', XMLDB_KEY_FOREIGN, array('disguiseid'), 'disguises', array('id'));
+
+        // Launch add key context-disguiseid.
+        $dbman->add_key($table, $key);
+
+        // Define field disguiseid to be added to context_temp.
+        $table = new xmldb_table('context_temp');
+        $field = new xmldb_field('disguiseid', XMLDB_TYPE_INTEGER, '10', null, true, null, 0, 'depth');
+
+        // Conditionally launch add field disguiseid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2016050401.00);
+    }
+
     return true;
 }
