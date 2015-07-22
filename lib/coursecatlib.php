@@ -2355,6 +2355,11 @@ class coursecat implements renderable, cacheable_object, IteratorAggregate {
         $record->ctxdepth = $record->depth + 1;
         $record->ctxlevel = CONTEXT_COURSECAT;
         $record->ctxinstance = $record->id;
+        if (isset($a['disguiseid'])) {
+            $record->ctxdisguiseid = $a['disguiseid'];
+        } else {
+            $record->ctxdisguiseid = 0;
+        }
         return new coursecat($record, true);
     }
 
