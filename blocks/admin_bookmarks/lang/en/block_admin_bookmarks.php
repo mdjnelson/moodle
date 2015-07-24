@@ -23,5 +23,5 @@
  */
 
 $string['admin_bookmarks:addinstance'] = 'Add a new admin bookmarks block';
-$string['admin_bookmarks:myaddinstance'] = 'Add a new admin bookmarks block to Dashboard';
+$string['admin_bookmarks:myaddinstance'] = 'Add a new admin bookmarks block to Dashboard and profile page';
 $string['pluginname'] = 'Admin bookmarks';

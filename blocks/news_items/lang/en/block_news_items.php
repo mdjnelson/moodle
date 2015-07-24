@@ -23,5 +23,5 @@
  */
 
 $string['news_items:addinstance'] = 'Add a new latest news block';
-$string['news_items:myaddinstance'] = 'Add a new latest news block to Dashboard';
+$string['news_items:myaddinstance'] = 'Add a new latest news block to Dashboard and profile page';
 $string['pluginname'] = 'Latest news';

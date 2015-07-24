@@ -531,7 +531,7 @@ class block_base {
             return true;
         }
 
-        // The blocks in My Moodle are a special case.  We want them to inherit from the user context.
+        // The blocks in the Dashboard and the user's profile page are a special case and use a different capability.
         if (!empty($USER->id)
             && $this->instance->parentcontextid == $this->page->context->id   // Block belongs to this page
             && $this->page->context->contextlevel == CONTEXT_USER             // Page belongs to a user
@@ -554,7 +554,7 @@ class block_base {
     function user_can_addto($page) {
         global $USER;
 
-        // The blocks in My Moodle are a special case and use a different capability.
+        // The blocks in the Dashboard and the user's profile page are a special case and use a different capability.
         if (!empty($USER->id)
             && $page->context->contextlevel == CONTEXT_USER // Page belongs to a user
             && $page->context->instanceid == $USER->id // Page belongs to this user

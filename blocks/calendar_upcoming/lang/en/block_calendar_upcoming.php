@@ -23,5 +23,5 @@
  */
 
 $string['calendar_upcoming:addinstance'] = 'Add a new upcoming events block';
-$string['calendar_upcoming:myaddinstance'] = 'Add a new upcoming events block to Dashboard';
+$string['calendar_upcoming:myaddinstance'] = 'Add a new upcoming events block to Dashboard and profile page';
 $string['pluginname'] = 'Upcoming events';
