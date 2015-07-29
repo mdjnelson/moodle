@@ -576,6 +576,18 @@ class block_base {
             }
         }
 
+        // Check if we are adding blocks to a user profile page.
+        if (!empty($USER->id)
+            && $page->context->contextlevel == CONTEXT_USER // Page belongs to a user.
+            && $page->pagetype == 'user-profile') { // Ensure we are on a profile page.
+
+            if ($page->context->instanceid == $USER->id) { // Page belongs to this user.
+                return has_capability('moodle/user:manageownblocks', $page->context);
+            } else { // Must belong to another user.
+                return has_capability('moodle/user:manageblocks', $page->context);
+            }
+        }
+
         $capability = 'block/' . $this->name() . ':addinstance';
         if ($this->has_add_block_capability($page, $capability)
                 && has_capability('moodle/block:edit', $page->context)) {
