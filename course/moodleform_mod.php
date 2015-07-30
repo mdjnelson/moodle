@@ -168,7 +168,8 @@ abstract class moodleform_mod extends moodleform {
         $this->_features = new stdClass();
         $this->_features->groups            = plugin_supports('mod', $this->_modname, FEATURE_GROUPS, true);
         $this->_features->groupings         = plugin_supports('mod', $this->_modname, FEATURE_GROUPINGS, false);
-        $this->_features->outcomes          = (!empty($CFG->enableoutcomes) and plugin_supports('mod', $this->_modname, FEATURE_GRADE_OUTCOMES, true));
+        $this->_features->outcomes          = (!empty($CFG->enableoutcomes) and
+                 plugin_supports('mod', $this->_modname, FEATURE_GRADE_OUTCOMES, true));
         $this->_features->hasgrades         = plugin_supports('mod', $this->_modname, FEATURE_GRADE_HAS_GRADE, false);
         $this->_features->idnumber          = plugin_supports('mod', $this->_modname, FEATURE_IDNUMBER, true);
         $this->_features->introeditor       = plugin_supports('mod', $this->_modname, FEATURE_MOD_INTRO, true);
@@ -177,7 +178,10 @@ abstract class moodleform_mod extends moodleform {
         $this->_features->showdescription   = plugin_supports('mod', $this->_modname, FEATURE_SHOW_DESCRIPTION, false);
         $this->_features->gradecat          = ($this->_features->outcomes or $this->_features->hasgrades);
         $this->_features->advancedgrading   = plugin_supports('mod', $this->_modname, FEATURE_ADVANCED_GRADING, false);
-        $this->_features->canrescale = (component_callback_exists('mod_' . $this->_modname, 'rescale_activity_grades') !== false);
+        $this->_features->canrescale        = (
+                component_callback_exists('mod_' . $this->_modname, 'rescale_activity_grades') !== false);
+        $this->_features->disguises         = plugin_supports('mod', $this->_modname, FEATURE_DISGUISES, false);
+        $this->_features->disguisesoptional = plugin_supports('mod', $this->_modname, FEATURE_DISGUISES_OPTIONAL, false);
     }
 
     /**
@@ -619,6 +623,10 @@ abstract class moodleform_mod extends moodleform {
             \core_availability\frontend::include_all_javascript($COURSE, $cm);
         }
 
+        if ($this->_features->disguises) {
+            \core\disguise\helper::add_to_form($mform, $this->_features, $this->_cm);
+        }
+
         // Conditional activities: completion tracking section
         if(!isset($completion)) {
             $completion = new completion_info($COURSE);
@@ -1045,5 +1053,3 @@ abstract class moodleform_mod extends moodleform {
         }
     }
 }
-
-

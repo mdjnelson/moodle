@@ -339,6 +339,11 @@ class moodle_page {
      */
     protected $_popup_notification_allowed = true;
 
+    /**
+     * @var bool Whether this is a disguise configuration page.
+     */
+    protected $_disguise_configuration_page = false;
+
     // Magic getter methods =============================================================
     // Due to the __get magic below, you normally do not call these as $PAGE->magic_get_x
     // methods, but instead use the $PAGE->x syntax.
@@ -996,7 +1001,19 @@ class moodle_page {
             }
         }
 
+        if (!$this->_disguise_configuration_page) {
+            \core\disguise\helper::ensure_configured_for_user_in_context($context);
+        }
+
         $this->_context = $context;
+    }
+
+    public function set_disguise_configuration_page($value = true) {
+        $this->_disguise_configuration_page = $value;
+    }
+
+    public function is_disguise_configuration_page() {
+        return !empty($this->_disguise_configuration_page);
     }
 
     /**

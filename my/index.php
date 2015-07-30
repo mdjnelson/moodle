@@ -61,6 +61,7 @@ if (isguestuser()) {  // Force them to see system default, no editing allowed
     $userid = null;
     $USER->editing = $edit = 0;  // Just in case
     $context = context_system::instance();
+    $PAGE->set_context($context);
     $PAGE->set_blocks_editing_capability('moodle/my:configsyspages');  // unlikely :)
     $header = "$SITE->shortname: $strmymoodle (GUEST)";
     $pagetitle = $header;
@@ -68,6 +69,7 @@ if (isguestuser()) {  // Force them to see system default, no editing allowed
 } else {        // We are trying to view or edit our own My Moodle page
     $userid = $USER->id;  // Owner of the page
     $context = context_user::instance($USER->id);
+    $PAGE->set_context($context);
     $PAGE->set_blocks_editing_capability('moodle/my:manageblocks');
     $header = fullname($USER);
     $pagetitle = $strmymoodle;
@@ -80,7 +82,6 @@ if (!$currentpage = my_get_page($userid, MY_PAGE_PRIVATE)) {
 
 // Start setting up the page
 $params = array();
-$PAGE->set_context($context);
 $PAGE->set_url('/my/index.php', $params);
 $PAGE->set_pagelayout('mydashboard');
 $PAGE->set_pagetype('my-index');
