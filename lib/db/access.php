@@ -2293,4 +2293,42 @@ $capabilities = array(
         ),
     ),
 
+    'moodle/disguise:configure' => array(
+        'riskbitmask'   => RISK_CONFIG,
+        'captype'       => 'write',
+        'contextlevel'  => CONTEXT_SYSTEM | CONTEXT_COURSECAT | CONTEXT_COURSE | CONTEXT_MODULE,
+        'archetypes'    => array(
+                'manager'           => CAP_ALLOW,
+                'teacher'           => CAP_ALLOW,
+                'editingteacher'    => CAP_ALLOW,
+        ),
+    ),
+
+    'moodle/disguise:showidentity' => array(
+        'riskbitmask'   => RISK_PERSONAL,
+        'captype'       => 'read',
+        'contextlevel'  => CONTEXT_COURSE,
+        'archetypes'    => array(
+                'manager'           => CAP_ALLOW,
+                'teacher'           => CAP_ALLOW,
+                'editingteacher'    => CAP_ALLOW,
+        ),
+    ),
+
+    'moodle/disguise:revealidentity' => array(
+        'riskbitmask'   => RISK_PERSONAL,
+        'captype'       => 'read',
+        'contextlevel'  => CONTEXT_COURSE,
+        'archetypes'    => array(
+                'manager'           => CAP_ALLOW,
+        ),
+    ),
+
+    'moodle/disguise:disablelock' => array(
+        'riskbitmask'   => RISK_PERSONAL,
+        'captype'       => 'read',
+        'contextlevel'  => CONTEXT_COURSE,
+        'archetypes'    => array(
+        ),
+    ),
 );

@@ -217,6 +217,10 @@ if (!empty($add)) {
         }
     }
 
+    if (plugin_supports('mod', $data->modulename, FEATURE_DISGUISES, false) && $context->has_own_disguise()) {
+        \core\disguise\helper::add_form_values($context, $data);
+    }
+
     $sectionname = get_section_name($course, $cw);
     $fullmodulename = get_string('modulename', $module->name);
 
