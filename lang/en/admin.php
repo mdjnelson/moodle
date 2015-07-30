@@ -424,6 +424,7 @@ $string['devicedetectregexexpression'] = 'Regular expression';
 $string['devicedetectregexvalue'] = 'Return value';
 $string['devicetype'] = 'Device type';
 $string['disableuserimages'] = 'Disable user profile images';
+$string['disguiseinstances'] = 'Instances';
 $string['displayerrorswarning'] = 'Enabling the PHP setting <em>display_errors</em> is not recommended on production sites because some error messages may reveal sensitive information about your server.';
 $string['displayloginfailures'] = 'Display login failures';
 $string['dndallowtextandlinks'] = 'Drag and drop upload of text/links';

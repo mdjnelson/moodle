@@ -553,6 +553,20 @@ if ($hassiteconfig) {
     }
 }
 
+
+// Add user disguises.
+if ($hassiteconfig) {
+    $ADMIN->add('modules', new admin_category('disguiseplugins', new lang_string('disguiseplugins')));
+    $ADMIN->add('disguiseplugins', new admin_externalpage('managedisguiseplugins', new lang_string('disguisepluginsmanage'),
+                                                        $CFG->wwwroot . '/' . $CFG->admin . '/disguiseplugins.php'));
+
+    // Extend settings for each plugin.
+    foreach (core_plugin_manager::instance()->get_plugins_of_type('disguise') as $plugin) {
+        /** @var \core\plugininfo\disguise $plugin */
+        $plugin->load_settings($ADMIN, 'disguiseplugins', $hassiteconfig);
+    }
+}
+
 /// Add all local plugins - must be always last!
 if ($hassiteconfig) {
     $ADMIN->add('modules', new admin_category('localplugins', new lang_string('localplugins')));
