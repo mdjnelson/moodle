@@ -244,6 +244,7 @@ $string['gradebookcalculationsfixbutton'] = 'Accept grade changes and fix calcul
 $string['gradebookcalculationswarning'] = 'Note: Some errors have been detected in calculating the grades displayed in the gradebook. It is recommended that the errors are fixed by clicking the button below, though this will result in some grades being changed. For details, see the changes between versions {$a->gradebookversion} and {$a->currentversion} in <a href="{$a->url}">Gradebook calculation changes</a>.';
 $string['gradebookhiddenerror'] = 'The gradebook is currently set to hide everything from students.';
 $string['gradebookhistories'] = 'Grade histories';
+$string['gradebooksetup'] = 'Gradebook setup';
 $string['gradeboundary'] = 'Letter grade boundary';
 $string['gradeboundary_help'] = 'This setting determines the minimum percentage over which grades will be assigned the grade letter.';
 $string['gradecategories'] = 'Grade categories';
