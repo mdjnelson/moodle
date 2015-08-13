@@ -367,20 +367,14 @@ class core_statslib_testcase extends advanced_testcase {
 
     /**
      * Test the function that calculates the start of the day.
-     *
-     * NOTE: I don't think this is the way this function should work.
-     *       This test documents the current functionality.
      */
     public function test_statslib_get_base_daily() {
         global $CFG;
 
-        for ($x = 0; $x < 24; $x += 1) {
+        for ($x = -13; $x <= 13; $x += 1) {
             $CFG->timezone = $x;
 
             $start = 1272672000 - ($x * 3600);
-            if ($x >= 20) {
-                $start += (24 * 3600);
-            }
 
             $this->assertEquals($start, stats_get_base_daily(1272686410), "Timezone $x check");
         }
@@ -394,6 +388,47 @@ class core_statslib_testcase extends advanced_testcase {
 
         $CFG->timezone = 0;
         $this->assertEquals(1272758400, stats_get_next_day_start(1272686410));
+    }
+
+    /**
+     * Test the function that gets the start of the week.
+     */
+    public function test_statslib_get_base_weekly() {
+        global $CFG;
+
+        $CFG->calendar_startwday = 0;
+
+        $CFG->timezone = -4;
+        $this->assertEquals(1388289600, stats_get_base_weekly(1388649845));
+
+        $CFG->timezone = 'America/New_York';
+        $this->assertEquals(1388293200, stats_get_base_weekly(1388649845));
+    }
+
+    /**
+     * Test the function that gets the start of the month.
+     */
+    public function test_statslib_get_base_monthly() {
+        global $CFG;
+
+        $CFG->timezone = -4;
+        $this->assertEquals(1446350400, stats_get_base_monthly(1446886850));
+
+        $CFG->timezone = 'America/New_York';
+        $this->assertEquals(1446350400, stats_get_base_monthly(1446886850));
+    }
+
+    /**
+     * Test the function that gets the start of the next month.
+     */
+    public function test_statslib_get_next_month_start() {
+        global $CFG;
+
+        $CFG->timezone = -4;
+        $this->assertEquals(1448942400, stats_get_next_month_start(1446886850));
+
+        $CFG->timezone = 'America/New_York';
+        $this->assertEquals(1448946000, stats_get_next_month_start(1446886850));
     }
 
     /**

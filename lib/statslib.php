@@ -981,25 +981,74 @@ function stats_get_start_from($str) {
 }
 
 /**
+ * Given a string to parse (passed to strtotime) and timestamp returns
+ * the adjusted timestamp.
+ *
+ * @param string $timestring the timestring to pass to strtotime
+ *  (eg. 'midnight', '+12 hours').
+ * @param int $time the unixtime.
+ * @param bool $resettime determines if we should adjust the
+ *  timezone offset returned by get_timezone_offset.
+ * @return int the timestamp
+ * @since Moodle 2.8.9. Function only exists in 2.8 (see MDL-49684), in
+ *  2.9 and onwards Moodle uses PHP date/time functions.
+ */
+function stats_get_timestamp($timestring, $time, $resettime) {
+    global $CFG;
+    $timezone = $CFG->timezone;
+
+    if (!is_numeric($timezone)) {
+        try {
+            $timezonetest = new DateTimeZone($timezone);
+        } catch (Exception $e) {
+            // Invalid timezone, so inherit timezone.
+            $timezone = 99;
+        }
+    }
+
+    if (empty($time)) {
+        $time = time();
+    }
+
+    $tzoffset = 0;
+    if ($timezone == 99) {
+        // Server time.
+        $setusertz = false;
+    } else {
+        if (is_numeric($timezone)) {
+            // Static offset from UTC.
+            $tzoffset = get_timezone_offset($timezone);
+            $timezone = 'UTC';
+        }
+
+        $tz = date_default_timezone_get();
+        $setusertz = ($tz !== $timezone);
+    }
+
+    if ($setusertz) {
+        date_default_timezone_set($timezone);
+    }
+
+    $time = strtotime($timestring, $time);
+    if ($resettime) {
+        $time -= $tzoffset;
+    }
+
+    if ($setusertz) {
+        date_default_timezone_set($tz);
+    }
+
+    return $time;
+}
+
+/**
  * Start of day
  * @param int $time timestamp
  * @return start of day
  */
 function stats_get_base_daily($time=0) {
-    global $CFG;
-
-    if (empty($time)) {
-        $time = time();
-    }
-    if ($CFG->timezone == 99) {
-        $time = strtotime(date('d-M-Y', $time));
-        return $time;
-    } else {
-        $offset = get_timezone_offset($CFG->timezone);
-        $gtime = $time + $offset;
-        $gtime = intval($gtime / (60*60*24)) * 60*60*24;
-        return $gtime - $offset;
-    }
+    $time = stats_get_timestamp('midnight', $time, true);
+    return $time;
 }
 
 /**
@@ -1011,19 +1060,15 @@ function stats_get_base_weekly($time=0) {
     global $CFG;
 
     $time = stats_get_base_daily($time);
+    $safetime = stats_get_timestamp('+12 hours', $time, false);
+    $thisday = date('w', $safetime);
     $startday = $CFG->calendar_startwday;
-    if ($CFG->timezone == 99) {
-        $thisday = date('w', $time);
-    } else {
-        $offset = get_timezone_offset($CFG->timezone);
-        $gtime = $time + $offset;
-        $thisday = gmdate('w', $gtime);
-    }
     if ($thisday > $startday) {
-        $time = $time - (($thisday - $startday) * 60*60*24);
+        $days = $thisday - $startday;
     } else if ($thisday < $startday) {
-        $time = $time - ((7 + $thisday - $startday) * 60*60*24);
+        $days = 7 + $thisday - $startday;
     }
+    $time = stats_get_timestamp("-$days day", $time, false);
     return $time;
 }
 
@@ -1033,24 +1078,9 @@ function stats_get_base_weekly($time=0) {
  * @return start of month
  */
 function stats_get_base_monthly($time=0) {
-    global $CFG;
-
-    if (empty($time)) {
-        $time = time();
-    }
-    if ($CFG->timezone == 99) {
-        return strtotime(date('1-M-Y', $time));
-
-    } else {
-        $time = stats_get_base_daily($time);
-        $offset = get_timezone_offset($CFG->timezone);
-        $gtime = $time + $offset;
-        $day = gmdate('d', $gtime);
-        if ($day == 1) {
-            return $time;
-        }
-        return $gtime - (($day-1) * 60*60*24);
-    }
+    $time = stats_get_timestamp('first day of this month', $time, false);
+    $time = stats_get_base_daily($time);
+    return $time;
 }
 
 /**
