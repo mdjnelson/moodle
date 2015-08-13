@@ -2523,10 +2523,12 @@ abstract class lesson_page extends lesson_base {
                 if ($this->lesson->review && !$result->correctanswer && !$result->isessayquestion) {
                     $nretakes = $DB->count_records("lesson_grades", array("lessonid"=>$this->lesson->id, "userid"=>$USER->id));
                     $qattempts = $DB->count_records("lesson_attempts", array("userid"=>$USER->id, "retry"=>$nretakes, "pageid"=>$this->properties->id));
-                    if ($qattempts == 1) {
-                        $result->feedback = $OUTPUT->box(get_string("firstwrong", "lesson"), 'feedback');
-                    } else {
-                        $result->feedback = $OUTPUT->box(get_string("secondpluswrong", "lesson"), 'feedback');
+                    if ($nretakes > $qattempts) {
+                        if ($qattempts == 1) {
+                            $result->feedback = $OUTPUT->box(get_string("firstwrong", "lesson"), 'feedback');
+                        } else {
+                            $result->feedback = $OUTPUT->box(get_string("secondpluswrong", "lesson"), 'feedback');
+                        }
                     }
                 } else {
                     $result->feedback = '';
