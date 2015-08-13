@@ -2047,22 +2047,42 @@ function get_user_preferences($name = null, $default = null, $user = null) {
  */
 function make_timestamp($year, $month=1, $day=1, $hour=0, $minute=0, $second=0, $timezone=99, $applydst=true) {
 
-    // Save input timezone, required for dst offset check.
-    $passedtimezone = $timezone;
+    $timezone = get_user_timezone($timezone);
 
-    $timezone = get_user_timezone_offset($timezone);
+    if (!is_numeric($timezone)) {
+        try {
+            $timezonetest = new DateTimeZone($timezone);
+        } catch (Exception $e) {
+            // Invalid timezone, so inherit timezone.
+            $timezone = 99;
+        }
+    }
 
+    $tzoffset = 0;
     if (abs($timezone) > 13) {
         // Server time.
-        $time = mktime((int)$hour, (int)$minute, (int)$second, (int)$month, (int)$day, (int)$year);
-    } else {
-        $time = gmmktime((int)$hour, (int)$minute, (int)$second, (int)$month, (int)$day, (int)$year);
-        $time = usertime($time, $timezone);
-
-        // Apply dst for string timezones or if 99 then try dst offset with user's default timezone.
-        if ($applydst && ((99 == $passedtimezone) || !is_numeric($passedtimezone))) {
-            $time -= dst_offset_on($time, $passedtimezone);
+        $setusertz = false;
+    }
+    else {
+        if (is_numeric($timezone)) {
+            // Static offset from UTC.
+            $tzoffset = get_timezone_offset($timezone);
+            $timezone = 'UTC';
         }
+
+        $tz = date_default_timezone_get();
+        $setusertz = ($tz !== $timezone);
+    }
+
+    if ($setusertz) {
+        date_default_timezone_set($timezone);
+    }
+
+    $time = mktime((int)$hour, (int)$minute, (int)$second, (int)$month, (int)$day, (int)$year);
+    $time -= $tzoffset;
+
+    if ($setusertz) {
+        date_default_timezone_set($tz);
     }
 
     return $time;
@@ -2561,7 +2581,7 @@ function calculate_user_dst_table($fromyear = null, $toyear = null, $strtimezone
     static $presetscache = array();
     if (!isset($presetscache[$usertz])) {
         $presetscache[$usertz] = $DB->get_records('timezone', array('name' => $usertz),
-            'year DESC', 'year, gmtoff, dstoff, dst_month, dst_startday, dst_weekday, dst_skipweeks, dst_time, std_month, '.
+            'year DESC', 'year, name, gmtoff, dstoff, dst_month, dst_startday, dst_weekday, dst_skipweeks, dst_time, std_month, '.
             'std_startday, std_weekday, std_skipweeks, std_time');
     }
     if (empty($presetscache[$usertz])) {
@@ -2628,15 +2648,17 @@ function dst_changes_for_year($year, $timezone) {
     list($dsthour, $dstmin) = explode(':', $timezone->dst_time);
     list($stdhour, $stdmin) = explode(':', $timezone->std_time);
 
-    $timedst = make_timestamp($year, $timezone->dst_month, $monthdaydst, 0, 0, 0, 99, false);
-    $timestd = make_timestamp($year, $timezone->std_month, $monthdaystd, 0, 0, 0, 99, false);
+    // Use 21:00 on the previous day to get a better baseline (no current timezones switch at that time).
+    $timedst = make_timestamp($year, $timezone->dst_month, $monthdaydst - 1, 21, 0, 0, $timezone->name, false);
+    $timestd = make_timestamp($year, $timezone->std_month, $monthdaystd - 1, 21, 0, 0, $timezone->name, false);
 
     // Instead of putting hour and minute in make_timestamp(), we add them afterwards.
     // This has the advantage of being able to have negative values for hour, i.e. for timezones
     // where GMT time would be in the PREVIOUS day than the local one on which DST changes.
 
-    $timedst += $dsthour * HOURSECS + $dstmin * MINSECS;
-    $timestd += $stdhour * HOURSECS + $stdmin * MINSECS;
+    // The number 3 here is the number of hours we subtracted from the baseline.
+    $timedst += ($dsthour + 3) * HOURSECS + $dstmin * MINSECS;
+    $timestd += ($stdhour + 3) * HOURSECS + $stdmin * MINSECS;
 
     return array('dst' => $timedst, 0 => $timedst, 'std' => $timestd, 1 => $timestd);
 }

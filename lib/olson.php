@@ -682,29 +682,21 @@ function olson_parse_at ($at, $set = 'set', $gmtoffset) {
     $at = (strpos($at, ':') === false) ? $at . ':0' : $at;
     list($hours, $mins) = explode(':', $at);
 
-    // GMT -- return as is!
-    if ( !empty($sig) && ( $sig === 'u'
-                           || $sig === 'g'
-                           || $sig === 'z'    )) {
-        return $at;
-    }
-
-    // Wall clock
-    if (empty($sig) || $sig === 'w') {
-        if ($set !== 'set'){ // wall clock is on DST, assume by 1hr
-            $hours = $hours-1;
+    if ( !empty($sig) ) {
+        // GMT -- shift to local
+        // Signatures u, g and z.
+        if ( $sig === 'u' || $sig === 'g' || $sig === 'z' ) {
+            $mins = $mins + $hours * 60 + $gmtoffset;
+            $hours = $mins / 60;
+            $hours = (int)$hours;
+            $mins  = abs($mins % 60);
         }
-        $sig = 's';
+
+        // Signatures u, g, z and s.
+        if ($set != 'set') {
+            $hours = $hours + 1;
+        }
     }
 
-    // Standard time
-    if (!empty($sig) && $sig === 's') {
-        $mins = $mins + $hours*60 + $gmtoffset;
-        $hours = $mins / 60;
-        $hours = (int)$hours;
-        $mins  = abs($mins % 60);
-        return sprintf('%02d:%02d', $hours, $mins);
-    }
-
-    trigger_error('unhandled case - AT flag is ' . $matches[0]);
+    return sprintf('%02d:%02d', (int)$hours, (int)$mins);
 }

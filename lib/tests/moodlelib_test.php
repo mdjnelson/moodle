@@ -1464,7 +1464,7 @@ class core_moodlelib_testcase extends advanced_testcase {
                 'seconds' => '00',
                 'timezone' => '99',  // User default timezone.
                 'applydst' => false, // Don't apply dst.
-                'expectedoutput' => '1309528800'
+                'expectedoutput' => '1309525200'
             ),
             array(
                 'usertimezone' => 'America/Moncton',
