@@ -307,7 +307,7 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
 
                 $checkrescale = function($val) {
                     // Nothing is affected by changes to grademax if there are no grades yet.
-                    if (!$this->isupdate || !$this->hasgrades) {
+                    if (!$this->isupdate || !$this->hasgrades || !$this->canrescale) {
                         return true;
                     }
                     // Closure to validate a scale value. See the note above about scope if this confuses you.
