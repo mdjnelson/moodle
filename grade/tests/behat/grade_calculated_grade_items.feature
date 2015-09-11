@@ -2,7 +2,7 @@
 Feature: Calculated grade items can be used in the gradebook
   In order to use calculated grade items in the gradebook
   As a teacher
-  I need setup calculated grade items in the categories and items page.
+  I need setup calculated grade items in the 'Gradebook setup' page.
 
   Background:
     Given the following "courses" exist:

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Edit and review page for grade categories and items
+ * The Gradebook setup page.
  *
  * @package   core_grades
  * @copyright 2008 Nicolas Connault
