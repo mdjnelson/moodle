@@ -112,7 +112,6 @@ $string['calculationsaved'] = 'Calculation saved';
 $string['calculationview'] = 'View calculation';
 $string['cannotaccessgroup'] = 'Can not access grades of selected group, sorry.';
 $string['categories'] = 'Categories';
-$string['categoriesanditems'] = 'Categories and items';
 $string['category'] = 'Category';
 $string['categoryedit'] = 'Edit category';
 $string['categoryname'] = 'Category name';
@@ -790,3 +789,6 @@ $string['writinggradebookinfo'] = 'Writing gradebook settings';
 $string['xml'] = 'XML';
 $string['yes'] = 'Yes';
 $string['yourgrade'] = 'Your grade';
+
+// Deprecated since 3.0.
+$string['categoriesanditems'] = 'Categories and items';
