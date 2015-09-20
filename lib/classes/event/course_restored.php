@@ -83,6 +83,16 @@ class course_restored extends base {
     }
 
     /**
+     * Determines if this event should be triggered during a backup restore.
+     *
+     * @return bool returns true if this event can be triggered during restore, false
+     *  otherwise.
+     */
+    public function trigger_during_restore() {
+        return true;
+    }
+
+    /**
      * Returns the name of the legacy event.
      *
      * @return string legacy event name

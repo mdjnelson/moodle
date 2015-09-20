@@ -321,6 +321,16 @@ abstract class base implements \IteratorAggregate {
     }
 
     /**
+     * Determines if this event should be triggered during a backup restore.
+     *
+     * @return bool returns true if this event can be triggered during restore, false
+     *  otherwise.
+     */
+    public function trigger_during_restore() {
+        return false;
+    }
+
+    /**
      * Restore event from existing historic data.
      *
      * @param array $data
@@ -683,13 +693,18 @@ abstract class base implements \IteratorAggregate {
      * Trigger event.
      */
     public final function trigger() {
-        global $CFG;
+        global $CFG, $PAGE;
 
         if ($this->restored) {
             throw new \coding_exception('Can not trigger restored event');
         }
         if ($this->triggered or $this->dispatched) {
             throw new \coding_exception('Can not trigger event twice');
+        }
+
+        // Only trigger this event during a restore if we explicitly say so.
+        if ($PAGE->requestorigin === 'restore' && !$this->trigger_during_restore()) {
+            return;
         }
 
         $this->validate_before_trigger();
