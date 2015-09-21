@@ -110,8 +110,15 @@ class restore_logstore_standard_subplugin extends restore_tool_log_logstore_subp
             }
         }
         if (!empty($data->other)) {
-            // TODO: Call to the resolver.
-            return;
+            // Check if there is a mapping function for this event.
+            $eventclass = $data->eventname;
+            if (class_exists($eventclass)) {
+                $data->other = $eventclass::get_other_mapping($this, $data->other);
+                // Now we want to serialize it so we can store it in the DB.
+                $data->other = serialize($data->other);
+            } else {
+                return; // No such class, can not restore.
+            }
         }
 
         // Arrived here, everything is now ready to be added to database, let's proceed.
