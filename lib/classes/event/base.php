@@ -479,6 +479,24 @@ abstract class base implements \IteratorAggregate {
     }
 
     /**
+     * This is used when restoring course logs where it is required that we
+     * map the objectid to it's new value in the new course.
+     *
+     * Does nothing in the base class except display a debugging message warning
+     * the user that the event does not contain the required functionality to
+     * map this information. For events that do not store an objectid this won't
+     * be called, so no debugging message will be displayed.
+     *
+     * @return string the table the objectid links to
+     */
+    public static function get_objectid_mapping() {
+        debugging('In order to restore course logs accurately the event must define the
+            function get_objectid_mapping().', DEBUG_DEVELOPER);
+
+        return false;
+    }
+
+    /**
      * Get static information about an event.
      * This is used in reports and is not for general use.
      *
