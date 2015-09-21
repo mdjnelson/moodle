@@ -132,7 +132,7 @@ abstract class restore_subplugin {
      * @param int $oldid the item ID from the backup
      * @param mixed $ifnotfound what to return if $oldid wasnt found. Defaults to false
      */
-    protected function get_mappingid($itemname, $oldid, $ifnotfound = false) {
+    public function get_mappingid($itemname, $oldid, $ifnotfound = false) {
         return $this->step->get_mappingid($itemname, $oldid, $ifnotfound);
     }
 

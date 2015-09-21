@@ -134,8 +134,13 @@ class restore_logstore_database_subplugin extends restore_tool_log_logstore_subp
         // same way restore mappings work. So we need to delegate them to some resolver that
         // will give us the correct restore mapping to be used.
         if (!empty($data->objectid)) {
-            // TODO: Call to the resolver.
-            return;
+            // Check if there is a mapping function for this event.
+            $eventclass = $data->eventname;
+            if (class_exists($eventclass)) {
+                $data->objectid = $eventclass::get_objectid_mapping($this, $data->objectid);
+            } else {
+                return; // No such class, can not restore.
+            }
         }
         if (!empty($data->other)) {
             // TODO: Call to the resolver.
