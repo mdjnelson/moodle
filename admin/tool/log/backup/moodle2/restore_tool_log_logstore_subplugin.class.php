@@ -99,8 +99,27 @@ abstract class restore_tool_log_logstore_subplugin extends restore_subplugin {
             }
         }
         if (!empty($data->other)) {
-            // TODO: Call to the resolver.
-            return;
+            // Check if there is an available class for this event we can use to map this value.
+            $eventclass = $data->eventname;
+            if (class_exists($eventclass)) {
+                $othermapping = $eventclass::get_other_mapping();
+                if ($othermapping) {
+                    // Go through the data we have.
+                    foreach ($data->other as $key => $value) {
+                        // Check if there is a corresponding key we can use to map to.
+                        if (isset($othermapping[$key])) {
+                            // Ok, let's map this.
+                            $mapping = $othermapping[$key];
+                            $mapping = $mapping['restore'];
+                            $data->other[$key] = $this->get_mappingid($mapping, $value);
+                        }
+                    }
+                }
+                // Now we want to serialize it so we can store it in the DB.
+                $data->other = serialize($data->other);
+            } else {
+                return; // No such class, can not restore.
+            }
         }
 
         return $data;
