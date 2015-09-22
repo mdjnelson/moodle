@@ -497,6 +497,22 @@ abstract class base implements \IteratorAggregate {
     }
 
     /**
+     * This is used when restoring course logs where it is required that we
+     * map the information in 'other' to it's new value in the new course.
+     *
+     * Does nothing in the base class except display a debugging message warning
+     * the user that the event does not contain the required functionality to
+     * map this information. For events that do not store any other information this
+     * won't be called, so no debugging message will be displayed.
+     *
+     * @return array an array of other values and their corresponding mapping DB table
+     */
+    public static function get_other_mapping() {
+        debugging('In order to restore course logs accurately the event must define the
+            function get_other_mapping().', DEBUG_DEVELOPER);
+    }
+
+    /**
      * Get static information about an event.
      * This is used in reports and is not for general use.
      *
