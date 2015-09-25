@@ -88,4 +88,13 @@ class page_locks_deleted extends \core\event\base {
     public function get_url() {
         return new \moodle_url('/mod/wiki/view.php', array('pageid' => $this->objectid));
     }
+
+    public static function get_objectid_mapping() {
+        return array('db' => 'wiki_pages', 'restore' => 'wiki_page');
+    }
+
+    public static function get_other_mapping() {
+        // Can not map 'section' value.
+        return false;
+    }
 }
