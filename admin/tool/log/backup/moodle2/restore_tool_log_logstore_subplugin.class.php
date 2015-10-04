@@ -100,7 +100,13 @@ abstract class restore_tool_log_logstore_subplugin extends restore_subplugin {
             if (class_exists($eventclass)) {
                 $mapping = $eventclass::get_objectid_mapping();
                 if ($mapping) {
-                    $data->objectid = $this->get_mappingid($mapping['restore'], $data->objectid);
+                    // Check if it can not be mapped.
+                    if ((is_int($mapping) && $mapping === \core\event\base::NOT_MAPPED) ||
+                        ($mapping['restore'] === \core\event\base::NOT_MAPPED)) {
+                        $data->objectid = \core\event\base::NOT_MAPPED;
+                    } else {
+                        $data->objectid = $this->get_mappingid($mapping['restore'], $data->objectid);
+                    }
                 }
             } else {
                 $message = "Event class not found: \"$eventclass\". Skipping log record.";
