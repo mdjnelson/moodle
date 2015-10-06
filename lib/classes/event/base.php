@@ -533,6 +533,18 @@ abstract class base implements \IteratorAggregate {
      * $mappedother['forumid'] = array('db' => 'forum', 'restore' => 'forum');
      * return $mappedother;
      *
+     * If an id can not be mapped during restore we set it to \core\event\base::NOT_MAPPED, example -
+     *
+     * $mappedother = array();
+     * $mappedother['someid'] = array('db' => 'some_table', 'restore' => \core\event\base::NOT_MAPPED);
+     * return $mappedother;
+     *
+     * Note - it isn't necessary to specify the 'db' and 'restore' values in this case, so you can also use -
+     *
+     * $mappedother = array();
+     * $mappedother['someid'] = \core\event\base::NOT_MAPPED;
+     * return $mappedother;
+     *
      * The 'db' key refers to the database table and the 'restore' key refers to
      * the name of the restore element the other value is associated with. In many
      * cases these will be the same.
