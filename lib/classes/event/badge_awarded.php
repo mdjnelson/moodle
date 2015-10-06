@@ -98,4 +98,12 @@ class badge_awarded extends base {
     public static function get_objectid_mapping() {
         return array('db' => 'badge', 'restore' => 'badge');
     }
+
+    public static function get_other_mapping() {
+        $othermapped = array();
+        // Can't map the 'badgeissuedid'.
+        $othermapped['badgeissuedid'] = \core\event\base::NOT_MAPPED;
+
+        return $othermapped;
+    }
 }
