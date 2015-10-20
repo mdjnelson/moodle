@@ -1551,11 +1551,11 @@ class mod_forum_events_testcase extends advanced_testcase {
         $this->assertCount(3, $events);
 
         // Loop through the events and check they are valid.
-        foreach ($events as $key => $event) {
-            if ($key === 0) {
+        foreach ($events as $event) {
+            if ($event->objectid == $post2->id) {
                 // The last post in the discussion (that wasn't deleted).
                 $post = $post2;
-            } else if ($key === 1) {
+            } else if ($event->objectid == $post1->id) {
                 // The first post in the discussion.
                 $post = $post1;
             } else { // Must be the discussion post.
