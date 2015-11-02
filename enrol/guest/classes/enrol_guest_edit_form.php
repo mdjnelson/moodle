@@ -84,20 +84,25 @@ class enrol_guest_edit_form extends moodleform {
         $checkpassword = false;
 
         if ($data['id']) {
-            if ($data['status'] == ENROL_INSTANCE_ENABLED) {
-                if ($instance->password !== $data['password']) {
-                    $checkpassword = true;
-                }
-            }
-        } else {
-            if ($data['status'] == ENROL_INSTANCE_ENABLED) {
+            // Check the password if we are enabling the plugin again.
+            if (($instance->status == ENROL_INSTANCE_DISABLED) && ($data['status'] == ENROL_INSTANCE_ENABLED)) {
                 $checkpassword = true;
             }
+
+            // Check the password if it has changed.
+            if ($instance->password !== $data['password']) {
+                $checkpassword = true;
+            }
+        } else {
+            $checkpassword = true;
         }
 
         if ($checkpassword) {
             $policy  = $plugin->get_config('usepasswordpolicy');
-            if ($policy) {
+            // If we have a password set and are using the password policy then check that it meets the policy
+            // criteria. If the password is empty, then it is not required; when the setting 'requirepassword'
+            // is enabled the 'password' field is required (see form rule above).
+            if (!empty($data['password'] && $policy)) {
                 $errmsg = '';
                 if (!check_password_policy($data['password'], $errmsg)) {
                     $errors['password'] = $errmsg;
