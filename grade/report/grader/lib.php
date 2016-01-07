@@ -39,6 +39,20 @@ class grade_report_grader extends grade_report {
     public $grades;
 
     /**
+     * Contains all the grades for the course - including ones not displayed in the grade tree.
+     *
+     * @var array $allgrades
+     */
+    private $allgrades = array();
+
+    /**
+     * Contains all the grade items for the course - including ones not displayed in the grade tree.
+     *
+     * @var array $allgradeitems
+     */
+    private $allgradeitems = array();
+
+    /**
      * Array of errors for bulk grades updating.
      * @var array $gradeserror
      */
@@ -538,9 +552,25 @@ class grade_report_grader extends grade_report {
 
         if ($grades = $DB->get_records_sql($sql, $params)) {
             foreach ($grades as $graderec) {
-                if (in_array($graderec->userid, $userids) and array_key_exists($graderec->itemid, $this->gtree->get_items())) { // some items may not be present!!
-                    $this->grades[$graderec->userid][$graderec->itemid] = new grade_grade($graderec, false);
-                    $this->grades[$graderec->userid][$graderec->itemid]->grade_item = $this->gtree->get_item($graderec->itemid); // db caching
+                if (in_array($graderec->userid, $userids)) {
+                    $grade = new grade_grade($graderec, false);
+                    if (array_key_exists($graderec->itemid, $this->gtree->get_items())) { // Some items may not be present.
+                        $this->grades[$graderec->userid][$graderec->itemid] = $grade;
+                        $this->grades[$graderec->userid][$graderec->itemid]->grade_item =
+                            $this->gtree->get_item($graderec->itemid);
+                    }
+                    // Load all the grades and grade items for users who can not view hidden items.
+                    if (!$this->canviewhidden) {
+                        $this->allgrades[$graderec->userid][$graderec->itemid] = $grade;
+                        // Check if the grade item has already been loaded.
+                        if (!isset($this->allgradeitems[$graderec->itemid]) &&
+                            isset($this->grades[$graderec->userid][$graderec->itemid])) {
+                            $this->allgradeitems[$graderec->itemid] =
+                                $this->grades[$graderec->userid][$graderec->itemid]->grade_item;
+                        } else if (!isset($this->allgradeitems[$graderec->itemid])) {
+                            $this->allgradeitems[$graderec->itemid] = grade_item::fetch(array('id' => $graderec->itemid));
+                        }
+                    }
                 }
             }
         }
@@ -553,6 +583,12 @@ class grade_report_grader extends grade_report {
                     $this->grades[$userid][$itemid]->itemid = $itemid;
                     $this->grades[$userid][$itemid]->userid = $userid;
                     $this->grades[$userid][$itemid]->grade_item = $this->gtree->get_item($itemid); // db caching
+
+                    // Load these as we need them for users who can not view hidden items.
+                    if (!$this->canviewhidden) {
+                        $this->allgrades[$userid][$itemid] = $this->grades[$userid][$itemid];
+                        $this->allgradeitems[$itemid] = $this->grades[$userid][$itemid]->grade_item;
+                    }
                 }
             }
         }
@@ -893,7 +929,9 @@ class grade_report_grader extends grade_report {
                 $altered = array();
                 $unknown = array();
             } else {
-                $hidingaffected = grade_grade::get_hiding_affected($this->grades[$userid], $this->gtree->get_items());
+                $allgrades = $this->allgrades[$userid];
+                $allgradeitems = $this->allgradeitems;
+                $hidingaffected = grade_grade::get_hiding_affected($allgrades, $allgradeitems);
                 $altered = $hidingaffected['altered'];
                 $unknown = $hidingaffected['unknown'];
                 unset($hidingaffected);
