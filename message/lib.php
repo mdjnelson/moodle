@@ -2755,21 +2755,22 @@ function message_page_type_list($pagetype, $parentcontext, $currentcontext) {
 
 /**
  * Get messages sent or/and received by the specified users.
- * Please note that this function return deleted messages too.
  *
- * @param  int      $useridto       the user id who received the message
- * @param  int      $useridfrom     the user id who sent the message. -10 or -20 for no-reply or support user
- * @param  int      $notifications  1 for retrieving notifications, 0 for messages, -1 for both
- * @param  bool     $read           true for retrieving read messages, false for unread
- * @param  string   $sort           the column name to order by including optionally direction
- * @param  int      $limitfrom      limit from
- * @param  int      $limitnum       limit num
+ * @param int $useridto the user id who received the message
+ * @param int $useridfrom the user id who sent the message. -10 or -20 for no-reply or support user
+ * @param int $notifications 1 for retrieving notifications, 0 for messages, -1 for both
+ * @param bool $read true for retrieving read messages, false for unread
+ * @param string $sort the column name to order by including optionally direction
+ * @param int $limitfrom limit from
+ * @param int $limitnum limit num
+ * @param bool $includedeletedmessages if true includes deleted messages, otherwise it does not
  * @return external_description
  * @since  2.8
  */
 function message_get_messages($useridto, $useridfrom = 0, $notifications = -1, $read = true,
-                                $sort = 'mr.timecreated DESC', $limitfrom = 0, $limitnum = 0) {
-    global $DB;
+                              $sort = 'mr.timecreated DESC', $limitfrom = 0, $limitnum = 0,
+                              $includedeletedmessages = true) {
+    global $DB, $USER;
 
     $messagetable = $read ? '{message_read}' : '{message}';
     $params = array('deleted' => 0);
@@ -2799,11 +2800,23 @@ function message_get_messages($useridto, $useridfrom = 0, $notifications = -1, $
         $params['notification'] = ($notifications) ? 1 : 0;
     }
 
+    $messagesql = '';
+    if (!$includedeletedmessages) {
+        if ($USER->id == $useridto) {
+            $params['messagedeleted'] = 0;
+            $messagesql = 'AND mr.timeusertodeleted = :messagedeleted';
+        } else if ($USER->id == $useridfrom) {
+            $params['messagedeleted'] = 0;
+            $messagesql = 'AND mr.timeuserfromdeleted = :messagedeleted';
+        }
+    }
+
     $sql = "SELECT mr.*, $userfields
               FROM $messagetable mr
                    $joinsql
              WHERE $usersql
                    $typesql
+                   $messagesql
              ORDER BY $sort";
 
     $messages = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);

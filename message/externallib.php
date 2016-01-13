@@ -629,7 +629,9 @@ class core_message_external extends external_api {
                     PARAM_BOOL, 'true for ordering by newest first, false for oldest first',
                     VALUE_DEFAULT, true),
                 'limitfrom' => new external_value(PARAM_INT, 'limit from', VALUE_DEFAULT, 0),
-                'limitnum' => new external_value(PARAM_INT, 'limit number', VALUE_DEFAULT, 0)
+                'limitnum' => new external_value(PARAM_INT, 'limit number', VALUE_DEFAULT, 0),
+                'includedeletedmessages' => new external_value(PARAM_BOOL, 'true for returning deleted messages as well,
+                    false otherwise', VALUE_DEFAULT, false)
             )
         );
     }
@@ -640,17 +642,19 @@ class core_message_external extends external_api {
      * @since  2.8
      * @throws invalid_parameter_exception
      * @throws moodle_exception
-     * @param  int      $useridto       the user id who received the message
-     * @param  int      $useridfrom     the user id who send the message. -10 or -20 for no-reply or support user
-     * @param  string   $type           type of message to return, expected values: notifications, conversations and both
-     * @param  bool     $read           true for retreiving read messages, false for unread
-     * @param  bool     $newestfirst    true for ordering by newest first, false for oldest first
-     * @param  int      $limitfrom      limit from
-     * @param  int      $limitnum       limit num
+     * @param int $useridto the user id who received the message
+     * @param int $useridfrom the user id who send the message. -10 or -20 for no-reply or support user
+     * @param string $type type of message to return, expected values: notifications, conversations and both
+     * @param bool $read true for retrieving read messages, false for unread
+     * @param bool $newestfirst true for ordering by newest first, false for oldest first
+     * @param int $limitfrom limit from
+     * @param int $limitnum limit num
+     * @param bool $includedeletedmessages if true it returns deleted messages as well, otherwise it does not
      * @return external_description
      */
     public static function get_messages($useridto, $useridfrom = 0, $type = 'both', $read = true,
-                                        $newestfirst = true, $limitfrom = 0, $limitnum = 0) {
+                                        $newestfirst = true, $limitfrom = 0, $limitnum = 0,
+                                        $includedeletedmessages = false) {
         global $CFG, $USER;
 
         $warnings = array();
@@ -729,7 +733,8 @@ class core_message_external extends external_api {
         $orderdirection = $newestfirst ? 'DESC' : 'ASC';
         $sort = "mr.timecreated $orderdirection";
 
-        if ($messages = message_get_messages($useridto, $useridfrom, $notifications, $read, $sort, $limitfrom, $limitnum)) {
+        if ($messages = message_get_messages($useridto, $useridfrom, $notifications, $read, $sort, $limitfrom, $limitnum,
+                $includedeletedmessages)) {
             $canviewfullname = has_capability('moodle/site:viewfullnames', $context);
 
             // In some cases, we don't need to get the to/from user objects from the sql query.
@@ -748,14 +753,6 @@ class core_message_external extends external_api {
                 $userfromfullname = fullname($userfrom, $canviewfullname);
             }
             foreach ($messages as $mid => $message) {
-
-                // Do not return deleted messages.
-                if (($useridto == $USER->id and $message->timeusertodeleted) or
-                        ($useridfrom == $USER->id and $message->timeuserfromdeleted)) {
-
-                    unset($messages[$mid]);
-                    continue;
-                }
 
                 // We need to get the user from the query.
                 if (empty($userfromfullname)) {
