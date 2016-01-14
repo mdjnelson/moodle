@@ -429,6 +429,7 @@ class core_message_externallib_testcase extends externallib_advanced_testcase {
         message_post_message($user3, $user1, 'some random text 5', FORMAT_MOODLE);
 
         $this->setUser($user1);
+
         // Get read conversations from user1 to user2.
         $messages = core_message_external::get_messages($user2->id, $user1->id, 'conversations', true, true, 0, 0);
         $messages = external_api::clean_returnvalue(core_message_external::get_messages_returns(), $messages);
@@ -439,9 +440,24 @@ class core_message_externallib_testcase extends externallib_advanced_testcase {
         $messagetobedeleted = $DB->get_record('message_read', array('id' => $message['id']));
         message_delete_message($messagetobedeleted, $user1->id);
 
+        // Check that the message is not returned.
         $messages = core_message_external::get_messages($user2->id, $user1->id, 'conversations', true, true, 0, 0);
         $messages = external_api::clean_returnvalue(core_message_external::get_messages_returns(), $messages);
         $this->assertCount(0, $messages['messages']);
+
+        // Check that we can return deleted messages if we want to.
+        $messages = core_message_external::get_messages($user2->id, $user1->id, 'conversations', true, true, 0, 0, true);
+        $messages = external_api::clean_returnvalue(core_message_external::get_messages_returns(), $messages);
+        $this->assertCount(1, $messages['messages']);
+
+        // Check that user2 can still see all the messages, even the one deleted by user1.
+        $this->setUser($user2);
+        $messages = core_message_external::get_messages($user2->id, 0, 'conversations', true, true, 0, 0);
+        $messages = external_api::clean_returnvalue(core_message_external::get_messages_returns(), $messages);
+        $this->assertCount(2, $messages['messages']);
+
+        // Set back to user 1.
+        $this->setUser($user1);
 
         // Get unread conversations from user1 to user2.
         $messages = core_message_external::get_messages($user2->id, $user1->id, 'conversations', false, true, 0, 0);
