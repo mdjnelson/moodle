@@ -398,6 +398,21 @@ class edit_item_form extends moodleform {
                 $errors['grademax'] = get_string('incorrectminmax', 'grades');
             }
         }
+
+        // We do not want the user to be able to change the grade type or scale for this item if grades exist.
+        if ($grade_item && $grade_item->has_grades()) {
+            // Check that grade type is set - should never not be set unless form has been modified.
+            if (!isset($data['gradetype'])) {
+                $errors['gradetype'] = get_string('modgradecantchangegradetype', 'grades');
+            } else if ($data['gradetype'] !== $grade_item->gradetype) { // Check if we are changing the grade type.
+                $errors['gradetype'] = get_string('modgradecantchangegradetype', 'grades');
+            } else if ($data['gradetype'] == GRADE_TYPE_SCALE) {
+                // Check if we are changing the scale - can't do this when grades exist.
+                if (isset($data['scaleid']) && ($data['scaleid'] !== $grade_item->scaleid)) {
+                    $errors['scaleid'] = get_string('modgradecantchangescale', 'grades');
+                }
+            }
+        }
         if ($grade_item) {
             if (grade_floats_different($data['grademin'], $grade_item->grademin) ||
                     grade_floats_different($data['grademax'], $grade_item->grademax)) {
