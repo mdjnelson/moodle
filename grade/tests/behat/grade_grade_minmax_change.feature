@@ -23,7 +23,7 @@ Feature: We can change the maximum and minimum number of points for manual items
     And I am on site homepage
     And I follow "Course 1"
     And I navigate to "Grades" node in "Course administration"
-    And I navigate to "Categories and items" node in "Grade administration > Setup"
+    And I navigate to "Gradebook setup" node in "Grade administration > Setup"
     And I press "Add grade item"
     And I set the following fields to these values:
       | Item name | Manual item 1 |
@@ -42,7 +42,7 @@ Feature: We can change the maximum and minimum number of points for manual items
     And I give the grade "10.00" to the user "Student 1" for the grade item "Manual item 1"
     And I give the grade "8.00" to the user "Student 2" for the grade item "Manual item 1"
     And I press "Save changes"
-    When I navigate to "Categories and items" node in "Grade administration > Setup"
+    When I navigate to "Gradebook setup" node in "Grade administration > Setup"
     And I click on "Edit" "link" in the "Manual item 1" "table_row"
     And I click on "Edit settings" "link" in the "Manual item 1" "table_row"
     And I set the following fields to these values:
@@ -58,7 +58,7 @@ Feature: We can change the maximum and minimum number of points for manual items
     And the following should exist in the "user-grade" table:
       | Grade item    | Calculated weight | Grade  | Contribution to course total |
       | Manual item 1 | 100.00 %          | 8.00   | 80.00 %                      |
-    And I navigate to "Categories and items" node in "Grade administration > Setup"
+    And I navigate to "Gradebook setup" node in "Grade administration > Setup"
     And I click on "Edit" "link" in the "Manual item 1" "table_row"
     And I click on "Edit settings" "link" in the "Manual item 1" "table_row"
     And I set the following fields to these values:
@@ -73,4 +73,4 @@ Feature: We can change the maximum and minimum number of points for manual items
     And I select "Student 2" from the "Select all or one user" singleselect
     And the following should exist in the "user-grade" table:
       | Grade item    | Calculated weight | Grade  | Contribution to course total |
-      | Manual item 1 | 100.00 %          | 16.00   | 80.00 %                      |
+      | Manual item 1 | 100.00 %          | 16.00   | 80.00 %                     |

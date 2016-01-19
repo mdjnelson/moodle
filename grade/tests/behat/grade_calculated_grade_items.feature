@@ -146,6 +146,7 @@ Feature: Calculated grade items can be used in the gradebook
     And I navigate to "Gradebook setup" node in "Grade administration > Setup"
     And I set the following settings for grade item "calc item":
       | Maximum grade | 40 |
+      | Rescale existing grades | No |
     And I follow "Grader report"
     And I give the grade "65.00" to the user "Student 2" for the grade item "grade item 1"
     And I press "Save changes"
