@@ -279,6 +279,9 @@ class edit_item_form extends moodleform {
                     }
                     $mform->removeElement('rescalegrades');
                     //$mform->removeElement('calculation');
+                } else if ($grade_item->has_grades()) {
+                    // Can't change the grade type or the scale if there are grades.
+                    $mform->hardFreeze('gradetype, scaleid');
                 }
             }
 
@@ -396,6 +399,21 @@ class edit_item_form extends moodleform {
             if ($data['grademax'] == $data['grademin'] or $data['grademax'] < $data['grademin']) {
                 $errors['grademin'] = get_string('incorrectminmax', 'grades');
                 $errors['grademax'] = get_string('incorrectminmax', 'grades');
+            }
+        }
+
+        // We do not want the user to be able to change the grade type or scale for this item if grades exist.
+        if ($grade_item && $grade_item->has_grades()) {
+            // Check that grade type is set - should never not be set unless form has been modified.
+            if (!isset($data['gradetype'])) {
+                $errors['gradetype'] = get_string('modgradecantchangegradetype', 'grades');
+            } else if ($data['gradetype'] !== $grade_item->gradetype) { // Check if we are changing the grade type.
+                $errors['gradetype'] = get_string('modgradecantchangegradetype', 'grades');
+            } else if ($data['gradetype'] == GRADE_TYPE_SCALE) {
+                // Check if we are changing the scale - can't do this when grades exist.
+                if (isset($data['scaleid']) && ($data['scaleid'] !== $grade_item->scaleid)) {
+                    $errors['scaleid'] = get_string('modgradecantchangescale', 'grades');
+                }
             }
         }
         if ($grade_item) {

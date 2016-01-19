@@ -57,6 +57,15 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
     /** @var boolean $canrescale Does this activity support rescaling grades? */
     public $canrescale = false;
 
+    /** @var int $currentscaleid The current scale id */
+    public $currentscaleid = null;
+
+    /** @var string $currentgradetype The current gradetype - can either be 'none', 'scale', or 'point' */
+    public $currentgradetype = 'none';
+
+    /** @var boolean $useratings Set to true if the activity is using ratings, false otherwise */
+    public $useratings = false;
+
     /**
      * Constructor
      *
@@ -76,12 +85,29 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
         $this->_appendName = true;
         $this->_type = 'modgrade';
         $this->isupdate = !empty($options['isupdate']);
-        $this->currentgrade = false;
         if (isset($options['currentgrade'])) {
             $this->currentgrade = $options['currentgrade'];
         }
+        if (isset($options['currentgradetype'])) {
+            $gradetype = $options['currentgradetype'];
+            switch ($gradetype) {
+                case GRADE_TYPE_NONE :
+                    $this->currentgradetype = 'none';
+                    break;
+                case GRADE_TYPE_SCALE :
+                    $this->currentgradetype = 'scale';
+                    break;
+                case GRADE_TYPE_VALUE :
+                    $this->currentgradetype = 'point';
+                    break;
+            }
+        }
+        if (isset($options['currentscaleid'])) {
+            $this->currentscaleid = $options['currentscaleid'];
+        }
         $this->hasgrades = !empty($options['hasgrades']);
         $this->canrescale = !empty($options['canrescale']);
+        $this->useratings = !empty($options['useratings']);
     }
 
     /**
@@ -136,19 +162,24 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
         $typeselectid = $this->generate_modgrade_subelement_id('modgrade_type');
         $typeselect->updateAttributes(array('id' => $typeselectid));
 
-        // Check box for options for processing existing grades.
-        if ($this->isupdate && $this->hasgrades && $this->canrescale) {
-            $langrescalegrades = get_string('modgraderescalegrades', 'grades');
-            $choices = array();
-            $choices[''] = get_string('choose');
-            $choices['no'] = get_string('no');
-            $choices['yes'] = get_string('yes');
-            $rescalegradesselect = @MoodleQuickForm::createElement('select',
-                                                                     'modgrade_rescalegrades',
-                                                                     $langrescalegrades,
-                                                                     $choices);
-            $rescalegradesselect->_generateId();
-            $rescalegradesid = $rescalegradesselect->getAttribute('id');
+        if ($this->isupdate && $this->hasgrades) {
+            $typeselect->updateAttributes(array('disabled' => 'disabled'));
+            $scaleselect->updateAttributes(array('disabled' => 'disabled'));
+
+            // Check box for options for processing existing grades.
+            if ($this->canrescale) {
+                $langrescalegrades = get_string('modgraderescalegrades', 'grades');
+                $choices = array();
+                $choices[''] = get_string('choose');
+                $choices['no'] = get_string('no');
+                $choices['yes'] = get_string('yes');
+                $rescalegradesselect = @MoodleQuickForm::createElement('select',
+                    'modgrade_rescalegrades',
+                    $langrescalegrades,
+                    $choices);
+                $rescalegradesselect->_generateId();
+                $rescalegradesid = $rescalegradesselect->getAttribute('id');
+            }
         }
 
         // Add elements.
@@ -285,6 +316,52 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
                 // A handy note: the parent scope of a closure is the function in which the closure was declared.
                 // Because of this using $this is safe despite the closures being called statically.
                 // A nasty magic hack!
+                $checkgradetypechange = function($val) {
+                    // Nothing is affected by changes to the grade type if there are no grades yet.
+                    if (!$this->hasgrades) {
+                        return true;
+                    }
+                    // Check that grade type is set - should never not be set unless form has been modified.
+                    if (!isset($val['modgrade_type'])) {
+                        return false;
+                    }
+                    // Check if we are changing the grade type when grades are present.
+                    if ($val['modgrade_type'] !== $this->currentgradetype) {
+                        return false;
+                    }
+                    return true;
+                };
+                $checkscalechange = function($val) {
+                    // Nothing is affected by changes to the scale if there are no grades yet.
+                    if (!$this->hasgrades) {
+                        return true;
+                    }
+                    // Check if we are changing the scale type when grades are present.
+                    if (isset($val['modgrade_type']) && $val['modgrade_type'] === 'scale') {
+                        if (isset($val['modgrade_scale']) && ($val['modgrade_scale'] !== $this->currentscaleid)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                };
+                $checkmaxgradechange = function($val) {
+                    // Nothing is affected by changes to the max grade if there are no grades yet.
+                    if (!$this->hasgrades) {
+                        return true;
+                    }
+                    // If we are not using ratings we can change the max grade.
+                    if (!$this->useratings) {
+                        return true;
+                    }
+                    // Check if we are changing the max grade if we are using ratings and there is a grade.
+                    if (isset($val['modgrade_type']) && $val['modgrade_type'] === 'point') {
+                        if (isset($val['modgrade_point']) &&
+                            grade_floats_different($this->currentgrade, $val['modgrade_point'])) {
+                            return false;
+                        }
+                    }
+                    return true;
+                };
                 $checkmaxgrade = function($val) {
                     // Closure to validate a max points value. See the note above about scope if this confuses you.
                     if (isset($val['modgrade_type']) && $val['modgrade_type'] === 'point') {
@@ -324,14 +401,20 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
                     return true;
                 };
 
+                $cantchangegradetype = get_string('modgradecantchangegradetype', 'grades');
+                $cantchangemaxgrade = get_string('modgradecantchangeratingmaxgrade', 'grades');
                 $maxgradeexceeded = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
                 $invalidscale = get_string('modgradeerrorbadscale', 'grades');
+                $cantchangescale = get_string('modgradecantchangescale', 'grades');
                 $mustchooserescale = get_string('mustchooserescaleyesorno', 'grades');
                 // When creating the rules the sixth arg is $force, we set it to true because otherwise the form
                 // will attempt to validate the existence of the element, we don't want this because the element
                 // is being created right now and doesn't actually exist as a registered element yet.
+                $caller->addRule($name, $cantchangegradetype, 'callback', $checkgradetypechange, 'server', false, true);
+                $caller->addRule($name, $cantchangemaxgrade, 'callback', $checkmaxgradechange, 'server', false, true);
                 $caller->addRule($name, $maxgradeexceeded, 'callback', $checkmaxgrade, 'server', false, true);
                 $caller->addRule($name, $invalidscale, 'callback', $checkvalidscale, 'server', false, true);
+                $caller->addRule($name, $cantchangescale, 'callback', $checkscalechange, 'server', false, true);
                 $caller->addRule($name, $mustchooserescale, 'callback', $checkrescale, 'server', false, true);
 
                 break;
