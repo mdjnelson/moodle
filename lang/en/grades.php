@@ -474,6 +474,7 @@ $string['missingscale'] = 'Scale must be selected';
 $string['mode'] = 'Mode';
 $string['modgrade'] = 'Grade';
 $string['modgrade_help'] = 'Select the type of grading used for this activity. If "scale" is chosen, you can then choose the scale from the "scale" dropdown. If using "point" grading, you can then enter the maximum grade available for this activity.';
+$string['modgradecantchangegradetypeorscalemsg'] = 'You can not change the type or scale when grades already exist for this item.';
 $string['modgradecantchangegradetype'] = 'You can not change the type as grades already exist for this item.';
 $string['modgradecantchangescale'] = 'You can not change the scale as grades already exist for this item';
 $string['modgradecantchangeratingmaxgrade'] = 'You can not change the maximum points when grades already exist for a rated item';

@@ -66,6 +66,15 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
     /** @var boolean $useratings Set to true if the activity is using ratings, false otherwise */
     public $useratings = false;
 
+    /** @var MoodleQuickForm_select $gradetypeformelement */
+    private $gradetypeformelement;
+
+    /** @var MoodleQuickForm_select $scaleformelement */
+    private $scaleformelement;
+
+    /** @var MoodleQuickForm_text $maxpointformelement */
+    private $maxpointformelement;
+
     /**
      * Constructor
      *
@@ -138,17 +147,18 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
         // Grade scale select box.
         $scales = get_scales_menu($COURSE->id);
         $langscale = get_string('modgradetypescale', 'grades');
-        $scaleselect = @MoodleQuickForm::createElement('select', 'modgrade_scale', $langscale, $scales, $attributes);
-        $scaleselect->setHiddenLabel = false;
-        $scaleselectid = $this->generate_modgrade_subelement_id('modgrade_scale');
-        $scaleselect->updateAttributes(array('id' => $scaleselectid));
+        $this->scaleformelement = @MoodleQuickForm::createElement('select', 'modgrade_scale', $langscale,
+            $scales, $attributes);
+        $this->scaleformelement->setHiddenLabel = false;
+        $scaleformelementid = $this->generate_modgrade_subelement_id('modgrade_scale');
+        $this->scaleformelement->updateAttributes(array('id' => $scaleformelementid));
 
         // Maximum grade textbox.
         $langmaxgrade = get_string('modgrademaxgrade', 'grades');
-        $maxgrade = @MoodleQuickForm::createElement('text', 'modgrade_point', $langmaxgrade, array());
-        $maxgrade->setHiddenLabel = false;
-        $maxgradeid = $this->generate_modgrade_subelement_id('modgrade_point');
-        $maxgrade->updateAttributes(array('id' => $maxgradeid));
+        $this->maxpointformelement = @MoodleQuickForm::createElement('text', 'modgrade_point', $langmaxgrade, array());
+        $this->maxpointformelement->setHiddenLabel = false;
+        $maxpointformelementid = $this->generate_modgrade_subelement_id('modgrade_point');
+        $this->maxpointformelement->updateAttributes(array('id' => $maxpointformelementid));
 
         // Grade type select box.
         $gradetype = array(
@@ -157,14 +167,15 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
             'point' => get_string('modgradetypepoint', 'grades'),
         );
         $langtype = get_string('modgradetype', 'grades');
-        $typeselect = @MoodleQuickForm::createElement('select', 'modgrade_type', $langtype, $gradetype, $attributes, true);
-        $typeselect->setHiddenLabel = false;
-        $typeselectid = $this->generate_modgrade_subelement_id('modgrade_type');
-        $typeselect->updateAttributes(array('id' => $typeselectid));
+        $this->gradetypeformelement = @MoodleQuickForm::createElement('select', 'modgrade_type', $langtype, $gradetype,
+            $attributes, true);
+        $this->gradetypeformelement->setHiddenLabel = false;
+        $gradetypeformelementid = $this->generate_modgrade_subelement_id('modgrade_type');
+        $this->gradetypeformelement->updateAttributes(array('id' => $gradetypeformelementid));
 
         if ($this->isupdate && $this->hasgrades) {
-            $typeselect->updateAttributes(array('disabled' => 'disabled'));
-            $scaleselect->updateAttributes(array('disabled' => 'disabled'));
+            $this->gradetypeformelement->updateAttributes(array('disabled' => 'disabled'));
+            $this->scaleformelement->updateAttributes(array('disabled' => 'disabled'));
 
             // Check box for options for processing existing grades.
             if ($this->canrescale) {
@@ -183,24 +194,26 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
         }
 
         // Add elements.
+        if ($this->isupdate && $this->hasgrades) {
+            // Set a message so the user knows why they can not alter the grade type or scale.
+            $gradesexistmsg = get_string('modgradecantchangegradetypeorscalemsg', 'grades');
+            $gradesexisthtml = '<div class=\'alert\'>' . $gradesexistmsg . '</div>';
+            $this->_elements[] = @MoodleQuickForm::createElement('static', 'gradesexistmsg', '', $gradesexisthtml);
+        }
 
         // Grade type select box.
-        $label = html_writer::tag('label', $typeselect->getLabel(), array('for' => $typeselect->getAttribute('id')));
+        $label = html_writer::tag('label', $this->gradetypeformelement->getLabel(),
+            array('for' => $this->gradetypeformelement->getAttribute('id')));
         $this->_elements[] = @MoodleQuickForm::createElement('static', 'gradetypelabel', '', '&nbsp;'.$label);
-        $this->_elements[] = $typeselect;
+        $this->_elements[] = $this->gradetypeformelement;
         $this->_elements[] = @MoodleQuickForm::createElement('static', 'gradetypespacer', '', '<br />');
 
         // Grade scale select box.
-        $label = html_writer::tag('label', $scaleselect->getLabel(), array('for' => $scaleselectid));
+        $label = html_writer::tag('label', $this->scaleformelement->getLabel(),
+            array('for' => $this->scaleformelement->getAttribute('id')));
         $this->_elements[] = @MoodleQuickForm::createElement('static', 'scalelabel', '', $label);
-        $this->_elements[] = $scaleselect;
+        $this->_elements[] = $this->scaleformelement;
         $this->_elements[] = @MoodleQuickForm::createElement('static', 'scalespacer', '', '<br />');
-
-        // Maximum grade textbox.
-        $label = html_writer::tag('label', $maxgrade->getLabel(), array('for' => $maxgradeid));
-        $this->_elements[] = @MoodleQuickForm::createElement('static', 'pointlabel', '', $label);
-        $this->_elements[] = $maxgrade;
-        $this->_elements[] = @MoodleQuickForm::createElement('static', 'pointspacer', '', '<br />');
 
         if ($this->isupdate && $this->hasgrades && $this->canrescale) {
             // We need to know how to apply any changes to maxgrade - ie to either update, or don't touch exising grades.
@@ -210,6 +223,13 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
             $this->_elements[] = $rescalegradesselect;
             $this->_elements[] = @MoodleQuickForm::createElement('static', 'scalespacer', '', '<br />');
         }
+
+        // Maximum grade textbox.
+        $label = html_writer::tag('label', $this->maxpointformelement->getLabel(),
+            array('for' => $this->maxpointformelement->getAttribute('id')));
+        $this->_elements[] = @MoodleQuickForm::createElement('static', 'pointlabel', '', $label);
+        $this->_elements[] = $this->maxpointformelement;
+        $this->_elements[] = @MoodleQuickForm::createElement('static', 'pointspacer', '', '<br />');
     }
 
     /**
@@ -321,12 +341,8 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
                     if (!$this->hasgrades) {
                         return true;
                     }
-                    // Check that grade type is set - should never not be set unless form has been modified.
-                    if (!isset($val['modgrade_type'])) {
-                        return false;
-                    }
                     // Check if we are changing the grade type when grades are present.
-                    if ($val['modgrade_type'] !== $this->currentgradetype) {
+                    if (isset($val['modgrade_type']) && $val['modgrade_type'] !== $this->currentgradetype) {
                         return false;
                     }
                     return true;
@@ -425,6 +441,12 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
                 // In this case we expect an int that is going to translate to a scale if negative, or to max points
                 // if positive.
 
+                // Set the maximum points field to disabled if the rescale option has not been chosen and there are grades.
+                if ($this->hasgrades) {
+                    $caller->disabledIf($this->getName() . '[modgrade_point]', $this->getName() .
+                        '[modgrade_rescalegrades]', 'eq', '');
+                }
+
                 // A constant value should be given as an int.
                 // The default value should be an int and should really be $CFG->gradepointdefault.
                 $value = $this->_findValue($caller->_constantValues);
@@ -450,15 +472,15 @@ class MoodleQuickForm_modgrade extends MoodleQuickForm_group {
                 if (!empty($this->_elements)) {
                     if (!empty($value)) {
                         if ($value < 0) {
-                            $this->_elements[1]->setValue('scale');
-                            $this->_elements[4]->setValue(($value * -1));
+                            $this->gradetypeformelement->setValue('scale');
+                            $this->scaleformelement->setValue(($value * -1));
                         } else if ($value > 0) {
-                            $this->_elements[1]->setValue('point');
-                            $this->_elements[7]->setValue($value);
+                            $this->gradetypeformelement->setValue('point');
+                            $this->maxpointformelement->setValue($value);
                         }
                     } else {
-                        $this->_elements[1]->setValue('none');
-                        $this->_elements[7]->setValue('');
+                        $this->gradetypeformelement->setValue('none');
+                        $this->maxpointformelement->setValue('');
                     }
                 }
                 break;

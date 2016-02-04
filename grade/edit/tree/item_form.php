@@ -51,6 +51,16 @@ class edit_item_form extends moodleform {
         $mform->addHelpButton('idnumber', 'idnumbermod');
         $mform->setType('idnumber', PARAM_RAW);
 
+        if (!empty($item->id)) {
+            $gradeitem = new grade_item(array('id' => $item->id, 'courseid' => $item->courseid));
+            // If grades exist set a message so the user knows why they can not alter the grade type or scale.
+            if ($gradeitem->has_grades()) {
+                $gradesexistmsg = get_string('modgradecantchangegradetypeorscalemsg', 'grades');
+                $gradesexisthtml = '<div class=\'alert\'>' . $gradesexistmsg . '</div>';
+                $mform->addElement('static', 'gradesexistmsg', '', $gradesexisthtml);
+            }
+        }
+
         // Manual grade items cannot have grade type GRADE_TYPE_NONE.
         $options = array(GRADE_TYPE_VALUE => get_string('typevalue', 'grades'),
                          GRADE_TYPE_SCALE => get_string('typescale', 'grades'),
@@ -81,9 +91,18 @@ class edit_item_form extends moodleform {
                 $options[$scale->id] = $scale->get_name().get_string('incorrectcustomscale', 'grades');
             }
         }
+
         $mform->addElement('select', 'scaleid', get_string('scale'), $options);
         $mform->addHelpButton('scaleid', 'typescale', 'grades');
         $mform->disabledIf('scaleid', 'gradetype', 'noteq', GRADE_TYPE_SCALE);
+
+        $choices = array();
+        $choices[''] = get_string('choose');
+        $choices['no'] = get_string('no');
+        $choices['yes'] = get_string('yes');
+        $mform->addElement('select', 'rescalegrades', get_string('modgraderescalegrades', 'grades'), $choices);
+        $mform->addHelpButton('rescalegrades', 'modgraderescalegrades', 'grades');
+        $mform->disabledIf('rescalegrades', 'gradetype', 'noteq', GRADE_TYPE_VALUE);
 
         $mform->addElement('text', 'grademax', get_string('grademax', 'grades'));
         $mform->addHelpButton('grademax', 'grademax', 'grades');
@@ -96,14 +115,6 @@ class edit_item_form extends moodleform {
             $mform->disabledIf('grademin', 'gradetype', 'noteq', GRADE_TYPE_VALUE);
             $mform->setType('grademin', PARAM_RAW);
         }
-
-        $choices = array();
-        $choices[''] = get_string('choose');
-        $choices['no'] = get_string('no');
-        $choices['yes'] = get_string('yes');
-        $mform->addElement('select', 'rescalegrades', get_string('modgraderescalegrades', 'grades'), $choices);
-        $mform->addHelpButton('rescalegrades', 'modgraderescalegrades', 'grades');
-        $mform->disabledIf('rescalegrades', 'gradetype', 'noteq', GRADE_TYPE_VALUE);
 
         $mform->addElement('text', 'gradepass', get_string('gradepass', 'grades'));
         $mform->addHelpButton('gradepass', 'gradepass', 'grades');
@@ -282,6 +293,12 @@ class edit_item_form extends moodleform {
                 } else if ($grade_item->has_grades()) {
                     // Can't change the grade type or the scale if there are grades.
                     $mform->hardFreeze('gradetype, scaleid');
+
+                    // Set the maximum grade to disabled unless a grade is chosen.
+                    $mform->disabledIf('grademax', 'rescalegrades', 'eq', '');
+                } else {
+                    // Remove the rescale element if there are no grades.
+                    $mform->removeElement('rescalegrades');
                 }
             }
 
