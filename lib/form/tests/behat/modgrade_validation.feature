@@ -44,11 +44,12 @@ Feature: Using the activity grade form element
       | Group mode | No groups |
     And I follow "Test forum name"
     And I click on "Edit settings" "link" in the "Administration" "block"
-    And I expand all fieldsets
+    When I expand all fieldsets
+    Then I should not see "You can not change the type or scale when grades already exist for this item"
     And I set the field "scale[modgrade_type]" to "Scale"
     And I set the field "scale[modgrade_scale]" to "ABCDEF"
-    When I press "Save and display"
-    Then I should not see "You can not change the type as grades already exist for this item"
+    And I press "Save and display"
+    And I should not see "You can not change the type as grades already exist for this item"
     And I click on "Edit settings" "link" in the "Administration" "block"
     And I expand all fieldsets
     And I set the field "scale[modgrade_scale]" to "Letter scale"
@@ -75,10 +76,11 @@ Feature: Using the activity grade form element
     And I press "Save changes"
     And I press "Continue"
     And I click on "Edit settings" "link" in the "Administration" "block"
-    And I expand all fieldsets
+    When I expand all fieldsets
+    Then I should see "You can not change the type or scale when grades already exist for this item"
     And I set the field "grade[modgrade_type]" to "Scale"
-    When I press "Save and display"
-    Then I should see "You can not change the type as grades already exist for this item"
+    And I press "Save and display"
+    And I should see "You can not change the type as grades already exist for this item"
 
   Scenario: Attempting to change scale when grades already exist
     Given I log in as "admin"
@@ -110,10 +112,11 @@ Feature: Using the activity grade form element
     And I press "Save changes"
     And I press "Continue"
     And I click on "Edit settings" "link" in the "Administration" "block"
-    And I expand all fieldsets
+    When I expand all fieldsets
+    Then I should see "You can not change the type or scale when grades already exist for this item"
     And I set the field "grade[modgrade_scale]" to "Letter scale"
-    When I press "Save and display"
-    Then I should see "You can not change the scale as grades already exist for this item"
+    And I press "Save and display"
+    And I should see "You can not change the scale as grades already exist for this item"
 
   Scenario: Attempting to change the maximum grade when ratings exist
     Given I log in as "teacher1"
@@ -145,10 +148,11 @@ Feature: Using the activity grade form element
     And I set the field "rating" to "100"
     And I press "Rate"
     And I click on "Edit settings" "link" in the "Administration" "block"
-    And I expand all fieldsets
+    When I expand all fieldsets
+    Then I should see "You can not change the type or scale when grades already exist for this item"
     And I set the field "Maximum points" to "50"
-    When I press "Save and display"
-    Then I should see "You can not change the maximum points when grades already exist for a rated item"
+    And I press "Save and display"
+    And I should see "You can not change the maximum points when grades already exist for a rated item"
 
   Scenario: Attempting to change the maximum grade when no rescaling option has been chosen
     Given I log in as "teacher1"
@@ -165,7 +169,8 @@ Feature: Using the activity grade form element
     And I press "Save changes"
     And I press "Continue"
     And I click on "Edit settings" "link" in the "Administration" "block"
-    And I expand all fieldsets
+    When I expand all fieldsets
+    Then I should see "You can not change the type or scale when grades already exist for this item"
     And I set the field "Maximum points" to "50"
-    When I press "Save and display"
-    Then I should see "You must choose whether to rescale existing grades or not"
+    And I press "Save and display"
+    And I should see "You must choose whether to rescale existing grades or not"
