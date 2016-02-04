@@ -38,10 +38,11 @@ Feature: Editing a grade item
 
   Scenario: Being able to change the grade type, scale and maximum grade for a manual grade item when there are no grades
     Given I click on "Edit" "link" in the "MI 1" "table_row"
+    Then I should not see "You can not change the type or scale when grades already exist for this item"
     And I click on "Edit settings" "link" in the "MI 1" "table_row"
     And I set the field "Grade type" to "Scale"
-    When I press "Save changes"
-    Then I should see "Scale must be selected"
+    And I press "Save changes"
+    And I should see "Scale must be selected"
     And I set the field "Scale" to "ABCDEF"
     And I press "Save changes"
     And I should not see "You can not change the type as grades already exist for this item"
@@ -58,7 +59,8 @@ Feature: Editing a grade item
     And I press "Save changes"
     And I navigate to "Gradebook setup" node in "Grade administration > Setup"
     And I click on "Edit" "link" in the "MI 1" "table_row"
-    And I click on "Edit settings" "link" in the "MI 1" "table_row"
+    When I click on "Edit settings" "link" in the "MI 1" "table_row"
+    Then I should see "You can not change the type or scale when grades already exist for this item"
     And "//div[contains(concat(' ', normalize-space(@class), ' '), 'fstatic') and contains(text(), 'Value')]" "xpath_element" should exist
 
   Scenario: Attempting to change a manual item's scale when grades already exist
@@ -73,7 +75,8 @@ Feature: Editing a grade item
     And I press "Save changes"
     And I navigate to "Gradebook setup" node in "Grade administration > Setup"
     And I click on "Edit" "link" in the "MI 1" "table_row"
-    And I click on "Edit settings" "link" in the "MI 1" "table_row"
+    When I click on "Edit settings" "link" in the "MI 1" "table_row"
+    Then I should see "You can not change the type or scale when grades already exist for this item"
     And "//div[contains(concat(' ', normalize-space(@class), ' '), 'fstatic') and contains(text(), 'ABCDEF')]" "xpath_element" should exist
 
   Scenario: Attempting to change the maximum grade when no rescaling option has been chosen
