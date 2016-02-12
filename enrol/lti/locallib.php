@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The form for adding/editing instances of the enrol_lti.
+ * LTI enrolment plugin locallib functions.
  *
  * @package enrol_lti
  * @copyright 2016 Mark Nelson <markn@moodle.com>
@@ -24,19 +24,32 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/formslib.php');
+/*
+ * The value used when we always want to send grades.
+ */
+define('ENROL_LTI_GRADE_SYNC_ALWAYS', 1);
 
-class enrol_lti_edit_form extends moodleform {
+/*
+ * The value used when we want to send grades when they differ.
+ */
+define('ENROL_LTI_GRADE_SYNC_DIFFERS', 2);
 
-    function definition() {
-        $mform = $this->_form;
+/*
+ * The value used when we want to send grades the first time only.
+ */
+define('ENROL_LTI_GRADE_SYNC_FIRST_TIME', 3);
 
-        list($instance, $plugin, $context) = $this->_customdata;
+/*
+ * The value used when we want to enrol new members and unenrol old ones.
+ */
+define('ENROL_LTI_MEMBER_SYNC_ENROL_AND_UNENROL', 1);
 
-        $mform->addElement('header', 'header', get_string('pluginname', 'enrol_lti'));
+/*
+ * The value used when we want to enrol new members only.
+ */
+define('ENROL_LTI_MEMBER_SYNC_ENROL_NEW', 2);
 
-        $this->add_action_buttons(true, ($instance->id ? null : get_string('addinstance', 'enrol')));
-
-        $this->set_data($instance);
-    }
-}
+/*
+ * The value used when we want to unenrol missing users.
+ */
+define('ENROL_LTI_MEMBER_SYNC_UNENROL_MISSING', 3);
