@@ -264,7 +264,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
             'children' => array(),
             'canreply' => true,
             'postread' => false,
-            'userfullname' => fullname($user3),
+            'userfullname' => \core_user::displayname($user3, $forum1context),
             'userpictureurl' => ''
         );
 
@@ -287,7 +287,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
             'children' => array($discussion1reply2->id),
             'canreply' => true,
             'postread' => false,
-            'userfullname' => fullname($user2),
+            'userfullname' => \core_user::displayname($user2, $forum1context),
             'userpictureurl' => ''
         );
 
@@ -462,6 +462,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $post1 = $DB->get_record('forum_posts', array('id' => $discussion1->firstpost), '*', MUST_EXIST);
 
         // User pictures are initially empty, we should get the links once the external function is called.
+
         $expecteddiscussions = array(
                 'id' => $discussion1->firstpost,
                 'name' => $discussion1->name,
@@ -483,8 +484,8 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
                 'attachment' => $post1->attachment,
                 'totalscore' => $post1->totalscore,
                 'mailnow' => $post1->mailnow,
-                'userfullname' => fullname($user1),
-                'usermodifiedfullname' => fullname($user4),
+                'userfullname' => \core_user::displayname($user1, $context),
+                'usermodifiedfullname' => \core_user::displayname($user4, $context),
                 'userpictureurl' => '',
                 'usermodifiedpictureurl' => '',
                 'numreplies' => 3,

@@ -45,17 +45,18 @@ if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
 require_login($course, false, $cm);
 $returnpageurl = new moodle_url('/mod/forum/' . $returnpage, array('id' => $course->id, 'f' => $forum->id));
 $returnto = forum_go_back_to($returnpageurl);
+$modcontext = context_module::instance($cm->id);
 
 if (!forum_tp_can_track_forums($forum)) {
     redirect($returnto);
 }
 
 $info = new stdClass();
-$info->name  = fullname($USER);
+$info->name  = \core_user::displayname($USER, $modcontext);
 $info->forum = format_string($forum->name);
 
 $eventparams = array(
-    'context' => context_module::instance($cm->id),
+    'context' => $modcontext,
     'relateduserid' => $USER->id,
     'other' => array('forumid' => $forum->id),
 );

@@ -353,7 +353,7 @@ function forum_rss_feed_contents($forum, $sql, $params, $context) {
                     //we should have an item title by now but if we dont somehow then substitute something somewhat meaningful
                     $item->title = format_string($forum->name.' '.userdate($rec->postcreated,get_string('strftimedatetimeshort', 'langconfig')));
                 }
-                $item->author = fullname($rec);
+                $item->author = \core_user::displayname($rec, $context);
                 $message = file_rewrite_pluginfile_urls($rec->postmessage, 'pluginfile.php', $context->id,
                         'mod_forum', 'post', $rec->postid);
                 $formatoptions->trusted = $rec->posttrust;

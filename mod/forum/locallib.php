@@ -310,7 +310,9 @@ class forum_portfolio_caller extends portfolio_module_caller_base {
         }
         $output .= '<div class="subject">'.format_string($post->subject).'</div>';
 
-        $fullname = fullname($users[$post->userid], $viewfullnames);
+        $fullname = \core_user::displayname($users[$post->userid], $this->modcontext, array(
+            'usefullnamedisplay' => $canviewfullname,
+        ));
         $by = new stdClass();
         $by->name = $fullname;
         $by->date = userdate($post->modified, '', core_date::get_user_timezone($this->user));

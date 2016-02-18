@@ -362,14 +362,10 @@ class forum_post implements \renderable, \templatable {
      * @return string
      */
     public function get_authorlink() {
-        $link = new \moodle_url(
-            '/user/view.php', array(
-                'id' => $this->post->userid,
-                'course' => $this->course->id,
-            )
-        );
-
-        return $link->out(false);
+        if ($link = \core_user::profile_url($this->author, \context_module::instance($this->cm->id), [], $this->course->id)) {
+            return $link->out(false);
+        }
+        return '';
     }
 
     /**
@@ -500,7 +496,9 @@ class forum_post implements \renderable, \templatable {
      * @return string
      */
     public function get_author_fullname() {
-        return fullname($this->author, $this->viewfullnames);
+        return \core_user::displayname($this->author, \context_module::instance($this->cm->id), array(
+            'usefullnamedisplay'     => $this->viewfullnames,
+        ));
     }
 
     /**
@@ -540,9 +538,7 @@ class forum_post implements \renderable, \templatable {
      * @return string
      */
     public function get_author_picture() {
-        global $OUTPUT;
-
-        return $OUTPUT->user_picture($this->author, array('courseid' => $this->course->id));
+        return \core_user::user_picture($this->author, \context_module::instance($this->cm->id));
     }
 
     /**

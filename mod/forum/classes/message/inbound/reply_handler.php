@@ -276,7 +276,7 @@ class reply_handler extends \core\message\inbound\handler {
 
         $record->itemid     = $itemid;
         $record->license    = $CFG->sitedefaultlicense;
-        $record->author     = fullname($USER);
+        $record->author     = \core_user::displayname($USER, $context);
         $record->contextid  = $context->id;
         $record->userid     = $USER->id;
 

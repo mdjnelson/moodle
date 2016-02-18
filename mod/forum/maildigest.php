@@ -50,7 +50,7 @@ $PAGE->set_context($context);
 $digestoptions = forum_get_user_digest_options();
 
 $info = new stdClass();
-$info->name  = fullname($USER);
+$info->name = \core_user::displayname($USER, $context);
 $info->forum = format_string($forum->name);
 forum_set_user_maildigest($forum, $maildigest);
 $info->maildigest = $maildigest;

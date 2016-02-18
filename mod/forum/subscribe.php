@@ -177,7 +177,7 @@ if (\mod_forum\subscriptions::is_forcesubscribed($forum)) {
 }
 
 $info = new stdClass();
-$info->name  = fullname($user);
+$info->name  = \core_user::displayname($user, $context);
 $info->forum = format_string($forum->name);
 
 if ($issubscribed) {

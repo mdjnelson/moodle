@@ -111,7 +111,7 @@ class mod_forum_external extends external_api {
      * @return external_single_structure
      * @since Moodle 2.5
      */
-     public static function get_forums_by_courses_returns() {
+    public static function get_forums_by_courses_returns() {
         return new external_multiple_structure(
             new external_single_structure(
                 array(
@@ -228,8 +228,6 @@ class mod_forum_external extends external_api {
             throw new moodle_exception('noviewdiscussionspermission', 'forum');
         }
 
-        $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
-
         // We will add this field in the response.
         $canreply = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
@@ -237,6 +235,10 @@ class mod_forum_external extends external_api {
 
         $sort = 'p.' . $sortby . ' ' . $sortdirection;
         $allposts = forum_get_all_discussion_posts($discussion->id, $sort, $forumtracked);
+
+        $coreuserparams = array(
+                'usefullnamedisplay' => has_capability('moodle/site:viewfullnames', $modcontext),
+            );
 
         foreach ($allposts as $post) {
 
@@ -268,9 +270,8 @@ class mod_forum_external extends external_api {
             $user = new stdclass();
             $user->id = $post->userid;
             $user = username_load_fields_from_object($user, $post, null, array('picture', 'imagealt', 'email'));
-            $post->userfullname = fullname($user, $canviewfullname);
-
-            $userpicture = new user_picture($user);
+            $post->userfullname = \core_user::displayname($user, $modcontext, $coreuserparams);
+            $userpicture = new user_picture(\core_user::prepare_external_user($user, $modcontext, $coreuserparams));
             $userpicture->size = 1; // Size f1.
             $post->userpictureurl = $userpicture->get_url($PAGE)->out(false);
 
@@ -440,7 +441,9 @@ class mod_forum_external extends external_api {
         $alldiscussions = forum_get_discussions($cm, $sort, true, -1, -1, true, $page, $perpage, FORUM_POSTS_ALL_USER_GROUPS);
 
         if ($alldiscussions) {
-            $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
+            $coreuserparams = array(
+                    'usefullnamedisplay' => has_capability('moodle/site:viewfullnames', $modcontext),
+                );
 
             // Get the unreads array, this takes a forum id and returns data for all discussions.
             $unreads = array();
@@ -489,9 +492,9 @@ class mod_forum_external extends external_api {
                 $user = username_load_fields_from_object($user, $discussion, null, $picturefields);
                 // Preserve the id, it can be modified by username_load_fields_from_object.
                 $user->id = $discussion->userid;
-                $discussion->userfullname = fullname($user, $canviewfullname);
+                $discussion->userfullname = \core_user::displayname($user, $modcontext, $coreuserparams);
 
-                $userpicture = new user_picture($user);
+                $userpicture = new user_picture(\core_user::prepare_external_user($user, $modcontext, $coreuserparams));
                 $userpicture->size = 1; // Size f1.
                 $discussion->userpictureurl = $userpicture->get_url($PAGE)->out(false);
 
@@ -500,9 +503,9 @@ class mod_forum_external extends external_api {
                 $usermodified = username_load_fields_from_object($usermodified, $discussion, 'um', $picturefields);
                 // Preserve the id (it can be overwritten due to the prefixed $picturefields).
                 $usermodified->id = $discussion->usermodified;
-                $discussion->usermodifiedfullname = fullname($usermodified, $canviewfullname);
+                $discussion->usermodifiedfullname = \core_user::displayname($usermodified, $modcontext, $coreuserparams);
 
-                $userpicture = new user_picture($usermodified);
+                $userpicture = new user_picture(\core_user::prepare_external_user($usermodified, $modcontext, $coreuserparams));
                 $userpicture->size = 1; // Size f1.
                 $discussion->usermodifiedpictureurl = $userpicture->get_url($PAGE)->out(false);
 
