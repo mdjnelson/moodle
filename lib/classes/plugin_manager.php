@@ -1768,6 +1768,7 @@ class core_plugin_manager {
 
             'disguise' => array(
                 'basic',
+                'predefined',
             ),
 
             'editor' => array(
