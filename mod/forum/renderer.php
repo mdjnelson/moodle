@@ -123,7 +123,8 @@ class mod_forum_renderer extends plugin_renderer_base {
             $output .= $this->output->heading(get_string("invalidmodule", "error"));
         } else {
             $cm = $modinfo->instances['forum'][$forum->id];
-            $canviewemail = in_array('email', get_extra_user_fields(context_module::instance($cm->id)));
+            $modcontext = context_module::instance($cm->id);
+            $canviewemail = in_array('email', get_extra_user_fields($modcontext));
             $strparams = new stdclass();
             $strparams->name = format_string($forum->name);
             $strparams->count = count($users);
@@ -134,7 +135,10 @@ class mod_forum_renderer extends plugin_renderer_base {
             $table->tablealign = 'center';
             $table->data = array();
             foreach ($users as $user) {
-                $info = array($this->output->user_picture($user, array('courseid'=>$course->id)), fullname($user));
+                $info = array(
+                    \core_user::user_picture($user, $modcontext, [], $course->id),
+                    \core_user::displayname($user, $modcontext),
+                );
                 if ($canviewemail) {
                     array_push($info, $user->email);
                 }

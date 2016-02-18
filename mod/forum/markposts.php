@@ -72,7 +72,7 @@ if (isguestuser()) {   // Guests can't change forum
 }
 
 $info = new stdClass();
-$info->name  = fullname($user);
+$info->name = \core_user::displayname($user, context_module::instance($cm->id));
 $info->forum = format_string($forum->name);
 
 if ($mark == 'read') {

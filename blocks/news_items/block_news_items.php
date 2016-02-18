@@ -118,7 +118,7 @@ class block_news_items extends block_base {
                 $text .= '<li class="post">'.
                          '<div class="head clearfix">'.
                          '<div class="date">'.userdate($discussion->modified, $strftimerecent).'</div>'.
-                         '<div class="name">'.fullname($discussion).'</div></div>'.
+                         '<div class="name">' . core_user::displayname($discussion, $context). '</div></div>'.
                          '<div class="info"><a href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$discussion->discussion.'">'.$discussion->subject.'</a></div>'.
                          "</li>\n";
             }
@@ -152,5 +152,3 @@ class block_news_items extends block_base {
         return $this->content;
     }
 }
-
-

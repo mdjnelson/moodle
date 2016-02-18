@@ -334,6 +334,7 @@ function forum_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:          return true;
         case FEATURE_SHOW_DESCRIPTION:        return true;
         case FEATURE_PLAGIARISM:              return true;
+        case FEATURE_DISGUISES:               return true;
 
         default: return null;
     }
@@ -627,6 +628,7 @@ function forum_cron() {
                 $forum      = $forums[$discussion->forum];
                 $course     = $courses[$forum->course];
                 $cm         =& $coursemodules[$forum->id];
+                $modcontext = context_module::instance($cm->id);
 
                 // Do some checks to see if we can bail out now.
 
@@ -764,8 +766,10 @@ function forum_cron() {
                 // Generate a reply-to address from using the Inbound Message handler.
                 $replyaddress = null;
                 if ($userto->canpost[$discussion->id] && array_key_exists($post->id, $messageinboundhandlers)) {
-                    $messageinboundgenerator->set_data($post->id, $messageinboundhandlers[$post->id]);
-                    $replyaddress = $messageinboundgenerator->generate($userto->id);
+                    if (!$modcontext->disguise || $modcontext->disguise->is_configured_for_user($userto)) {
+                        $messageinboundgenerator->set_data($post->id, $messageinboundhandlers[$post->id]);
+                        $replyaddress = $messageinboundgenerator->generate($userto->id);
+                    }
                 }
 
                 if (!isset($userto->canpost[$discussion->id])) {
@@ -856,10 +860,12 @@ function forum_cron() {
                 // If forum_replytouser is not set then send mail using the noreplyaddress.
                 if (empty($CFG->forum_replytouser)) {
                     $eventdata->userfrom = core_user::get_noreply_user();
+                } else {
+                    $eventdata->userfrom = core_user::get_disguised_user($eventdata->userfrom, $modcontext);
                 }
 
                 $smallmessagestrings = new stdClass();
-                $smallmessagestrings->user          = fullname($userfrom);
+                $smallmessagestrings->user          = core_user::displayname($userfrom, $modcontext);
                 $smallmessagestrings->forumname     = "$shortname: " . format_string($forum->name, true) . ": " . $discussion->name;
                 $smallmessagestrings->message       = $post->message;
 
@@ -1126,6 +1132,7 @@ function forum_cron() {
                             );
 
                         $maildigest = forum_get_user_maildigest_bulk($digests, $userto, $forum->id);
+
                         if (!isset($userto->canpost[$discussion->id])) {
                             $canreply = forum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
                         } else {
@@ -1576,15 +1583,15 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
         if (!$cm->uservisible) {
             continue;
         }
-        $context = context_module::instance($cm->id);
+        $post->context = context_module::instance($cm->id);
 
-        if (!has_capability('mod/forum:viewdiscussion', $context)) {
+        if (!has_capability('mod/forum:viewdiscussion', $post->context)) {
             continue;
         }
 
         if (!empty($CFG->forum_enabletimedposts) and $USER->id != $post->duserid
           and (($post->timestart > 0 and $post->timestart > time()) or ($post->timeend > 0 and $post->timeend < time()))) {
-            if (!has_capability('mod/forum:viewhiddentimedposts', $context)) {
+            if (!has_capability('mod/forum:viewhiddentimedposts', $post->context)) {
                 continue;
             }
         }
@@ -1606,10 +1613,14 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
 
     foreach ($printposts as $post) {
         $subjectclass = empty($post->parent) ? ' bold' : '';
+        $user = clone $post;
+        $user->id = $post->userid;
 
         echo '<li><div class="head">'.
                '<div class="date">'.userdate($post->modified, $strftimerecent).'</div>'.
-               '<div class="name">'.fullname($post, $viewfullnames).'</div>'.
+               '<div class="name">'.core_user::displayname($user, $post->context, array(
+                    'usefullnamedisplay' => $viewfullnames,
+                )) . '</div>'.
              '</div>';
         echo '<div class="info'.$subjectclass.'">';
         if (empty($post->parent)) {
@@ -3178,8 +3189,14 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     $postuserfields = explode(',', user_picture::fields());
     $postuser = username_load_fields_from_object($postuser, $post, null, $postuserfields);
     $postuser->id = $post->userid;
-    $postuser->fullname    = fullname($postuser, $cm->cache->caps['moodle/site:viewfullnames']);
-    $postuser->profilelink = new moodle_url('/user/view.php', array('id'=>$post->userid, 'course'=>$course->id));
+    $postuserparams = array(
+            'usefullnamedisplay' => $cm->cache->caps['moodle/site:viewfullnames'],
+        );
+    $postuser->fullname    = core_user::displayname($postuser, $modcontext, $postuserparams);
+    $postuser->profilelink = core_user::profile_url($postuser, $modcontext, $postuserparams, $course->id);
+    $postuser->picture     = core_user::user_picture($postuser, $modcontext, $postuserparams, array(
+            'courseid' => $course->id,
+        ));
 
     // Prepare the groups the posting user belongs to
     if (isset($cm->cache->usersgroups)) {
@@ -3319,7 +3336,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
                                                    'aria-label' => $discussionbyuser));
     $output .= html_writer::start_tag('div', array('class'=>'row header clearfix'));
     $output .= html_writer::start_tag('div', array('class'=>'left picture'));
-    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id));
+    $output .= $postuser->picture;
     $output .= html_writer::end_tag('div');
 
 
@@ -3334,7 +3351,11 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
                                                            'aria-level' => '2'));
 
     $by = new stdClass();
-    $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
+    if ($postuser->profilelink) {
+        $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
+    } else {
+        $by->name = $postuser->fullname;
+    }
     $by->date = userdate($post->modified);
     $output .= html_writer::tag('div', get_string('bynameondate', 'forum', $by), array('class'=>'author',
                                                                                        'role' => 'heading',
@@ -3691,19 +3712,34 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
     echo '<a href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'">'.$post->subject.'</a>';
     echo "</td>\n";
 
+    $postuserparams = array(
+            'usefullnamedisplay' => has_capability('moodle/site:viewfullnames', $modcontext),
+        );
+
     // Picture
     $postuser = new stdClass();
     $postuserfields = explode(',', user_picture::fields());
     $postuser = username_load_fields_from_object($postuser, $post, null, $postuserfields);
     $postuser->id = $post->userid;
     echo '<td class="picture">';
-    echo $OUTPUT->user_picture($postuser, array('courseid'=>$forum->course));
+    echo core_user::user_picture($postuser, $modcontext, $postuserparams, array(
+            'courseid' => $forum->course,
+        ));
     echo "</td>\n";
 
     // User name
-    $fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $modcontext));
+
     echo '<td class="author">';
-    echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->userid.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
+
+    $postuserparams = array(
+            'usefullnamedisplay' => has_capability('moodle/site:viewfullnames', $modcontext),
+        );
+    $fullname = core_user::displayname($postuser, $modcontext, $postuserparams);
+    if ($profilelink = core_user::profile_url($postuser, $modcontext, $postuserparams, $forum->course)) {
+        echo html_writer::link($profilelink, $fullname);
+    } else {
+        echo $fullname;
+    }
     echo "</td>\n";
 
     // Group picture
@@ -3767,8 +3803,13 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
 
     // In QA forums we check that the user can view participants.
     if ($forum->type !== 'qanda' || $canviewparticipants) {
-        echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
-             fullname($usermodified).'</a><br />';
+        $fullname = core_user::displayname($usermodified, $modcontext);
+        if ($profilelink = core_user::profile_url($usermodified, $modcontext, [], $forum->course)) {
+            echo html_writer::link($profilelink, $fullname);
+        } else {
+            echo $fullname;
+        }
+        echo '<br>';
         $parenturl = (empty($post->lastpostid)) ? '' : '&amp;parent='.$post->lastpostid;
     }
 
@@ -4718,7 +4759,8 @@ function forum_post_subscription($fromform, $forum, $discussion) {
     }
 
     $info = new stdClass();
-    $info->name  = fullname($USER);
+    $cm = get_coursemodule_from_instance('forum', $forum->id);
+    $info->name  = core_user::displayname($USER, context_module::instance($cm->id));
     $info->discussion = format_string($discussion->name);
     $info->forum = format_string($forum->name);
 
@@ -5732,7 +5774,9 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
                     continue;
                 }
                 $by = new stdClass();
-                $by->name = fullname($post, $canviewfullnames);
+                $by->name = core_user::displayname($post, $modcontext, array(
+                    'usefullnamedisplay' => $canviewfullnames,
+                ));
                 $by->date = userdate($post->modified);
 
                 if ($forumtracked) {
@@ -5921,10 +5965,17 @@ function forum_print_recent_mod_activity($activity, $courseid, $detail, $modname
         $class = 'discussion';
     }
 
+    $userparams = array(
+            'usefullnamedisplay' => $viewfullnames,
+        );
+    $modcontext = context_module::instance($activity->cmid);
+
     echo '<table border="0" cellpadding="3" cellspacing="0" class="forum-recent">';
 
     echo "<tr><td class=\"userpicture\" valign=\"top\">";
-    echo $OUTPUT->user_picture($activity->user, array('courseid'=>$courseid));
+    echo core_user::user_picture($activity->user, $modcontext, $userparams, array(
+            'courseid' => $courseid,
+        ));
     echo "</td><td class=\"$class\">";
 
     if ($activity->content->parent) {
@@ -5944,9 +5995,13 @@ function forum_print_recent_mod_activity($activity, $courseid, $detail, $modname
     echo '</div>';
 
     echo '<div class="user">';
-    $fullname = fullname($activity->user, $viewfullnames);
-    echo "<a href=\"$CFG->wwwroot/user/view.php?id={$activity->user->id}&amp;course=$courseid\">"
-         ."{$fullname}</a> - ".userdate($activity->timestamp);
+    $fullname = core_user::displayname($activity->user, $modcontext, $userparams);
+    if ($profilelink = core_user::profile_url($activity->user, $modcontext, $userparams, $courseid)) {
+        echo html_writer::link($profilelink, $fullname);
+    } else {
+        echo $fullname;
+    }
+    echo ' - ' . userdate($activity->timestamp);
     echo '</div>';
       echo "</td></tr></table>";
 
