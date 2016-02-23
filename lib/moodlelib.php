@@ -4677,6 +4677,15 @@ function delete_course($courseorid, $showfeedback = true) {
         return false;
     }
 
+    // Allow plugins to use this course before we completely delete it.
+    if ($pluginsfunction = get_plugins_with_function('pre_course_delete')) {
+        foreach ($pluginsfunction as $plugintype => $plugins) {
+            foreach ($plugins as $pluginfunction) {
+                $pluginfunction($course);
+            }
+        }
+    }
+
     // Make the course completely empty.
     remove_course_contents($courseid, $showfeedback);
 
