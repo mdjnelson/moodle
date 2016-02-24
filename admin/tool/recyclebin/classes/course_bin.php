@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course extends recyclebin
+class course_bin extends base_bin
 {
     private $_courseid;
 
@@ -73,7 +73,7 @@ class course extends recyclebin
         global $DB;
 
         return $DB->get_records('tool_recyclebin_course', array(
-            'course' => $this->_courseid
+            'courseid' => $this->_courseid
         ));
     }
 
@@ -135,13 +135,13 @@ class course extends recyclebin
         }
 
         // Record the activity, get an ID.
-        $binid = $DB->insert_record('tool_recyclebin_course', array(
-            'course' => $cm->course,
-            'section' => $cm->section,
-            'module' => $cm->module,
-            'name' => $cminfo->name,
-            'deleted' => time()
-        ));
+        $activity = new \stdClass();
+        $activity->courseid = $cm->course;
+        $activity->section = $cm->section;
+        $activity->module = $cm->module;
+        $activity->name = $cminfo->name;
+        $activity->timecreated = time();
+        $binid = $DB->insert_record('tool_recyclebin_course', $activity);
 
         // Move the file to our own special little place.
         if (!$file->copy_content_to($bindir . '/' . $binid)) {
@@ -259,7 +259,7 @@ class course extends recyclebin
         }
 
         // The course might have been deleted, check we have a context.
-        $context = \context_course::instance($item->course, \IGNORE_MISSING);
+        $context = \context_course::instance($item->courseid, \IGNORE_MISSING);
         if (!$context) {
             return;
         }
@@ -279,7 +279,7 @@ class course extends recyclebin
      * @param stdClass $item The item database record
      */
     public function can_view($item) {
-        $context = \context_course::instance($item->course);
+        $context = \context_course::instance($item->courseid);
         return has_capability('tool/recyclebin:view_item', $context);
     }
 
@@ -289,7 +289,7 @@ class course extends recyclebin
      * @param stdClass $item The item database record
      */
     public function can_restore($item) {
-        $context = \context_course::instance($item->course);
+        $context = \context_course::instance($item->courseid);
         return has_capability('tool/recyclebin:restore_item', $context);
     }
 
@@ -299,7 +299,7 @@ class course extends recyclebin
      * @param stdClass $item The item database record
      */
     public function can_delete($item) {
-        $context = \context_course::instance($item->course);
+        $context = \context_course::instance($item->courseid);
 
         // Basic check - do we have the first require capability?
         if (!has_capability('tool/recyclebin:delete_item', $context)) {

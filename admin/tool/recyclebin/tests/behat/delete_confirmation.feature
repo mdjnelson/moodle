@@ -1,14 +1,14 @@
 @tool @tool_recyclebin
 Feature: Delete confirmation
-    As a teacher
-    I want to be prompted before I permanently delete something
-    So that I do not make a mistake again
+  As a teacher
+  I want to be prompted before I permanently delete something
+  So that I do not make a mistake again
 
-Background:
+  Background:
     Given the following "users" exist:
         | username | firstname | lastname | email |
         | teacher1 | Teacher | 1 | teacher@asd.com |
-    Given the following "courses" exist:
+    And the following "courses" exist:
         | fullname | shortname |
         | Course 1 | C1 |
     And the following "course enrolments" exist:
@@ -24,24 +24,24 @@ Background:
     And I delete "Test page" activity
     And I follow "Recycle bin"
 
-@javascript
-Scenario: Confirm single delete
+  @javascript
+  Scenario: Confirm single delete
     When I click on "Delete" "link"
-    Then I should see "Are you sure you want to delete the selected item in the recycle bin?"
+    Then I should see "Are you sure you want to delete the selected item from the recycle bin?"
     And I press "No"
     And I should see "Test page"
-    When I click on "Delete" "link"
+    And I click on "Delete" "link"
     And I press "Yes"
     And I wait to be redirected
-    Then I should see "There are no items in the recycle bin."
+    And I should see "There are no items in the recycle bin."
 
-@javascript
-Scenario: Confirm empty bin
-    When I press "Empty recycle bin"
-    Then I should see "Are you sure you want to delete all items in the recycle bin?"
+  @javascript
+  Scenario: Confirm empty bin
+    When I press "Delete all"
+    Then I should see "Are you sure you want to delete all items from the recycle bin?"
     And I press "No"
     And I should see "Test page"
-    When I press "Empty recycle bin"
+    And I press "Delete all"
     And I press "Yes"
     And I wait to be redirected
-    Then I should see "There are no items in the recycle bin."
+    And I should see "There are no items in the recycle bin."

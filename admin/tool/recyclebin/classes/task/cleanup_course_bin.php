@@ -25,18 +25,18 @@
 namespace tool_recyclebin\task;
 
 /**
- * This task deletes expired category recyclebin items.
+ * This task deletes expired course recyclebin items.
  *
  * @package    tool_recyclebin
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cleanup_courses extends \core\task\scheduled_task {
+class cleanup_course_bin extends \core\task\scheduled_task {
     /**
      * Task name.
      */
     public function get_name() {
-        return get_string('cleancategoryrecyclebin', 'tool_recyclebin');
+        return get_string('cleancourserecyclebin', 'tool_recyclebin');
     }
 
     /**
@@ -45,17 +45,34 @@ class cleanup_courses extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
 
-        // Delete courses.
-        $lifetime = get_config('tool_recyclebin', 'course_expiry');
-        if (!\tool_recyclebin\category::is_enabled() || $lifetime <= 0) {
+        // Delete mods.
+        $lifetime = get_config('tool_recyclebin', 'expiry');
+        if (!\tool_recyclebin\course_bin::is_enabled() || $lifetime <= 0) {
             return true;
         }
 
-        $items = $DB->get_recordset_select('tool_recyclebin_category', 'deleted < ?', array(time() - (86400 * $lifetime)));
-        foreach ($items as $item) {
-            mtrace("[RecycleBin] Deleting course {$item->id}...");
+        // Start building SQL.
+        $sql = '';
+        $params = array();
 
-            $bin = new \tool_recyclebin\category($item->category);
+        // Protected mods are exempt.
+        $protected = get_config('tool_recyclebin', 'protectedmods');
+        if (!empty($protected)) {
+            $protected = explode(',', $protected);
+            list($sql, $params) = $DB->get_in_or_equal($protected, SQL_PARAMS_NAMED, 'm', false);
+            $sql = " AND module {$sql}";
+        }
+
+        // Add timecreated param.
+        $params = is_array($params) ? $params : array();
+        $params['timecreated'] = time() - (86400 * $lifetime);
+
+        // Delete items.
+        $items = $DB->get_recordset_select('tool_recyclebin_course', 'timecreated < :timecreated' . $sql, $params);
+        foreach ($items as $item) {
+            mtrace("[RecycleBin] Deleting item {$item->id}...");
+
+            $bin = new \tool_recyclebin\course_bin($item->courseid);
             $bin->delete_item($item);
         }
         $items->close();

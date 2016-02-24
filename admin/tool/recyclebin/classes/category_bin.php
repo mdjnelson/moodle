@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class category extends recyclebin
+class category_bin extends base_bin
 {
     private $_categoryid;
 
@@ -77,7 +77,7 @@ class category extends recyclebin
         global $DB;
 
         $items = $DB->get_records('tool_recyclebin_category', array(
-            'category' => $this->_categoryid
+            'categoryid' => $this->_categoryid
         ));
 
         foreach ($items as $item) {
@@ -131,12 +131,12 @@ class category extends recyclebin
         }
 
         // Record the activity, get an ID.
-        $binid = $DB->insert_record('tool_recyclebin_category', array(
-            'category' => $course->category,
-            'shortname' => $course->shortname,
-            'fullname' => $course->fullname,
-            'deleted' => time()
-        ));
+        $item = new \stdClass();
+        $item->categoryid = $course->category;
+        $item->shortname = $course->shortname;
+        $item->fullname = $course->fullname;
+        $item->timecreated = time();
+        $binid = $DB->insert_record('tool_recyclebin_category', $item);
 
         // Move the file to our own special little place.
         if (!$file->copy_content_to($bindir . '/course-' . $binid)) {
@@ -271,7 +271,7 @@ class category extends recyclebin
         // Fire event.
         $event = \tool_recyclebin\event\course_purged::create(array(
             'objectid' => $item->id,
-            'context' => \context_coursecat::instance($item->category)
+            'context' => \context_coursecat::instance($item->categoryid)
         ));
         $event->add_record_snapshot('tool_recyclebin_category', $item);
         $event->trigger();
@@ -283,7 +283,7 @@ class category extends recyclebin
      * @param stdClass $item The item database record
      */
     public function can_view($item) {
-        $context = \context_coursecat::instance($item->category);
+        $context = \context_coursecat::instance($item->categoryid);
         return has_capability('tool/recyclebin:view_course', $context);
     }
 
@@ -293,7 +293,7 @@ class category extends recyclebin
      * @param stdClass $item The item database record
      */
     public function can_restore($item) {
-        $context = \context_coursecat::instance($item->category);
+        $context = \context_coursecat::instance($item->categoryid);
         return has_capability('tool/recyclebin:restore_course', $context);
     }
 
@@ -303,7 +303,7 @@ class category extends recyclebin
      * @param stdClass $item The item database record
      */
     public function can_delete($item) {
-        $context = \context_coursecat::instance($item->category);
+        $context = \context_coursecat::instance($item->categoryid);
         return has_capability('tool/recyclebin:delete_course', $context);
     }
 }

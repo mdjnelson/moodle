@@ -2,7 +2,7 @@
 Feature: Basic recycle bin functionality
   As a teacher
   I want be able to recover deleted content
-  So that I can fix a mistake or accidently deletion
+  So that I can fix a mistake or an accidental deletion
 
   Background: Course with teacher exists.
     Given the following "users" exist:
@@ -24,21 +24,21 @@ Feature: Basic recycle bin functionality
       | Name                | Test page |
       | Description         | Test   |
       | Page content        | Test   |
-    When I delete "Test page" activity
-    And I follow "Recycle bin"
+    And I delete "Test page" activity
+    When I follow "Recycle bin"
     Then I should see "Test page"
-    When I follow "Restore"
-    Then I should see "Test page has been restored"
-    When I wait to be redirected
+    And I follow "Restore"
+    And I should see "Test page has been restored"
+    And I wait to be redirected
     And I am on homepage
     And I follow "Course 1"
-    Then I should see "Test page" in the "Topic 1" "section"
-    When I delete "Test page" activity
+    And I should see "Test page" in the "Topic 1" "section"
+    And I delete "Test page" activity
     And I follow "Recycle bin"
-    Then I should see "Test page"
-    When I follow "Delete"
-    Then I should see "Test page has been deleted"
-    When I wait to be redirected
+    And I should see "Test page"
+    And I follow "Delete"
+    And I should see "Test page has been deleted"
+    And I wait to be redirected
     And I am on homepage
     And I follow "Course 1"
-    Then I should not see "Test page" in the "Topic 1" "section"
+    And I should not see "Test page" in the "Topic 1" "section"

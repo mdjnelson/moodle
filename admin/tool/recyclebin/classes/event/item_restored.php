@@ -50,7 +50,7 @@ class item_restored extends \core\event\base
      * @return string
      */
     public static function get_name() {
-        return get_string('event_restored_name', 'tool_recyclebin');
+        return get_string('eventrestored', 'tool_recyclebin');
     }
 
     /**
@@ -59,7 +59,7 @@ class item_restored extends \core\event\base
      * @return string
      */
     public function get_description() {
-        return get_string('event_restored_description', 'tool_recyclebin', array(
+        return get_string('eventrestored_desc', 'tool_recyclebin', array(
             'objectid' => $this->objectid
         ));
     }

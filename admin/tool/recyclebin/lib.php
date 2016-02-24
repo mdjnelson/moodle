@@ -39,7 +39,7 @@ function tool_recyclebin_extend_navigation_course($navigation, $course, $context
     $settingnode = null;
 
     // Only add this settings item on non-site course pages.
-    if (!$PAGE->course || $PAGE->course->id == SITEID || !\tool_recyclebin\course::is_enabled()) {
+    if (!$PAGE->course || $PAGE->course->id == SITEID || !\tool_recyclebin\course_bin::is_enabled()) {
         return null;
     }
 
@@ -48,7 +48,7 @@ function tool_recyclebin_extend_navigation_course($navigation, $course, $context
         return null;
     }
 
-    $bin = new \tool_recyclebin\course($context->instanceid);
+    $bin = new \tool_recyclebin\course_bin($context->instanceid);
     $url = new moodle_url('/admin/tool/recyclebin/index.php', array(
         'contextid' => $context->id
     ));
@@ -95,12 +95,12 @@ function tool_recyclebin_extend_navigation_category_settings($navigation, $conte
     $settingnode = null;
 
     // Check we can view the recycle bin.
-    if (!has_capability('tool/recyclebin:view_course', $context) || !\tool_recyclebin\category::is_enabled()) {
+    if (!has_capability('tool/recyclebin:view_course', $context) || !\tool_recyclebin\category_bin::is_enabled()) {
         return null;
     }
 
     // Add a link to the category recyclebin.
-    $bin = new \tool_recyclebin\category($context->instanceid);
+    $bin = new \tool_recyclebin\category_bin($context->instanceid);
     $url = new moodle_url('/admin/tool/recyclebin/index.php', array(
         'contextid' => $context->id
     ));
@@ -139,8 +139,8 @@ function tool_recyclebin_extend_navigation_category_settings($navigation, $conte
  * @param \stdClass $cm The course module record.
  */
 function tool_recyclebin_pre_course_module_delete($cm) {
-    if (\tool_recyclebin\course::is_enabled()) {
-        $recyclebin = new \tool_recyclebin\course($cm->course);
+    if (\tool_recyclebin\course_bin::is_enabled()) {
+        $recyclebin = new \tool_recyclebin\course_bin($cm->course);
         $recyclebin->store_item($cm);
     }
 }
@@ -151,8 +151,8 @@ function tool_recyclebin_pre_course_module_delete($cm) {
  * @param \stdClass $course The course record.
  */
 function tool_recyclebin_pre_course_delete($course) {
-    if (\tool_recyclebin\category::is_enabled()) {
-        $recyclebin = new \tool_recyclebin\category($course->category);
+    if (\tool_recyclebin\category_bin::is_enabled()) {
+        $recyclebin = new \tool_recyclebin\category_bin($course->category);
         $recyclebin->store_item($course);
     }
 }

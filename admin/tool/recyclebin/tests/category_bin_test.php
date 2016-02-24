@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_recyclebin_category_tests extends \advanced_testcase
+class tool_recyclebin_category_bin_tests extends advanced_testcase
 {
     /**
      * Setup for each test.
@@ -57,7 +57,7 @@ class tool_recyclebin_category_tests extends \advanced_testcase
         $this->assertEquals($this->before, $DB->count_records('course'));
 
         // Try with the API.
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         $this->assertEquals(1, count($recyclebin->get_items()));
     }
 
@@ -70,7 +70,7 @@ class tool_recyclebin_category_tests extends \advanced_testcase
         delete_course($this->course, false);
         $this->assertEquals($this->before, $DB->count_records('course'));
 
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         foreach ($recyclebin->get_items() as $item) {
             $recyclebin->restore_item($item);
         }
@@ -88,7 +88,7 @@ class tool_recyclebin_category_tests extends \advanced_testcase
         delete_course($this->course, false);
         $this->assertEquals($this->before, $DB->count_records('course'));
 
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         foreach ($recyclebin->get_items() as $item) {
             $recyclebin->delete_item($item);
         }
@@ -109,13 +109,13 @@ class tool_recyclebin_category_tests extends \advanced_testcase
         $this->assertEquals($this->before, $DB->count_records('course'));
 
         // Set deleted date to the distant past.
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         foreach ($recyclebin->get_items() as $item) {
-            $item->deleted = 1;
+            $item->timecreated = 1;
             $DB->update_record('tool_recyclebin_category', $item);
         }
         // Execute cleanup task.
-        $task = new tool_recyclebin\task\cleanup_courses();
+        $task = new tool_recyclebin\task\cleanup_category_bin();
         $task->execute();
 
         $this->assertEquals($this->before, $DB->count_records('course'));

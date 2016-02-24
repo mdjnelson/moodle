@@ -25,18 +25,18 @@
 namespace tool_recyclebin\task;
 
 /**
- * This task deletes expired course recyclebin items.
+ * This task deletes expired category recyclebin items.
  *
  * @package    tool_recyclebin
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cleanup_activities extends \core\task\scheduled_task {
+class cleanup_category_bin extends \core\task\scheduled_task {
     /**
      * Task name.
      */
     public function get_name() {
-        return get_string('cleancourserecyclebin', 'tool_recyclebin');
+        return get_string('cleancategoryrecyclebin', 'tool_recyclebin');
     }
 
     /**
@@ -45,34 +45,17 @@ class cleanup_activities extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
 
-        // Delete mods.
-        $lifetime = get_config('tool_recyclebin', 'expiry');
-        if (!\tool_recyclebin\course::is_enabled() || $lifetime <= 0) {
+        // Delete courses.
+        $lifetime = get_config('tool_recyclebin', 'course_expiry');
+        if (!\tool_recyclebin\category_bin::is_enabled() || $lifetime <= 0) {
             return true;
         }
 
-        // Start building SQL.
-        $sql = '';
-        $params = array();
-
-        // Protected mods are exempt.
-        $protected = get_config('tool_recyclebin', 'protectedmods');
-        if (!empty($protected)) {
-            $protected = explode(',', $protected);
-            list($sql, $params) = $DB->get_in_or_equal($protected, SQL_PARAMS_NAMED, 'm', false);
-            $sql = " AND module {$sql}";
-        }
-
-        // Add deleted param.
-        $params = is_array($params) ? $params : array();
-        $params['deleted'] = time() - (86400 * $lifetime);
-
-        // Delete items.
-        $items = $DB->get_recordset_select('tool_recyclebin_course', 'deleted < :deleted' . $sql, $params);
+        $items = $DB->get_recordset_select('tool_recyclebin_category', 'timecreated < ?', array(time() - (86400 * $lifetime)));
         foreach ($items as $item) {
-            mtrace("[RecycleBin] Deleting item {$item->id}...");
+            mtrace("[RecycleBin] Deleting course {$item->id}...");
 
-            $bin = new \tool_recyclebin\course($item->course);
+            $bin = new \tool_recyclebin\category_bin($item->categoryid);
             $bin->delete_item($item);
         }
         $items->close();

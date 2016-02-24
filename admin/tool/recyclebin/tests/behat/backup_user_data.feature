@@ -46,20 +46,21 @@ Feature: Backup user data
     And I press "Attempt quiz now"
     And I click on "True" "radio" in the "First question" "question"
     And I click on "False" "radio" in the "Second question" "question"
-    And I press "Next"
+    And I press "Finish attempt"
     And I press "Submit all and finish"
     And I click on "Submit all and finish" "button" in the "Confirmation" "dialogue"
-    Then I should see "5.00 out of 10.00"
-    Given I log out
+    And I should see "5.00 out of 10.00"
+    And I log out
     And I log in as "teacher1"
     And I follow "Course 1"
     And I turn editing mode on
-    And I delete "Quiz 1" activity
+    When I delete "Quiz 1" activity
     And I follow "Recycle bin"
+    Then I should see "Quiz 1"
     And I follow "Restore"
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    And I follow "Grades"
-    Then "Quiz 1" row "Grade" column of "user-grade" table should contain "5"
+    And I navigate to "Grades" node in "Course administration"
+    And "Quiz 1" row "Grade" column of "user-grade" table should contain "5"
     And "Quiz 1" row "Percentage" column of "user-grade" table should contain "50"

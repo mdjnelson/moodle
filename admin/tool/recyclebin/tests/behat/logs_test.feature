@@ -19,14 +19,12 @@ Feature: Recycle bin refinements
     And I follow "Course 1"
     And I turn editing mode on
     And I add a "Page" to section "1" and I fill the form with:
-      | Name                | Test page |
-      | Description         | Test   |
-      | Page content        | Test   |
+      | Name          | Test page |
+      | Description   | Test      |
+      | Page content  | Test      |
     And I delete "Test page" activity
     And I follow "Recycle bin"
     When I click on "Delete" "link"
-    # Uncomment if running with javascript.
-    #And I press "Yes"
     And I wait to be redirected
     And I follow "C1"
     And I expand "Reports" node

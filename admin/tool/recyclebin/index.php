@@ -39,7 +39,7 @@ switch ($context->contextlevel) {
         require_login($context->instanceid);
         require_capability('tool/recyclebin:view_item', $context);
 
-        $recyclebin = new \tool_recyclebin\course($context->instanceid);
+        $recyclebin = new \tool_recyclebin\course_bin($context->instanceid);
         $description = get_string('description_course', 'tool_recyclebin');
     break;
 
@@ -47,7 +47,7 @@ switch ($context->contextlevel) {
         require_login();
         require_capability('tool/recyclebin:view_course', $context);
 
-        $recyclebin = new \tool_recyclebin\category($context->instanceid);
+        $recyclebin = new \tool_recyclebin\category_bin($context->instanceid);
         $description = get_string('description_coursecat', 'tool_recyclebin');
     break;
 
@@ -137,7 +137,7 @@ $firstcolstr = $context->contextlevel == \CONTEXT_COURSE ? 'activity' : 'course'
 $columns = array($firstcolstr, 'date', 'restore', 'delete');
 $headers = array(
     get_string($firstcolstr),
-    get_string('deleted', 'tool_recyclebin'),
+    get_string('datedeleted', 'tool_recyclebin'),
     get_string('restore'),
     get_string('delete')
 );
@@ -172,7 +172,7 @@ foreach ($items as $item) {
     }
 
     $row[] = $name;
-    $row[] = userdate($item->deleted);
+    $row[] = userdate($item->timecreated);
 
     // Build restore link.
     if ($recyclebin->can_restore($item) && ($context->contextlevel == \CONTEXT_COURSECAT || isset($modules[$item->module]))) {

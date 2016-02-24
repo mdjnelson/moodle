@@ -50,7 +50,7 @@ class item_purged extends \core\event\base
      * @return string
      */
     public static function get_name() {
-        return get_string('event_purged_name', 'tool_recyclebin');
+        return get_string('eventpurged', 'tool_recyclebin');
     }
 
     /**
@@ -59,7 +59,7 @@ class item_purged extends \core\event\base
      * @return string
      */
     public function get_description() {
-        return get_string('event_purged_description', 'tool_recyclebin', array(
+        return get_string('eventpurged_desc', 'tool_recyclebin', array(
             'objectid' => $this->objectid
         ));
     }
