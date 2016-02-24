@@ -15,52 +15,52 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Recycle bin events.
+ * Recycle bin cron task.
  *
  * @package    tool_recyclebin
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_recyclebin\event;
-
-defined('MOODLE_INTERNAL') || die();
+namespace tool_recyclebin\task;
 
 /**
- * Event Class
+ * This task deletes expired category recyclebin items.
  *
  * @package    tool_recyclebin
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_purged extends \core\event\base
-{
+class cleanup_category_bin extends \core\task\scheduled_task {
+
     /**
-     * Init method.
+     * Task name.
      */
-    protected function init() {
-        $this->data['objecttable'] = 'tool_recyclebin_category';
-        $this->data['crud'] = 'd';
-        $this->data['edulevel'] = self::LEVEL_OTHER;
+    public function get_name() {
+        return get_string('taskcleanupcategorybin', 'tool_recyclebin');
     }
 
     /**
-     * Returns localised general event name.
-     *
-     * @return string
+     * Delete all expired items.
      */
-    public static function get_name() {
-        return get_string('event_purged_name', 'tool_recyclebin');
-    }
+    public function execute() {
+        global $DB;
 
-    /**
-     * Returns description of what happened.
-     *
-     * @return string
-     */
-    public function get_description() {
-        return get_string('event_purged_description', 'tool_recyclebin', array(
-            'objectid' => $this->objectid
-        ));
+        // Delete courses.
+        $lifetime = get_config('tool_recyclebin', 'categorybinexpiry');
+        if (!\tool_recyclebin\category_bin::is_enabled() || $lifetime <= 0) {
+            return true;
+        }
+
+        $items = $DB->get_recordset_select('tool_recyclebin_category', 'timecreated < ?', array(time() - (86400 * $lifetime)));
+        foreach ($items as $item) {
+            mtrace("[tool_recyclebin] Deleting item '{$item->id}' from the category recycle bin ...");
+
+            $bin = new \tool_recyclebin\category_bin($item->categoryid);
+            $bin->delete_item($item);
+        }
+        $items->close();
+
+        return true;
     }
 }

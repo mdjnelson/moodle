@@ -31,18 +31,20 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2015 University of Kent
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tool_recyclebin_category_tests extends \advanced_testcase
-{
+class tool_recyclebin_category_bin_tests extends advanced_testcase {
+
+    /**
+     * @var stdClass $course
+     */
+    protected $course;
+
     /**
      * Setup for each test.
      */
     protected function setUp() {
-        global $DB;
-
-        $this->resetAfterTest(true);
+        $this->resetAfterTest();
         $this->setAdminUser();
 
-        $this->before = $DB->count_records('course');
         $this->course = $this->getDataGenerator()->create_course();
     }
 
@@ -52,73 +54,87 @@ class tool_recyclebin_category_tests extends \advanced_testcase
     public function test_hook() {
         global $DB;
 
-        $this->assertEquals($this->before + 1, $DB->count_records('course'));
+        // Should have nothing in the recycle bin.
+        $this->assertEquals(0, $DB->count_records('tool_recyclebin_course'));
+
         delete_course($this->course, false);
-        $this->assertEquals($this->before, $DB->count_records('course'));
+
+        // Check the course is now in the recycle bin.
+        $this->assertEquals(1, $DB->count_records('tool_recyclebin_category'));
 
         // Try with the API.
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         $this->assertEquals(1, count($recyclebin->get_items()));
     }
 
     /**
-     * Run a bunch of tests to make sure we can restore courses.
+     * Test that we can restore recycle bin items.
      */
     public function test_restore() {
         global $DB;
 
         delete_course($this->course, false);
-        $this->assertEquals($this->before, $DB->count_records('course'));
 
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         foreach ($recyclebin->get_items() as $item) {
             $recyclebin->restore_item($item);
         }
 
-        $this->assertEquals($this->before + 1, $DB->count_records('course'));
+        // Check that it was restored and removed from the recycle bin.
+        $this->assertEquals(2, $DB->count_records('course')); // Site course and the course we restored.
         $this->assertEquals(0, count($recyclebin->get_items()));
     }
 
     /**
-     * Run a bunch of tests to make sure we can purge courses.
+     * Test that we can delete recycle bin items.
      */
-    public function test_purge() {
+    public function test_delete() {
         global $DB;
 
         delete_course($this->course, false);
-        $this->assertEquals($this->before, $DB->count_records('course'));
 
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         foreach ($recyclebin->get_items() as $item) {
             $recyclebin->delete_item($item);
         }
 
-        $this->assertEquals($this->before, $DB->count_records('course'));
+        // Item was deleted, so no course was restored.
+        $this->assertEquals(1, $DB->count_records('course')); // Just the site course.
         $this->assertEquals(0, count($recyclebin->get_items()));
     }
 
     /**
-     * Test the cleanup/purge task.
+     * Test the cleanup task.
      */
-    public function test_purge_task() {
+    public function test_cleanup_task() {
         global $DB;
 
-        set_config('course_expiry', 1, 'tool_recyclebin');
+        set_config('categorybinexpiry', 1, 'tool_recyclebin');
 
         delete_course($this->course, false);
-        $this->assertEquals($this->before, $DB->count_records('course'));
+
+        $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
 
         // Set deleted date to the distant past.
-        $recyclebin = new \tool_recyclebin\category($this->course->category);
         foreach ($recyclebin->get_items() as $item) {
-            $item->deleted = 1;
+            $item->timecreated = 1;
             $DB->update_record('tool_recyclebin_category', $item);
         }
+
+        // Create another course to delete.
+        $course = $this->getDataGenerator()->create_course();
+        delete_course($course, false);
+
+        // Should now be two courses in the recycle bin.
+        $this->assertEquals(2, count($recyclebin->get_items()));
+
         // Execute cleanup task.
-        $task = new tool_recyclebin\task\cleanup_courses();
+        $this->expectOutputRegex("/\[tool_recyclebin\] Deleting item '\d+' from the category recycle bin/");
+        $task = new \tool_recyclebin\task\cleanup_category_bin();
         $task->execute();
 
-        $this->assertEquals($this->before, $DB->count_records('course'));
-        $this->assertEquals(0, count($recyclebin->get_items()));
+        // Task should only have deleted the course where we updated the time.
+        $this->assertEquals(1, count($recyclebin->get_items()));
+        $this->assertEquals('Test course 2', $course->fullname);
     }
 }

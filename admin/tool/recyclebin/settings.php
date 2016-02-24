@@ -48,32 +48,31 @@ if ($hassiteconfig) {
     );
 
     $settings->add(new admin_setting_configcheckbox(
-        'tool_recyclebin/enablecourse',
-        new lang_string('enablecourse', 'tool_recyclebin'),
-        new lang_string('enablecourse_desc', 'tool_recyclebin'),
+        'tool_recyclebin/coursebinenable',
+        new lang_string('coursebinenable', 'tool_recyclebin'),
+        '',
         1
     ));
 
     $settings->add(new admin_setting_configselect(
-        'tool_recyclebin/expiry',
-        new lang_string('expiry', 'tool_recyclebin'),
-        new lang_string('expiry_desc', 'tool_recyclebin'),
+        'tool_recyclebin/coursebinexpiry',
+        new lang_string('coursebinexpiry', 'tool_recyclebin'),
+        new lang_string('coursebinexpiry_desc', 'tool_recyclebin'),
         0,
         $lifetimes
     ));
 
-
     $settings->add(new admin_setting_configcheckbox(
-        'tool_recyclebin/enablecategory',
-        new lang_string('enablecategory', 'tool_recyclebin'),
-        new lang_string('enablecategory_desc', 'tool_recyclebin'),
+        'tool_recyclebin/categorybinenable',
+        new lang_string('categorybinenable', 'tool_recyclebin'),
+        '',
         1
     ));
 
     $settings->add(new admin_setting_configselect(
-        'tool_recyclebin/course_expiry',
-        new lang_string('course_expiry', 'tool_recyclebin'),
-        new lang_string('course_expiry_desc', 'tool_recyclebin'),
+        'tool_recyclebin/categorybinexpiry',
+        new lang_string('categorybinexpiry', 'tool_recyclebin'),
+        new lang_string('categorybinexpiry_desc', 'tool_recyclebin'),
         0,
         $lifetimes
     ));
@@ -87,11 +86,11 @@ if ($hassiteconfig) {
         0
     ));
 
-    $settings->add(new admin_setting_configmultiselect(
+    $settings->add(new admin_setting_configmultiselect_modules(
         'tool_recyclebin/protectedmods',
         new lang_string('protectedmods', 'tool_recyclebin'),
         new lang_string('protectedmods_desc', 'tool_recyclebin'),
         array(),
-        $DB->get_records_menu('modules', array('visible' => 1), 'name ASC', 'id, name')
+        true
     ));
 }
