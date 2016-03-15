@@ -52,7 +52,9 @@ class cleanup_category_bin extends \core\task\scheduled_task {
             return true;
         }
 
-        $items = $DB->get_recordset_select('tool_recyclebin_category', 'timecreated < ?', array(time() - (86400 * $lifetime)));
+        // Get the items we can delete.
+        $items = $DB->get_recordset_select('tool_recyclebin_category', 'timecreated < :timecreated',
+            array('timecreated' => time() - $lifetime));
         foreach ($items as $item) {
             mtrace("[tool_recyclebin] Deleting item '{$item->id}' from the category recycle bin ...");
 

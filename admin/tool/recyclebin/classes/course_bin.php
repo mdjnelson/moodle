@@ -324,25 +324,10 @@ class course_bin extends base_bin {
     /**
      * Can we delete this?
      *
-     * @param \stdClass $item The item database record
      * @return bool returns true if they can delete, false if not
      */
-    public function can_delete($item) {
-        $context = \context_course::instance($item->courseid);
-
-        // Basic check - do we have the first require capability?
-        if (!has_capability('tool/recyclebin:deleteitems', $context)) {
-            return false;
-        }
-
-        // Are we a protected item?
-        $protected = get_config('tool_recyclebin', 'protectedmods');
-        $protected = explode(',', $protected);
-        if (!in_array($item->module, $protected)) {
-            return true;
-        }
-
-        // Yes! Can we delete protected items?
-        return has_capability('tool/recyclebin:deleteprotecteditems', $context);
+    public function can_delete() {
+        $context = \context_course::instance($this->_courseid);
+        return has_capability('tool/recyclebin:deleteitems', $context);
     }
 }

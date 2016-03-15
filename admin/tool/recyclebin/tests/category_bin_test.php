@@ -45,17 +45,20 @@ class tool_recyclebin_category_bin_tests extends advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
+        // We want the category bin to be enabled.
+        set_config('categorybinenable', 1, 'tool_recyclebin');
+
         $this->course = $this->getDataGenerator()->create_course();
     }
 
     /**
      * Check that our hook is called when a course is deleted.
      */
-    public function test_hook() {
+    public function test_pre_course_delete_hook() {
         global $DB;
 
         // Should have nothing in the recycle bin.
-        $this->assertEquals(0, $DB->count_records('tool_recyclebin_course'));
+        $this->assertEquals(0, $DB->count_records('tool_recyclebin_category'));
 
         delete_course($this->course, false);
 
@@ -65,6 +68,28 @@ class tool_recyclebin_category_bin_tests extends advanced_testcase {
         // Try with the API.
         $recyclebin = new \tool_recyclebin\category_bin($this->course->category);
         $this->assertEquals(1, count($recyclebin->get_items()));
+    }
+
+    /**
+     * Check that our hook is called when a course is deleted.
+     */
+    public function test_pre_course_category_delete_hook() {
+        global $DB;
+
+        // Should have nothing in the recycle bin.
+        $this->assertEquals(0, $DB->count_records('tool_recyclebin_category'));
+
+        delete_course($this->course, false);
+
+        // Check the course is now in the recycle bin.
+        $this->assertEquals(1, $DB->count_records('tool_recyclebin_category'));
+
+        // Now let's delete the course category.
+        $category = coursecat::get($this->course->category);
+        $category->delete_full(false);
+
+        // Check that the course was deleted from the category recycle bin.
+        $this->assertEquals(0, $DB->count_records('tool_recyclebin_category'));
     }
 
     /**

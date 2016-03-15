@@ -89,7 +89,7 @@ abstract class base_bin {
         // Cleanup all items.
         $items = $this->get_items();
         foreach ($items as $item) {
-            if ($this->can_delete($item)) {
+            if ($this->can_delete()) {
                 $this->delete_item($item);
             }
         }
@@ -107,8 +107,6 @@ abstract class base_bin {
 
     /**
      * Can we delete this?
-     *
-     * @param \stdClass $item The item database record
      */
-    public abstract function can_delete($item);
+    public abstract function can_delete();
 }

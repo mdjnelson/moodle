@@ -16,6 +16,9 @@ Feature: Backup user data
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
+    And the following config values are set as admin:
+      | coursebinenable | 1 | tool_recyclebin |
+      | autohide | 0 | tool_recyclebin |
 
   @javascript
   Scenario: Delete and restore a quiz with user data
@@ -33,8 +36,8 @@ Feature: Backup user data
       | Feedback for the response 'True'.  | So you think it is true                 |
       | Feedback for the response 'False'. | So you think it is false                |
     And I add a "True/False" question to the "Quiz 1" quiz with:
-      | Question name                      | TF2                          |
-      | Question text                      | Second question               |
+      | Question name                      | TF2                                     |
+      | Question text                      | Second question                         |
       | General feedback                   | Thank you, this is the general feedback |
       | Correct answer                     | False                                   |
       | Feedback for the response 'True'.  | So you think it is true                 |

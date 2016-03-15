@@ -147,8 +147,8 @@ function tool_recyclebin_extend_navigation_category_settings($navigation, $conte
  */
 function tool_recyclebin_pre_course_module_delete($cm) {
     if (\tool_recyclebin\course_bin::is_enabled()) {
-        $recyclebin = new \tool_recyclebin\course_bin($cm->course);
-        $recyclebin->store_item($cm);
+        $coursebin = new \tool_recyclebin\course_bin($cm->course);
+        $coursebin->store_item($cm);
     }
 }
 
@@ -158,8 +158,25 @@ function tool_recyclebin_pre_course_module_delete($cm) {
  * @param \stdClass $course The course record.
  */
 function tool_recyclebin_pre_course_delete($course) {
+    // Delete all the items in the course recycle bin, regardless if it enabled or not.
+    // It may have been enabled, then disabled later on, so may still have content.
+    $coursebin = new \tool_recyclebin\course_bin($course->id);
+    $coursebin->delete_all_items();
+
     if (\tool_recyclebin\category_bin::is_enabled()) {
-        $recyclebin = new \tool_recyclebin\category_bin($course->category);
-        $recyclebin->store_item($course);
+        $categorybin = new \tool_recyclebin\category_bin($course->category);
+        $categorybin->store_item($course);
     }
+}
+
+/**
+ * Hook called before we delete a category.
+ *
+ * @param \stdClass $category The category record.
+ */
+function tool_recyclebin_pre_course_category_delete($category) {
+    // Delete all the items in the category recycle bin, regardless if it enabled or not.
+    // It may have been enabled, then disabled later on, so may still have content.
+    $categorybin = new \tool_recyclebin\category_bin($category->id);
+    $categorybin->delete_all_items();
 }

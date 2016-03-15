@@ -52,28 +52,9 @@ class cleanup_course_bin extends \core\task\scheduled_task {
             return true;
         }
 
-        // Start building SQL.
-        $sql = "SELECT rc.*
-                  FROM {tool_recyclebin_course} rc ";
-        $where = 'WHERE';
-        $params = array();
-
-        // Protected mods are exempt.
-        $protected = get_config('tool_recyclebin', 'protectedmods');
-        if (!empty($protected)) {
-            $protected = explode(',', $protected);
-            list($msql, $params) = $DB->get_in_or_equal($protected, SQL_PARAMS_NAMED, 'm', false);
-            $sql .= "JOIN {modules} m
-                       ON rc.module = m.id
-                    WHERE m.name {$msql} ";
-            $where = "AND";
-        }
-
-        $sql .= $where . ' rc.timecreated < :timecreated';
-        $params['timecreated'] = time() - (86400 * $lifetime);
-
-        // Delete items.
-        $items = $DB->get_recordset_sql($sql, $params);
+        // Get the items we can delete.
+        $items = $DB->get_recordset_select('tool_recyclebin_course', 'timecreated < :timecreated',
+            array('timecreated' => time() - $lifetime));
         foreach ($items as $item) {
             mtrace("[tool_recyclebin] Deleting item '{$item->id}' from the course recycle bin ...");
 

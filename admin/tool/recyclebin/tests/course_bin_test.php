@@ -50,6 +50,9 @@ class tool_recyclebin_course_bin_tests extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
+        // We want the course bin to be enabled.
+        set_config('coursebinenable', 1, 'tool_recyclebin');
+
         $this->course = $this->getDataGenerator()->create_course();
         $this->quiz = $this->getDataGenerator()->get_plugin_generator('mod_quiz')->create_instance(array(
             'course' => $this->course->id
@@ -59,7 +62,7 @@ class tool_recyclebin_course_bin_tests extends advanced_testcase {
     /**
      * Check that our hook is called when an activity is deleted.
      */
-    public function test_hook() {
+    public function test_pre_course_module_delete_hook() {
         global $DB;
 
         // Should have nothing in the recycle bin.
@@ -153,41 +156,5 @@ class tool_recyclebin_course_bin_tests extends advanced_testcase {
         $this->assertEquals(1, count($items));
         $deletedbook = reset($items);
         $this->assertEquals($book->name, $deletedbook->name);
-    }
-
-    /**
-     * Test the cleanup task.
-     */
-    public function test_cleanup_task_with_protected_mods() {
-        global $DB;
-
-        set_config('coursebinexpiry', 1, 'tool_recyclebin');
-        set_config('protectedmods', 'assign', 'tool_recyclebin');
-
-        // Create a protected module.
-        $assign = $this->getDataGenerator()->get_plugin_generator('mod_assign')->create_instance(array(
-            'course' => $this->course->id));
-
-        // Delete the quiz and the assign.
-        course_delete_module($this->quiz->cmid);
-        course_delete_module($assign->cmid);
-
-        // Set deleted date to the distant past.
-        $recyclebin = new \tool_recyclebin\course_bin($this->course->id);
-        foreach ($recyclebin->get_items() as $item) {
-            $item->timecreated = 1;
-            $DB->update_record('tool_recyclebin_course', $item);
-        }
-
-        // Execute cleanup task.
-        $this->expectOutputRegex("/\[tool_recyclebin\] Deleting item '\d+' from the course recycle bin/");
-        $task = new \tool_recyclebin\task\cleanup_course_bin();
-        $task->execute();
-
-        // Should still have the assignment as it is a protected module.
-        $items = $recyclebin->get_items();
-        $this->assertEquals(1, count($items));
-        $deletedassign = reset($items);
-        $this->assertEquals($assign->name, $deletedassign->name);
     }
 }

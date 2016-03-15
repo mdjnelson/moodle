@@ -36,15 +36,6 @@ $capabilities = array(
         )
     ),
 
-    'tool/recyclebin:deleteprotecteditems' => array(
-        'captype' => 'write',
-        'riskbitmask' => RISK_DATALOSS,
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
-            'manager' => CAP_ALLOW
-        )
-    ),
-
     'tool/recyclebin:restoreitems' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,

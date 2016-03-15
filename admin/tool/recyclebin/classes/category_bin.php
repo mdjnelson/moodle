@@ -332,11 +332,10 @@ class category_bin extends base_bin {
     /**
      * Can we delete items in this recycle bin?
      *
-     * @param \stdClass $item The item database record
      * @return bool returns true if they can delete, false if not
      */
-    public function can_delete($item) {
-        $context = \context_coursecat::instance($item->categoryid);
+    public function can_delete() {
+        $context = \context_coursecat::instance($this->_categoryid);
         return has_capability('tool/recyclebin:deleteitems', $context);
     }
 }

@@ -42,6 +42,10 @@ class tool_recyclebin_events_testcase extends advanced_testcase {
      */
     public function setUp() {
         $this->resetAfterTest();
+
+        // We want the category and course bin to be enabled.
+        set_config('categorybinenable', 1, 'tool_recyclebin');
+        set_config('coursebinenable', 1, 'tool_recyclebin');
     }
 
     /**

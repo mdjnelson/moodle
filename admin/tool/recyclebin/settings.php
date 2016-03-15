@@ -30,23 +30,6 @@ if ($hassiteconfig) {
     $settings = new admin_settingpage('tool_recyclebin', get_string('pluginname', 'tool_recyclebin'));
     $ADMIN->add('tools', $settings);
 
-    $lifetimes = array(
-        0    => new lang_string('neverdelete', 'tool_recyclebin'),
-        1000 => new lang_string('numdays', '', 1000),
-        365  => new lang_string('numdays', '', 365),
-        180  => new lang_string('numdays', '', 180),
-        150  => new lang_string('numdays', '', 150),
-        120  => new lang_string('numdays', '', 120),
-        90   => new lang_string('numdays', '', 90),
-        60   => new lang_string('numdays', '', 60),
-        35   => new lang_string('numdays', '', 35),
-        21   => new lang_string('numdays', '', 21),
-        14   => new lang_string('numdays', '', 14),
-        10   => new lang_string('numdays', '', 10),
-        5    => new lang_string('numdays', '', 5),
-        2    => new lang_string('numdays', '', 2)
-    );
-
     $settings->add(new admin_setting_configcheckbox(
         'tool_recyclebin/coursebinenable',
         new lang_string('coursebinenable', 'tool_recyclebin'),
@@ -54,12 +37,11 @@ if ($hassiteconfig) {
         1
     ));
 
-    $settings->add(new admin_setting_configselect(
+    $settings->add(new admin_setting_configduration(
         'tool_recyclebin/coursebinexpiry',
         new lang_string('coursebinexpiry', 'tool_recyclebin'),
         new lang_string('coursebinexpiry_desc', 'tool_recyclebin'),
-        0,
-        $lifetimes
+        604800 // A week.
     ));
 
     $settings->add(new admin_setting_configcheckbox(
@@ -69,28 +51,17 @@ if ($hassiteconfig) {
         1
     ));
 
-    $settings->add(new admin_setting_configselect(
+    $settings->add(new admin_setting_configduration(
         'tool_recyclebin/categorybinexpiry',
         new lang_string('categorybinexpiry', 'tool_recyclebin'),
         new lang_string('categorybinexpiry_desc', 'tool_recyclebin'),
-        0,
-        $lifetimes
+        604800 // A week.
     ));
-
-    unset($lifetimes);
 
     $settings->add(new admin_setting_configcheckbox(
         'tool_recyclebin/autohide',
         new lang_string('autohide', 'tool_recyclebin'),
         new lang_string('autohide_desc', 'tool_recyclebin'),
-        0
-    ));
-
-    $settings->add(new admin_setting_configmultiselect_modules(
-        'tool_recyclebin/protectedmods',
-        new lang_string('protectedmods', 'tool_recyclebin'),
-        new lang_string('protectedmods_desc', 'tool_recyclebin'),
-        array(),
-        true
+        1
     ));
 }

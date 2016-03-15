@@ -17,8 +17,11 @@ Feature: Basic recycle bin functionality
       | user | course | role |
       | teacher1 | C1 | editingteacher |
     And the following config values are set as admin:
-      | coursebinexpiry | 10 | tool_recyclebin |
-      | categorybinexpiry | 14 | tool_recyclebin |
+      | coursebinenable | 1 | tool_recyclebin |
+      | categorybinenable | 1 | tool_recyclebin |
+      | coursebinexpiry | 604800 | tool_recyclebin |
+      | categorybinexpiry | 1209600 | tool_recyclebin |
+      | autohide | 0 | tool_recyclebin |
 
   Scenario: Restore a deleted assignment
     Given I log in as "teacher1"
@@ -30,7 +33,7 @@ Feature: Basic recycle bin functionality
     And I delete "Test assign" activity
     When I follow "Recycle bin"
     Then I should see "Test assign"
-    And I should see "Contents will be permanently deleted after 10 days"
+    And I should see "Contents will be permanently deleted after 7 days"
     And I follow "Restore"
     And I should see "'Test assign' has been restored"
     And I wait to be redirected

@@ -107,7 +107,7 @@ if (!empty($action)) {
 
         // Delete it.
         case 'delete':
-            if ($recyclebin->can_delete($item)) {
+            if ($recyclebin->can_delete()) {
                 $recyclebin->delete_item($item);
                 redirect($PAGE->url, get_string('alertdeleted', 'tool_recyclebin', $item), 2);
             } else {
@@ -145,7 +145,8 @@ if (empty($items)) {
 
 // Start with a description.
 if ($expiry > 0) {
-    echo '<div class=\'alert\'>' . get_string('deleteexpirywarning', 'tool_recyclebin', $expiry) . '</div>';
+    $expirydisplay = format_time($expiry);
+    echo '<div class=\'alert\'>' . get_string('deleteexpirywarning', 'tool_recyclebin', $expirydisplay) . '</div>';
 }
 
 // Define columns and headers.
@@ -210,7 +211,7 @@ foreach ($items as $item) {
     }
 
     // Build delete link.
-    if ($recyclebin->can_delete($item)) {
+    if ($recyclebin->can_delete()) {
         $showempty = true;
         $delete = new moodle_url($PAGE->url, array(
             'contextid' => $contextid,
