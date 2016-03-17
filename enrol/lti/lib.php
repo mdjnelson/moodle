@@ -137,6 +137,28 @@ class enrol_lti_plugin extends enrol_plugin {
     }
 
     /**
+     * Delete plugin specific information.
+     *
+     * @param stdClass $instance
+     * @return void
+     */
+    public function delete_instance($instance) {
+        global $DB;
+
+        // Get the tool associated with this instance.
+        $tool = $DB->get_record('enrol_lti_tools', array('enrolid' => $instance->id), 'id', MUST_EXIST);
+
+        // Delete any users associated with this tool.
+        $DB->delete_records('enrol_lti_users', array('toolid' => $tool->id));
+
+        // Delete the lti tool record.
+        $DB->delete_records('enrol_lti_tools', array('id' => $tool->id));
+
+        // Time for the parent to do it's thang, yeow.
+        parent::delete_instance($instance);
+    }
+
+    /**
      * Add elements to the edit instance form.
      *
      * @param stdClass $instance
