@@ -397,3 +397,25 @@ class enrol_lti_plugin extends enrol_plugin {
         return $actions;
     }
 }
+
+/**
+ * Display the LTI link in the course administration menu.
+ *
+ * @param settings_navigation $navigation The settings navigation object
+ * @param stdClass $course The course
+ * @param stdclass $context Course context
+ */
+function enrol_lti_extend_navigation_course($navigation, $course, $context) {
+    // Check that the LTI plugin is enabled.
+    if (enrol_is_enabled('lti')) {
+        // Check that they can add an instance.
+        $ltiplugin = enrol_get_plugin('lti');
+        if ($ltiplugin->can_add_instance($course->id)) {
+            $url = new moodle_url('/enrol/lti/index.php', array('courseid' => $course->id));
+            $settingsnode = navigation_node::create(get_string('sharedexternaltools', 'enrol_lti'), $url,
+                navigation_node::TYPE_SETTING, null, null, new pix_icon('i/settings', ''));
+
+            $navigation->add_node($settingsnode);
+        }
+    }
+}

@@ -38,3 +38,28 @@ define('ENROL_LTI_MEMBER_SYNC_ENROL_NEW', 2);
  * The value used when we want to unenrol missing users.
  */
 define('ENROL_LTI_MEMBER_SYNC_UNENROL_MISSING', 3);
+
+/**
+ * Returns the LTI tools requested.
+ *
+ * @param array $params The list of SQL params (eg. array('columnname' => value, 'columnname2' => value)).
+ * @return array of tools
+ */
+function enrol_lti_get_lti_tools($params = array()) {
+    global $DB;
+
+    $sql = "SELECT elt.*, e.name, e.courseid, e.status
+              FROM {enrol_lti_tools} elt
+              JOIN {enrol} e
+                ON elt.enrolid = e.id";
+    if ($params) {
+        $where = "WHERE";
+        foreach ($params as $colname => $value) {
+            $sql .= " $where $colname = :$colname";
+            $where = "AND";
+        }
+    }
+    $sql .= " ORDER BY timecreated";
+
+    return $DB->get_records_sql($sql, $params);
+}
