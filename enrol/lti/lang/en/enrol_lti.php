@@ -50,6 +50,7 @@ $string['membersynctime'] = 'Members synchronisation time';
 $string['membersynctime_desc'] = 'This determines how often synchronisation of members occur.';
 $string['notoolsprovided'] = 'No tools provided';
 $string['lti:config'] = 'Configure LTI enrol instances';
+$string['lti:unenrol'] = 'Unenrol users from the course';
 $string['pluginname'] = 'LTI enrolments';
 $string['pluginname_desc'] = 'The LTI enrolment plugin allows externals users to access a course via a LTI link - this requires the LTI authentication plugin to be enabled as well.';
 $string['remotesystem'] = 'Remote system';

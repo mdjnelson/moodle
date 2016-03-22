@@ -71,6 +71,16 @@ class enrol_lti_plugin extends enrol_plugin {
     }
 
     /**
+     * Returns true if it's possible to unenrol users.
+     *
+     * @param stdClass $instance course enrol instance
+     * @return bool
+     */
+    public function allow_unenrol(stdClass $instance) {
+        return true;
+    }
+
+    /**
      * We are a good plugin and don't invent our own UI/validation code path.
      *
      * @return boolean
@@ -332,6 +342,30 @@ class enrol_lti_plugin extends enrol_plugin {
         }
 
         return $errors;
+    }
+
+    /**
+     * Gets an array of the user enrolment actions.
+     *
+     * @param course_enrolment_manager $manager
+     * @param stdClass $ue A user enrolment object
+     * @return array An array of user_enrolment_actions
+     */
+    public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue) {
+        $actions = array();
+        $context = $manager->get_context();
+        $instance = $ue->enrolmentinstance;
+        $params = $manager->get_moodlepage()->url->params();
+        $params['ue'] = $ue->id;
+        if ($this->allow_unenrol_user($instance, $ue) && has_capability("enrol/lti:unenrol", $context)) {
+            $url = new moodle_url('/enrol/unenroluser.php', $params);
+            $actions[] = new user_enrolment_action(new pix_icon('t/delete', ''), get_string('unenrol', 'enrol'), $url, array('class'=>'unenrollink', 'rel'=>$ue->id));
+        }
+        if ($this->allow_manage($instance) && has_capability("enrol/lti:manage", $context)) {
+            $url = new moodle_url('/enrol/editenrolment.php', $params);
+            $actions[] = new user_enrolment_action(new pix_icon('t/edit', ''), get_string('edit'), $url, array('class'=>'editenrollink', 'rel'=>$ue->id));
+        }
+        return $actions;
     }
 }
 
