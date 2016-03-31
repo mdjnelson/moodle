@@ -1,7 +1,7 @@
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or courseify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
@@ -45,22 +45,66 @@ class disguisebasic_disguise_testcase extends advanced_testcase {
      * Ensure that the displayname appears as expected.
      */
     public function test_displayname() {
-        global $DB;
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
-        $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
-        $modcontext = context_module::instance($forum->cmid);
+        $coursecontext = \context_course::instance($course->id);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'basic');
+        fixture\helper::create($coursecontext, 'basic');
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();
-        $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'), MUST_EXIST);
-        $this->getDataGenerator()->enrol_user($user->id, $course->id, $roleid);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
 
         // Check the displayname.
-        $this->assertEquals(get_string('anonymous', 'disguise_basic'), \core_user::displayname($user, $modcontext));
+        $this->assertEquals(get_string('anonymous', 'disguise_basic'), \core_user::displayname($user, $coursecontext));
+    }
+
+    public function test_requires_user_configuration() {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $coursecontext = \context_course::instance($course->id);
+
+        // Creating a new disguise.
+        fixture\helper::create($coursecontext, 'basic');
+
+        $rc = new \ReflectionClass('\\disguise_basic\\disguise');
+        $rcm = $rc->getMethod('requires_user_configuration');
+        $rcm->setAccessible(true);
+
+        $this->assertFalse($rcm->invoke($coursecontext->disguise));
+    }
+
+    public function test_add_disguise_navigation_without_capability() {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $coursecontext = context_course::instance($course->id);
+        fixture\helper::create($coursecontext, 'basic');
+
+        // Create a user in the course.
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+
+        $this->setUser($user);
+
+        $this->assertEmpty($coursecontext->disguise->add_disguise_navigation());
+    }
+
+    public function test_add_disguise_navigation_with_capability() {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $coursecontext = context_course::instance($course->id);
+        fixture\helper::create($coursecontext, 'basic');
+
+        // Create a user in the course.
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'manager');
+        $this->setUser($user);
+
+        $this->assertNotEmpty($coursecontext->disguise->add_disguise_navigation());
     }
 }
