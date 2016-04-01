@@ -300,3 +300,37 @@ function enrol_lti_get_lti_tools($params = array()) {
 
     return $DB->get_records_sql($sql, array_values($params));
 }
+
+/**
+ * Create a IMS POX body request for sync grades.
+ *
+ * @param string $source Sourceid required for the request
+ * @param float $grade User final grade
+ * @return string
+ */
+function enrol_lti_create_service_body($source, $grade) {
+    return '<?xml version="1.0" encoding="UTF-8"?>
+<imsx_POXEnvelopeRequest xmlns="http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
+  <imsx_POXHeader>
+    <imsx_POXRequestHeaderInfo>
+      <imsx_version>V1.0</imsx_version>
+      <imsx_messageIdentifier>'.(time()).'</imsx_messageIdentifier>
+    </imsx_POXRequestHeaderInfo>
+  </imsx_POXHeader>
+  <imsx_POXBody>
+    <replaceResultRequest>
+      <resultRecord>
+        <sourcedGUID>
+          <sourcedId>'.$source.'</sourcedId>
+        </sourcedGUID>
+        <result>
+          <resultScore>
+            <language>en-us</language>
+            <textString>'.$grade.'</textString>
+          </resultScore>
+        </result>
+      </resultRecord>
+    </replaceResultRequest>
+  </imsx_POXBody>
+</imsx_POXEnvelopeRequest>';
+}
