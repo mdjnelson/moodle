@@ -18,7 +18,6 @@ Feature: Backup user data
       | student1 | C1 | student |
     And the following config values are set as admin:
       | coursebinenable | 1 | tool_recyclebin |
-      | autohide | 0 | tool_recyclebin |
 
   @javascript
   Scenario: Delete and restore a quiz with user data

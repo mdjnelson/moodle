@@ -27,8 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 $string['alertdeleted'] = '\'{$a->name}\' has been deleted.';
 $string['alertemptied'] = 'Recycle bin has been emptied.';
 $string['alertrestored'] = '\'{$a->name}\' has been restored.';
-$string['autohide'] = 'Auto hide';
-$string['autohide_desc'] = 'Automatically hides the recycle bin link when the bin is empty.';
 $string['categorybinenable'] = 'Enable category recycle bin';
 $string['categorybinexpiry'] = 'Course lifetime';
 $string['categorybinexpiry_desc'] = 'How long should a deleted course remain in the recycle bin?';

@@ -57,11 +57,4 @@ if ($hassiteconfig) {
         new lang_string('categorybinexpiry_desc', 'tool_recyclebin'),
         WEEKSECS
     ));
-
-    $settings->add(new admin_setting_configcheckbox(
-        'tool_recyclebin/autohide',
-        new lang_string('autohide', 'tool_recyclebin'),
-        new lang_string('autohide_desc', 'tool_recyclebin'),
-        1
-    ));
 }

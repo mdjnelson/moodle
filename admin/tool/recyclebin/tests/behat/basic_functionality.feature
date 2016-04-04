@@ -21,7 +21,6 @@ Feature: Basic recycle bin functionality
       | categorybinenable | 1 | tool_recyclebin |
       | coursebinexpiry | 604800 | tool_recyclebin |
       | categorybinexpiry | 1209600 | tool_recyclebin |
-      | autohide | 0 | tool_recyclebin |
 
   Scenario: Restore a deleted assignment
     Given I log in as "teacher1"

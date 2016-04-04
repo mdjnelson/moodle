@@ -54,15 +54,6 @@ function tool_recyclebin_extend_navigation_course($navigation, $course, $context
         'contextid' => $context->id
     ));
 
-    // If we are set to auto-hide, check the number of items.
-    $autohide = get_config('tool_recyclebin', 'autohide');
-    if ($autohide) {
-        $items = $coursebin->get_items();
-        if (empty($items)) {
-            return null;
-        }
-    }
-
     // Add the recyclebin link.
     $pluginname = get_string('pluginname', 'tool_recyclebin');
 
@@ -111,15 +102,6 @@ function tool_recyclebin_extend_navigation_category_settings($navigation, $conte
     $url = new moodle_url('/admin/tool/recyclebin/index.php', array(
         'contextid' => $context->id
     ));
-
-    // If we are set to auto-hide, check the number of items.
-    $autohide = get_config('tool_recyclebin', 'autohide');
-    if ($autohide) {
-        $items = $categorybin->get_items();
-        if (empty($items)) {
-            return null;
-        }
-    }
 
     // Add the recyclebin link.
     $pluginname = get_string('pluginname', 'tool_recyclebin');
