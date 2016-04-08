@@ -1768,7 +1768,7 @@ class core_plugin_manager {
 
             'enrol' => array(
                 'category', 'cohort', 'database', 'flatfile',
-                'guest', 'imsenterprise', 'ldap', 'manual', 'meta', 'mnet',
+                'guest', 'imsenterprise', 'ldap', 'lti', 'manual', 'meta', 'mnet',
                 'paypal', 'self'
             ),
 
