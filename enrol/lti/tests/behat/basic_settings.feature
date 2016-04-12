@@ -16,9 +16,7 @@ Feature: Check that settings are adhered to when creating an enrolment plugin
       | user | course | role |
       | teacher1 | C1 | editingteacher |
     And I log in as "admin"
-
-  Scenario: As an admin set site-wide settings for the enrolment plugin and ensure they are used
-    Given I navigate to "Manage enrol plugins" node in "Site administration > Plugins > Enrolments"
+    And I navigate to "Manage enrol plugins" node in "Site administration > Plugins > Enrolments"
     And I click on "Enable" "link" in the "Shared external tool" "table_row"
     And I navigate to "Shared external tool" node in "Site administration > Plugins > Enrolments"
     And I set the following fields to these values:
@@ -30,7 +28,9 @@ Feature: Check that settings are adhered to when creating an enrolment plugin
       | Institution         | Moodle Pty Ltd                         |
     And I press "Save changes"
     And I log out
-    And I log in as "teacher1"
+
+  Scenario: As an admin set site-wide settings for the enrolment plugin and ensure they are used
+    Given I log in as "teacher1"
     And I follow "Course 1"
     And I navigate to "Enrolment methods" node in "Course administration > Users"
     And I select "Shared external tool" from the "Add method" singleselect
