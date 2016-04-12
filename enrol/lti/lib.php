@@ -101,7 +101,6 @@ class enrol_lti_plugin extends enrol_plugin {
      *
      * @param object $course
      * @param array $fields instance fields
-     * @return int id of new instance, null if can not be created
      */
     public function add_instance($course, array $fields = null) {
         global $DB;
@@ -119,7 +118,8 @@ class enrol_lti_plugin extends enrol_plugin {
 
         $DB->insert_record('enrol_lti_tools', $data);
 
-        return $instanceid;
+        // Redirect back to our page.
+        redirect(new moodle_url('/enrol/lti/index.php', array('courseid' => $course->id)));
     }
 
     /**
@@ -127,7 +127,6 @@ class enrol_lti_plugin extends enrol_plugin {
      *
      * @param stdClass $instance
      * @param stdClass $data modified instance fields
-     * @return boolean
      */
     public function update_instance($instance, $data) {
         global $DB;
@@ -150,7 +149,23 @@ class enrol_lti_plugin extends enrol_plugin {
             $tool->$field = $value;
         }
 
-        return $DB->update_record('enrol_lti_tools', $tool);
+        $DB->update_record('enrol_lti_tools', $tool);
+
+        // The following logic that marks the context as dirty is done in enrol/editinstance.php -
+        // we must replicate it here if we are to redirect to our own page for displaying LTI
+        // enrolment instances.
+        $reset = false;
+        if (isset($data->status)) {
+            $reset = ($instance->status != $data->status);
+        }
+
+        if ($reset) {
+            $context = context_course::instance($data->courseid, MUST_EXIST);
+            $context->mark_dirty();
+        }
+
+        // Redirect back to our page.
+        redirect(new moodle_url('/enrol/lti/index.php', array('courseid' => $data->courseid)));
     }
 
     /**
