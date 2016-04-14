@@ -28,15 +28,6 @@ require_once($CFG->dirroot . '/enrol/lti/locallib.php');
 
 if ($ADMIN->fulltree) {
 
-    $settings->add(new admin_setting_heading('enrol_lti_sync_settings',
-        get_string('syncsettings', 'enrol_lti'), ''));
-
-    $settings->add(new admin_setting_configduration('enrol_lti/gradesynctime',
-        get_string('gradesynctime', 'enrol_lti'), get_string('gradesynctime_desc', 'enrol_lti'), 60 * 60));
-
-    $settings->add(new admin_setting_configduration('enrol_lti/membersynctime',
-        get_string('membersynctime', 'enrol_lti'), get_string('membersynctime_desc', 'enrol_lti'), 60 * 60));
-
     $settings->add(new admin_setting_heading('enrol_lti_user_default_values',
         get_string('userdefaultvalues', 'enrol_lti'), ''));
 
