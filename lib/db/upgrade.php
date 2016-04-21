@@ -1859,5 +1859,52 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2017121200.00);
     }
 
+    if ($oldversion < 2017121800.00) {
+
+        // Changing precision of field idnumber on table course to (255).
+        $coursetable = new xmldb_table('course');
+        $columns = $DB->get_columns('course');
+        if ($columns['idnumber']->max_length < 255) {
+            $index1 = new xmldb_index('idnumber', XMLDB_INDEX_NOTUNIQUE, array('idnumber'));
+            if ($dbman->index_exists($coursetable, $index1)) {
+                $dbman->drop_index($coursetable, $index1);
+            }
+            $field = new xmldb_field('idnumber', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'shortname');
+
+            // Launch change of precision for field idnumber.
+            $dbman->change_field_precision($coursetable, $field);
+            $dbman->add_index($coursetable, $index1);
+        }
+
+        if ($columns['fullname']->max_length < 255) {
+            $field = new xmldb_field('fullname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'sortorder');
+            // Launch change of precision for field fullname.
+            $dbman->change_field_precision($coursetable, $field);
+        }
+
+        $courserequesttable = new xmldb_table('course_request');
+        $columns = $DB->get_columns('course_request');
+        if ($columns['fullname']->max_length < 255) {
+            $field = new xmldb_field('fullname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'id');
+            // Launch change of precision for field fullname.
+            $dbman->change_field_precision($courserequesttable, $field);
+        }
+
+        if ($columns['shortname']->max_length < 255) {
+            $index1 = new xmldb_index('shortname', XMLDB_INDEX_NOTUNIQUE, array('shortname'));
+            if ($dbman->index_exists($courserequesttable, $index1)) {
+                $dbman->drop_index($courserequesttable, $index1);
+            }
+            $field = new xmldb_field('shortname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'fullname');
+
+            // Launch change of precision for field idnumber.
+            $dbman->change_field_precision($courserequesttable, $field);
+            $dbman->add_index($courserequesttable, $index1);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2017121800.00);
+    }
+
     return true;
 }
