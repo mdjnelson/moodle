@@ -45,17 +45,6 @@ class enrol_lti_plugin extends enrol_plugin {
     }
 
     /**
-     * Returns whether or not it is possible to edit an instance.
-     *
-     * @param stdClass $instance
-     * @return boolean
-     */
-    public function can_edit_instance($instance) {
-        $context = context_course::instance($instance->courseid);
-        return has_capability('enrol/lti:config', $context);
-    }
-
-    /**
      * Is it possible to delete enrol instance via standard UI?
      *
      * @param object $instance
@@ -203,9 +192,7 @@ class enrol_lti_plugin extends enrol_plugin {
      * @return bool
      */
     public function edit_instance_form($instance, MoodleQuickForm $mform, $context) {
-        global $CFG, $DB;
-
-        require_once($CFG->dirroot . '/enrol/lti/locallib.php');
+        global $DB;
 
         $nameattribs = array('size' => '20', 'maxlength' => '255');
         $mform->addElement('text', 'name', get_string('custominstancename', 'enrol'), $nameattribs);
@@ -274,11 +261,11 @@ class enrol_lti_plugin extends enrol_plugin {
         $mform->addHelpButton('membersync', 'membersync', 'enrol_lti');
 
         $options = array();
-        $options[ENROL_LTI_MEMBER_SYNC_ENROL_AND_UNENROL] = get_string('membersyncmodeenrolandunenrol', 'enrol_lti');
-        $options[ENROL_LTI_MEMBER_SYNC_ENROL_NEW] = get_string('membersyncmodeenrolnew', 'enrol_lti');
-        $options[ENROL_LTI_MEMBER_SYNC_UNENROL_MISSING] = get_string('membersyncmodeunenrolmissing', 'enrol_lti');
+        $options[\enrol_lti\helper::MEMBER_SYNC_ENROL_AND_UNENROL] = get_string('membersyncmodeenrolandunenrol', 'enrol_lti');
+        $options[\enrol_lti\helper::MEMBER_SYNC_ENROL_NEW] = get_string('membersyncmodeenrolnew', 'enrol_lti');
+        $options[\enrol_lti\helper::MEMBER_SYNC_UNENROL_MISSING] = get_string('membersyncmodeunenrolmissing', 'enrol_lti');
         $mform->addElement('select', 'membersyncmode', get_string('membersyncmode', 'enrol_lti'), $options);
-        $mform->setDefault('membersyncmode', ENROL_LTI_MEMBER_SYNC_ENROL_AND_UNENROL);
+        $mform->setDefault('membersyncmode', \enrol_lti\helper::MEMBER_SYNC_ENROL_AND_UNENROL);
         $mform->addHelpButton('membersyncmode', 'membersyncmode', 'enrol_lti');
         $mform->disabledIf('membersyncmode', 'membersync', 0);
 

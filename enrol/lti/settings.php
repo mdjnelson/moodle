@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->dirroot . '/enrol/lti/locallib.php');
-
 if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_heading('enrol_lti_user_default_values',

@@ -23,7 +23,6 @@
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');
-require_once($CFG->dirroot.'/enrol/lti/locallib.php');
 require_once($CFG->dirroot.'/enrol/lti/lib.php');
 
 $courseid = required_param('courseid', PARAM_INT);
@@ -42,11 +41,10 @@ require_login($course);
 require_capability('moodle/course:enrolreview', $context);
 
 $ltiplugin = enrol_get_plugin('lti');
-$ltienabled = enrol_is_enabled('lti');
-
 $canconfig = has_capability('moodle/course:enrolconfig', $context);
+$pageurl = new moodle_url('/enrol/lti/index.php', array('courseid' => $courseid));
 
-$PAGE->set_url('/enrol/lti/index.php', array('courseid' => $courseid));
+$PAGE->set_url($pageurl);
 $PAGE->set_title(get_string('course') . ': ' . $course->fullname);
 $PAGE->set_pagelayout('admin');
 
@@ -98,100 +96,13 @@ if ($action) {
     }
 }
 
-if ($tools = enrol_lti_get_lti_tools(array('courseid' => $course->id))) {
-    // Strings that are used.
-    $strup = get_string('up');
-    $strdown = get_string('down');
-    $strdelete = get_string('delete');
-    $strenable = get_string('enable');
-    $strdisable = get_string('disable');
-    $strmanage = get_string('manageinstance', 'enrol');
-
-    $data = array();
-    $url = new moodle_url('/enrol/lti/index.php', array('sesskey' => sesskey(), 'courseid' => $course->id));
-    foreach ($tools as $tool) {
-        $instance = new stdClass();
-        $instance->id = $tool->enrolid;
-        $instance->courseid = $course->id;
-        $instance->enrol = 'lti';
-        $instance->status = $tool->status;
-
-        // Set the values we will be adding to this row.
-        if (empty($tool->name)) {
-            $toolcontext = context::instance_by_id($tool->contextid);
-            $name = $toolcontext->get_context_name();
-        } else {
-            $name = $tool->name;
-        }
-        $toolurl = new moodle_url('/enrol/lti/tool.php', array('id' => $tool->id));
-        $secret = $tool->secret;
-
-        // Start creating the row.
-        $line = array();
-        if ($canconfig) {
-            $buttons = array();
-
-            if ($ltiplugin->can_delete_instance($instance)) {
-                $aurl = new moodle_url($url, array('action' => 'delete', 'instanceid' => $instance->id));
-                $buttons[] = $OUTPUT->action_icon($aurl, new pix_icon('t/delete', $strdelete, 'core',
-                    array('class' => 'iconsmall')));
-            }
-
-            if ($ltienabled && $ltiplugin->can_hide_show_instance($instance)) {
-                if ($instance->status == ENROL_INSTANCE_ENABLED) {
-                    $aurl = new moodle_url($url, array('action' => 'disable', 'instanceid' => $instance->id));
-                    $buttons[] = $OUTPUT->action_icon($aurl, new pix_icon('t/hide', $strdisable, 'core',
-                        array('class' => 'iconsmall')));
-                } else if ($instance->status == ENROL_INSTANCE_DISABLED) {
-                    $aurl = new moodle_url($url, array('action' => 'enable', 'instanceid' => $instance->id));
-                    $buttons[] = $OUTPUT->action_icon($aurl, new pix_icon('t/show', $strenable, 'core',
-                        array('class' => 'iconsmall')));
-                }
-            }
-
-            if ($ltienabled && $canconfig) {
-                $linkparams = array(
-                    'courseid' => $instance->courseid,
-                    'id' => $instance->id, 'type' => $instance->enrol,
-                    'returnurl' => new moodle_url('/enrol/lti/index.php', array('courseid' => $course->id))
-                );
-                $editlink = new moodle_url("/enrol/editinstance.php", $linkparams);
-                $buttons[] = $OUTPUT->action_icon($editlink, new pix_icon('t/edit', get_string('edit'), 'core',
-                    array('class' => 'iconsmall')));
-            }
-
-            // We want to dim the following items if they are disabled.
-            if ($instance->status != ENROL_INSTANCE_ENABLED) {
-                $line[] = html_writer::tag('span', $name, array('class' => 'dimmed_text'));
-                $line[] = html_writer::tag('span', $toolurl, array('class' => 'dimmed_text'));
-                $line[] = html_writer::tag('span', $secret, array('class' => 'dimmed_text'));
-            } else {
-                $line[] = $name;
-                $line[] = $toolurl;
-                $line[] = $secret;
-            }
-            $line[] = implode(' ', $buttons);
-        } else {
-            $line[] = '';
-        }
-        $data[] = $line;
-    }
-}
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('toolsprovided', 'enrol_lti'));
 
-if (!empty($data)) {
-    $table = new html_table();
-    $table->head = array(
-        get_string('name'),
-        get_string('url'),
-        get_string('secret', 'enrol_lti'),
-        get_string('edit'));
-    $table->size = array('20%', '20%', '50%', '10%');
-    $table->align = array('left', 'left', 'left', 'center');
-    $table->data = $data;
-    echo html_writer::table($table);
+if (\enrol_lti\helper::count_lti_tools(array('courseid' => $courseid)) > 0) {
+    $table = new \enrol_lti\manage_table($courseid);
+    $table->define_baseurl($pageurl);
+    $table->out(50, false);
 } else {
     $notify = new \core\output\notification(get_string('notoolsprovided', 'enrol_lti'),
         \core\output\notification::NOTIFY_WARNING);

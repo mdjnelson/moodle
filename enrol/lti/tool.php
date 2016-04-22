@@ -24,16 +24,15 @@
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/user/lib.php');
-require_once($CFG->dirroot . '/enrol/lti/locallib.php');
 require_once($CFG->dirroot . '/enrol/lti/ims-blti/blti.php');
 
 $toolid = required_param('id', PARAM_INT);
 $lticontextid = required_param('context_id', PARAM_RAW);
 
 // Get the tool.
-$tool = enrol_lti_get_lti_tool($toolid);
+$tool = \enrol_lti\helper::get_lti_tool($toolid);
 
-// Do not set session, do not redirect.
+// Create the BLTI request.
 $ltirequest = new BLTI($tool->secret, false, false);
 
 // Correct launch request.
@@ -61,7 +60,7 @@ if ($ltirequest->valid) {
 
     // Set the user data.
     $user = new stdClass();
-    $user->username = enrol_lti_create_username($ltirequest->info['oauth_consumer_key'], $ltirequest->info['user_id']);
+    $user->username = \enrol_lti\helper::create_username($ltirequest->info['oauth_consumer_key'], $ltirequest->info['user_id']);
     if (!empty($ltirequest->info['lis_person_name_given'])) {
         $user->firstname = $ltirequest->info['lis_person_name_given'];
     } else {
@@ -76,7 +75,7 @@ if ($ltirequest->valid) {
     $user->email = clean_param($ltirequest->getUserEmail(), PARAM_EMAIL);
 
     // Get the user data from the LTI consumer.
-    $user = enrol_lti_assign_user_tool_data($tool, $user);
+    $user = \enrol_lti\helper::assign_user_tool_data($tool, $user);
 
     // Check if the user exists.
     if (!$dbuser = $DB->get_record('user', array('username' => $user->username, 'deleted' => 0))) {
@@ -92,7 +91,7 @@ if ($ltirequest->valid) {
         // Get the updated user record.
         $user = $DB->get_record('user', array('id' => $user->id));
     } else {
-        if (enrol_lti_user_match($user, $dbuser)) {
+        if (\enrol_lti\helper::user_match($user, $dbuser)) {
             $user = $dbuser;
         } else {
             // If email is empty remove it, so we don't update the user with an empty email.
@@ -109,10 +108,16 @@ if ($ltirequest->valid) {
     }
 
     // Update user image.
+    $image = false;
     if (!empty($ltirequest->info['user_image'])) {
-        enrol_lti_update_user_profile_image($user->id, $ltirequest->info['user_image']);
+        $image = $ltirequest->info['user_image'];
     } else if (!empty($ltirequest->info['custom_user_image'])) {
-        enrol_lti_update_user_profile_image($user->id, $ltirequest->info['custom_user_image']);
+        $image = $ltirequest->info['custom_user_image'];
+    }
+
+    // Check if there is an image to process.
+    if ($image) {
+        \enrol_lti\helper::update_user_profile_image($user->id, $ltirequest->info['custom_user_image']);
     }
 
     // Check if we are an instructor.
@@ -143,10 +148,10 @@ if ($ltirequest->valid) {
     }
 
     // Enrol the user in the course with no role.
-    $result = enrol_lti_enrol_user($tool, $user->id);
+    $result = \enrol_lti\helper::enrol_user($tool, $user->id);
 
-    // Only true is a valid result, else there was a problem.
-    if ($result !== true) {
+    // Display an error, if there is one.
+    if ($result !== \enrol_lti\helper::ENROLMENT_SUCCESSFUL) {
         print_error($result, 'enrol_lti');
         exit();
     }
@@ -159,6 +164,7 @@ if ($ltirequest->valid) {
     $sourceid = (!empty($ltirequest->info['lis_result_sourcedid'])) ? $ltirequest->info['lis_result_sourcedid'] : '';
     $serviceurl = (!empty($ltirequest->info['lis_outcome_service_url'])) ? $ltirequest->info['lis_outcome_service_url'] : '';
 
+    // Check if we have recorded this user before.
     if ($userlog = $DB->get_record('enrol_lti_users', array('toolid' => $tool->id, 'userid' => $user->id))) {
         if ($userlog->sourceid != $sourceid) {
             $userlog->sourceid = $sourceid;
@@ -169,7 +175,7 @@ if ($ltirequest->valid) {
         $userlog->lastaccess = time();
         $DB->update_record('enrol_lti_users', $userlog);
     } else {
-        // This data is needed for sending backup outcomes (aka grades).
+        // Add the user details so we can use it later when syncing grades and members.
         $userlog = new stdClass();
         $userlog->userid = $user->id;
         $userlog->toolid = $tool->id;
