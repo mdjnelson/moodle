@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Test the local library functionality.
+ * Test the helper functionality.
  *
  * @package enrol_lti
  * @copyright 2016 Mark Nelson <markn@moodle.com>
@@ -24,18 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-
-require_once($CFG->dirroot . '/enrol/lti/locallib.php');
-
 /**
- * Test the local library functionality.
+ * Test the helper functionality.
  *
  * @package enrol_lti
  * @copyright 2016 Mark Nelson <markn@moodle.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class enrol_lti_enrol_user_testcase extends advanced_testcase {
+class enrol_lti_helper_testcase extends advanced_testcase {
 
     /**
      * @var stdClass $user1 A user.
@@ -70,7 +66,7 @@ class enrol_lti_enrol_user_testcase extends advanced_testcase {
         global $DB, $CFG;
 
         // Set the profile image.
-        enrol_lti_update_user_profile_image($this->user1->id, $this->getExternalTestFileUrl('/test.jpg'));
+        \enrol_lti\helper::update_user_profile_image($this->user1->id, $this->getExternalTestFileUrl('/test.jpg'));
 
         // Get the new user record.
         $this->user1 = $DB->get_record('user', array('id' => $this->user1->id));
@@ -99,18 +95,21 @@ class enrol_lti_enrol_user_testcase extends advanced_testcase {
         $data->maxenrolled = 1;
         $tool = $this->create_tool($data);
 
+        // Now get all the information we need.
+        $tool = \enrol_lti\helper::get_lti_tool($tool->id);
+
         // Enrol a user.
-        $result = enrol_lti_enrol_user($tool, $this->user1->id);
+        $result = \enrol_lti\helper::enrol_user($tool, $this->user1->id);
 
         // Check that the user was enrolled.
         $this->assertEquals(true, $result);
         $this->assertEquals(1, $DB->count_records('user_enrolments', array('enrolid' => $tool->enrolid)));
 
         // Try and enrol another user - should not happen.
-        $result = enrol_lti_enrol_user($tool, $this->user2->id);
+        $result = \enrol_lti\helper::enrol_user($tool, $this->user2->id);
 
         // Check that this user was not enrolled and we are told why.
-        $this->assertEquals(ENROL_LTI_MAX_ENROLLED, $result);
+        $this->assertEquals(\enrol_lti\helper::ENROLMENT_MAX_ENROLLED, $result);
         $this->assertEquals(1, $DB->count_records('user_enrolments', array('enrolid' => $tool->enrolid)));
     }
 
@@ -125,11 +124,14 @@ class enrol_lti_enrol_user_testcase extends advanced_testcase {
         $data->enrolstartdate = time() + DAYSECS; // Make sure it is in the future.
         $tool = $this->create_tool($data);
 
+        // Now get all the information we need.
+        $tool = \enrol_lti\helper::get_lti_tool($tool->id);
+
         // Try and enrol a user - should not happen.
-        $result = enrol_lti_enrol_user($tool, $this->user1->id);
+        $result = \enrol_lti\helper::enrol_user($tool, $this->user1->id);
 
         // Check that this user was not enrolled and we are told why.
-        $this->assertEquals(ENROL_LTI_ENROLMENT_NOT_STARTED, $result);
+        $this->assertEquals(\enrol_lti\helper::ENROLMENT_NOT_STARTED, $result);
         $this->assertEquals(0, $DB->count_records('user_enrolments', array('enrolid' => $tool->enrolid)));
     }
 
@@ -144,11 +146,14 @@ class enrol_lti_enrol_user_testcase extends advanced_testcase {
         $data->enrolenddate = time() - DAYSECS; // Make sure it is in the past.
         $tool = $this->create_tool($data);
 
+        // Now get all the information we need.
+        $tool = \enrol_lti\helper::get_lti_tool($tool->id);
+
         // Try and enrol a user - should not happen.
-        $result = enrol_lti_enrol_user($tool, $this->user1->id);
+        $result = \enrol_lti\helper::enrol_user($tool, $this->user1->id);
 
         // Check that this user was not enrolled and we are told why.
-        $this->assertEquals(ENROL_LTI_ENROLMENT_FINISHED, $result);
+        $this->assertEquals(\enrol_lti\helper::ENROLMENT_FINISHED, $result);
         $this->assertEquals(0, $DB->count_records('user_enrolments', array('enrolid' => $tool->enrolid)));
     }
 
@@ -174,13 +179,13 @@ class enrol_lti_enrol_user_testcase extends advanced_testcase {
         $tool4 = $this->create_tool($data);
 
         // Get all the tools.
-        $tools = enrol_lti_get_lti_tools();
+        $tools = \enrol_lti\helper::get_lti_tools();
 
         // Check that we got all the tools.
         $this->assertEquals(4, count($tools));
 
         // Get all the tools in course 1.
-        $tools = enrol_lti_get_lti_tools(array('courseid' => $course1->id));
+        $tools = \enrol_lti\helper::get_lti_tools(array('courseid' => $course1->id));
 
         // Check that we got all the tools in course 1.
         $this->assertEquals(2, count($tools));
@@ -188,14 +193,14 @@ class enrol_lti_enrol_user_testcase extends advanced_testcase {
         $this->assertTrue(isset($tools[$tool2->id]));
 
         // Get all the tools in course 2 that are disabled.
-        $tools = enrol_lti_get_lti_tools(array('courseid' => $course2->id, 'status' => ENROL_INSTANCE_DISABLED));
+        $tools = \enrol_lti\helper::get_lti_tools(array('courseid' => $course2->id, 'status' => ENROL_INSTANCE_DISABLED));
 
         // Check that we got all the tools in course 2 that are disabled.
         $this->assertEquals(1, count($tools));
         $this->assertTrue(isset($tools[$tool4->id]));
 
         // Get all the tools that are enabled.
-        $tools = enrol_lti_get_lti_tools(array('status' => ENROL_INSTANCE_ENABLED));
+        $tools = \enrol_lti\helper::get_lti_tools(array('status' => ENROL_INSTANCE_ENABLED));
 
         // Check that we got all the tools that are enabled.
         $this->assertEquals(3, count($tools));
