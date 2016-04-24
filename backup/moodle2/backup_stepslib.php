@@ -279,6 +279,9 @@ class backup_module_structure_step extends backup_structure_step {
         // many plagiarism plugins storing information about this course
         $this->add_plugin_structure('plagiarism', $module, true);
 
+        // Attach disguise plugin structure to $module.
+        $this->add_plugin_structure('disguise', $module, true);
+
         // attach local plugin structure to $module, multiple allowed
         $this->add_plugin_structure('local', $module, true);
 
@@ -409,6 +412,9 @@ class backup_course_structure_step extends backup_structure_step {
         // attach plagiarism plugin structure to $course element, there can be potentially
         // many plagiarism plugins storing information about this course
         $this->add_plugin_structure('plagiarism', $course, true);
+
+        // Attach disguise plugin structure to $module.
+        $this->add_plugin_structure('disguise', $course, true);
 
         // attach local plugin structure to $course element; multiple local plugins
         // can save course data if required
