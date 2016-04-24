@@ -37,6 +37,7 @@ require_once($CFG->dirroot . '/backup/moodle2/restore_default_block_task.class.p
 require_once($CFG->dirroot . '/backup/moodle2/restore_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/restore_qtype_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/restore_format_plugin.class.php');
+require_once($CFG->dirroot . '/backup/moodle2/restore_disguise_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/restore_local_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/restore_theme_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/restore_report_plugin.class.php');

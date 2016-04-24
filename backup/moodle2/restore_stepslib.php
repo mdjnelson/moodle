@@ -3816,6 +3816,9 @@ class restore_module_structure_step extends restore_structure_step {
         // Apply for 'plagiarism' plugins optional paths at module level
         $this->add_plugin_structure('plagiarism', $module);
 
+        // Attach disguise plugin structure to $module.
+        $this->add_plugin_structure('disguise', $module);
+
         // Apply for 'local' plugins optional paths at module level
         $this->add_plugin_structure('local', $module);
 
