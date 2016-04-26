@@ -160,9 +160,9 @@ class sync_members extends \core\task\scheduled_task {
                             // Set the user data.
                             $user = new \stdClass();
                             $user->username = \enrol_lti\helper::create_username($ltiuser->consumerkey, $member->user_id);
-                            $user->firstname = clean_param($member->person_name_given, PARAM_TEXT);
-                            $user->lastname = clean_param($member->person_name_family, PARAM_TEXT);
-                            $user->email = clean_param($member->person_contact_email_primary, PARAM_EMAIL);
+                            $user->firstname = \core_user::clean_field($member->person_name_given, 'firstname');
+                            $user->lastname = \core_user::clean_field($member->person_name_family, 'lastname');
+                            $user->email = \core_user::clean_field($member->person_contact_email_primary, 'email');
 
                             // Get the user data from the LTI consumer.
                             $user = \enrol_lti\helper::assign_user_tool_data($tool, $user);
