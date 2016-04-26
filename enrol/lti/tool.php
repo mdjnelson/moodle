@@ -72,7 +72,7 @@ if ($ltirequest->valid) {
         $user->lastname = $ltirequest->info['context_id'];
     }
 
-    $user->email = clean_param($ltirequest->getUserEmail(), PARAM_EMAIL);
+    $user->email = \core_user::clean_field($ltirequest->getUserEmail(), 'email');
 
     // Get the user data from the LTI consumer.
     $user = \enrol_lti\helper::assign_user_tool_data($tool, $user);

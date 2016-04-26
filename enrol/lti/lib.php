@@ -243,8 +243,8 @@ class enrol_lti_plugin extends enrol_plugin {
         $mform->addElement('header', 'remotesystem', get_string('remotesystem', 'enrol_lti'));
 
         $mform->addElement('text', 'secret', get_string('secret', 'enrol_lti'), 'maxlength="64" size="25"');
-        $mform->setType('secret', PARAM_TEXT);
-        $mform->setDefault('secret', md5(uniqid(rand(), 1)));
+        $mform->setType('secret', PARAM_ALPHANUM);
+        $mform->setDefault('secret', random_string(32));
         $mform->addHelpButton('secret', 'secret', 'enrol_lti');
         $mform->addRule('secret', get_string('required'), 'required');
 
@@ -304,7 +304,7 @@ class enrol_lti_plugin extends enrol_plugin {
 
         $institution = get_config('enrol_lti', 'institution');
         $mform->addElement('text', 'institution', get_string('institution'), 'maxlength="40" size="25"');
-        $mform->setType('institution', PARAM_TEXT);
+        $mform->setType('institution', core_user::get_property_type('institution'));
         $mform->setDefault('institution', $institution);
         $mform->setAdvanced('institution');
 
@@ -315,7 +315,7 @@ class enrol_lti_plugin extends enrol_plugin {
 
             $mform->addElement('hidden', 'toolid');
             $mform->setType('toolid', PARAM_INT);
-            $mform->setDefault('toolid', $ltitool->id);
+            $mform->setConstant('toolid', $ltitool->id);
 
             $mform->setDefaults((array) $ltitool);
         }

@@ -28,6 +28,7 @@ require_once($CFG->dirroot.'/enrol/lti/lib.php');
 $courseid = required_param('courseid', PARAM_INT);
 $action = optional_param('action', '', PARAM_ALPHA);
 if ($action) {
+    require_sesskey();
     $instanceid = required_param('instanceid', PARAM_INT);
     $instance = $DB->get_record('enrol', array('id' => $instanceid), '*', MUST_EXIST);
 }
