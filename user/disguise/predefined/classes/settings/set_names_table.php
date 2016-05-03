@@ -41,7 +41,7 @@ class set_names_table extends \flexible_table {
     /**
      * Constructor for the list of names in the set.
      *
-     * @param   object  $set    The set
+     * @param  \stdClass   $set    The set
      */
     public function __construct(\stdClass $set) {
         parent::__construct('disguise_predefined_set_names');
@@ -68,7 +68,7 @@ class set_names_table extends \flexible_table {
     /**
      * Formatter for the name column.
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_name($row) {
@@ -79,7 +79,7 @@ class set_names_table extends \flexible_table {
     /**
      * Formatter for the actions column.
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_actions($row) {

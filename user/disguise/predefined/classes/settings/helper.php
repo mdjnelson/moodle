@@ -40,7 +40,7 @@ class helper extends \disguise_predefined\helper {
      *
      * @param int           $itemid     The value being updated
      * @param mixed         $newvalue   The new value
-     * @return renderable               The rendered HTML of the inplace_editable
+     * @return \renderable              The rendered HTML of the inplace_editable
      */
     public static function update_sets_name($itemid, $newvalue) {
         global $DB, $PAGE;
@@ -60,7 +60,7 @@ class helper extends \disguise_predefined\helper {
     /**
      * Render the inplace editable used to edit the set name.
      *
-     * @param   int         $setid      The set id.
+     * @param   \stdClass   $set        The set.
      * @return  string
      */
     public static function render_sets_name_inplace_editable(\stdClass $set) {
@@ -82,7 +82,7 @@ class helper extends \disguise_predefined\helper {
      *
      * @param int           $itemid     The value being updated
      * @param mixed         $newvalue   The new value
-     * @return renderable               The rendered HTML of the inplace_editable
+     * @return \renderable              The rendered HTML of the inplace_editable
      */
     public static function update_sets_format($itemid, $newvalue) {
         global $DB, $PAGE;
@@ -106,7 +106,7 @@ class helper extends \disguise_predefined\helper {
     /**
      * Render the inplace editable used to edit the set format.
      *
-     * @param   int         $setid      The set id.
+     * @param   \stdClass   $set        The set.
      * @return  string
      */
     public static function render_sets_format_inplace_editable(\stdClass $set) {
@@ -125,7 +125,7 @@ class helper extends \disguise_predefined\helper {
      *
      * @param int           $itemid     The value being updated
      * @param mixed         $newvalue   The new value
-     * @return renderable               The rendered HTML of the inplace_editable
+     * @return \renderable              The rendered HTML of the inplace_editable
      */
     public static function update_name($itemid, $newvalue) {
         global $DB, $PAGE;
@@ -144,7 +144,7 @@ class helper extends \disguise_predefined\helper {
     /**
      * Render the inplace editable used to edit the set name.
      *
-     * @param   int         $setid      The set id.
+     * @param   \stdClass   $name      The set id.
      * @return  string
      */
     public static function render_name_inplace_editable(\stdClass $name) {
@@ -163,7 +163,7 @@ class helper extends \disguise_predefined\helper {
      *
      * @param int           $itemid     The value being updated
      * @param mixed         $newvalue   The new value
-     * @return renderable               The rendered HTML of the inplace_editable
+     * @return \renderable              The rendered HTML of the inplace_editable
      */
     public static function update_availability($itemid, $newvalue) {
         global $DB, $PAGE;
@@ -182,7 +182,7 @@ class helper extends \disguise_predefined\helper {
     /**
      * Render the inplace editable used to edit the set available.
      *
-     * @param   int         $setid      The set id.
+     * @param   \stdClass   $set        The set.
      * @return  string
      */
     public static function render_available_inplace_editable(\stdClass $set) {

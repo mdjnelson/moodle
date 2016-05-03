@@ -85,7 +85,7 @@ EOF;
      * Get the specified set.
      *
      * @param   int         $setid      The set id.
-     * @return  stdClass
+     * @return  \stdClass
      */
     public static function get_set($setid) {
         global $DB;
@@ -102,7 +102,7 @@ EOF;
      * @param   string      $wrapper    The wrapper to use.
      * @param   bool        $available  Whether the set is available.
      * @param   array       $data       The names in the set.
-     * @return  stdClass
+     * @return  \stdClass
      */
     public static function add_set($name, $wrapper, $available = true, $data = []) {
         global $DB;
@@ -130,7 +130,7 @@ EOF;
      * Get the specified name.
      *
      * @param   int         $nameid     The name id.
-     * @return  stdClass
+     * @return  \stdClass
      */
     public static function get_name($nameid) {
         global $DB;

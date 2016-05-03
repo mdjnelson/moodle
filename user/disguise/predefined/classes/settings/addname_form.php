@@ -35,7 +35,7 @@ require_once($CFG->libdir . '/formslib.php');
  */
 class addname_form extends \moodleform {
     /**
-     * @var     stdClass    $set        The set that this name is being added to.
+     * @var     \stdClass    $set        The set that this name is being added to.
      */
     protected $set;
 
@@ -43,7 +43,7 @@ class addname_form extends \moodleform {
      * Constructor for the addname form.
      *
      * @param   string      $target     The form target
-     * @param   stdClass    $set        The set that this name is being added to.
+     * @param   \stdClass   $set        The set that this name is being added to.
      */
     public function __construct($target, \stdClass $set) {
         $this->set = $set;

@@ -36,14 +36,14 @@ require_once($CFG->libdir . '/tablelib.php');
  */
 class name_table extends \flexible_table {
     /**
-     * @var     context $context
+     * @var \context $context
      */
     protected $context;
 
     /**
      * Constructor for the list of names in the disguise.
      *
-     * @param   context $context
+     * @param   \context $context
      */
     public function __construct(\context $context) {
         parent::__construct('disguise_predefined_names');
@@ -73,7 +73,7 @@ class name_table extends \flexible_table {
     /**
      * Formatter for the assigned column
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_assigned($row) {
@@ -87,7 +87,7 @@ class name_table extends \flexible_table {
     /**
      * Formatter for the enabled column
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_enabled($row) {
@@ -98,7 +98,7 @@ class name_table extends \flexible_table {
     /**
      * Formatter for the name column
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_name($row) {

@@ -42,8 +42,6 @@ class setup_form extends \moodleform {
      * @return void
      */
     public function definition() {
-        global $CFG, $OUTPUT;
-
         $mform = &$this->_form;
 
         $mform->addElement('static', 'setup_explanation', '', get_string('setup_explanation', 'disguise_basic'));

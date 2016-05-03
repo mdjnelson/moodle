@@ -192,7 +192,7 @@ class manager {
     /**
      * Process the add set form.
      *
-     * @param   mform   $mform
+     * @param   \moodleform   $form
      */
     protected function process_add_set_form($form) {
         global $DB;
@@ -214,7 +214,7 @@ class manager {
     /**
      * Process the import set form.
      *
-     * @param   mform   $mform
+     * @param   \moodleform   $form
      */
     protected function process_import_set_form($form) {
         if ($form->get_data()) {
@@ -262,8 +262,8 @@ class manager {
     /**
      * Process the add names to set form.
      *
-     * @param   mform       $mform
-     * @param   stdClass    $set        The set to add the names to
+     * @param   \moodleform  $form
+     * @param   \stdClass    $set        The set to add the names to
      */
     protected function process_add_names_form($form, $set) {
         global $DB;
@@ -280,8 +280,6 @@ class manager {
                     ];
                 $inserts[] = $insert;
             }
-
-            $
 
             $DB->insert_records('disguise_predefined_set_data', $inserts);
             $successmessage = get_string('message_addedxnamestoset', 'disguise_predefined', (object) [
@@ -376,7 +374,7 @@ class manager {
     /**
      * Get the link to the settings index.
      *
-     * @return  moodle_url
+     * @return  \moodle_url
      */
     public static function get_index_link() {
         return new \moodle_url(self::$settingsbase);
@@ -386,7 +384,7 @@ class manager {
      * Get the link to edit a set.
      *
      * @param   int     $setid      The id of the set to view.
-     * @return  moodle_url
+     * @return  \moodle_url
      */
     public static function get_view_set_link($setid) {
         return new \moodle_url(self::$settingsbase, [
@@ -399,7 +397,7 @@ class manager {
      * Get the link to export a set.
      *
      * @param   int     $setid      The id of the set to export.
-     * @return  moodle_url
+     * @return  \moodle_url
      */
     public static function get_export_set_link($setid) {
         return new \moodle_url(self::$settingsbase, [
@@ -413,7 +411,7 @@ class manager {
      *
      * @param   int     $setid     The id of the set to delete.
      * @param   boolean $sesskey    Include the sesskey to format this link as an action.
-     * @return  moodle_url
+     * @return  \moodle_url
      */
     public static function get_delete_set_link($setid, $sesskey = false) {
         $link = new \moodle_url(self::$settingsbase, [
@@ -433,7 +431,7 @@ class manager {
      *
      * @param   int     $nameid     The id of the name to delete.
      * @param   boolean $sesskey    Include the sesskey to format this link as an action.
-     * @return  moodle_url
+     * @return  \moodle_url
      */
     public static function get_delete_name_link($nameid, $sesskey = false) {
         $link = new \moodle_url(self::$settingsbase, [

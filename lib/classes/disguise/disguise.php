@@ -83,8 +83,8 @@ abstract class disguise {
     /**
      * Constructor.
      *
-     * @param stdClass  $record Typically the database record for this disguise
-     * @param context   $context Context at which to instantiate this disguise
+     * @param \stdClass $record  Typically the database record for this disguise
+     * @param \context  $context Context at which to instantiate this disguise
      */
     public function __construct($record, \context $context) {
         $this->id                   = $record->id;
@@ -151,9 +151,8 @@ abstract class disguise {
     /**
      * Set the configuration for this disguise instance.
      *
-     * @param  stdClass $config The configuration values for this instance.
-     * @param   string  $key        The configuration key to set.
-     * @param   mixed   $value      The value to set.
+     * @param  string    $key        The configuration key to set.
+     * @param  mixed     $value      The value to set.
      * @return self
      */
     final public function set_config($key, $value) {
@@ -207,6 +206,8 @@ abstract class disguise {
      * Ensure that the the user has configured their disguise.
      *
      * @param \stdClass $user The user to check.
+     * @return bool|void Returns true if the user is already configured, or is not required to be, otherwise
+     *      redirects to the configuration page.
      */
     final public function ensure_configured_for_user(\stdClass $user) {
         if ($this->is_configured_for_user($user)) {
@@ -219,7 +220,7 @@ abstract class disguise {
             return true;
         }
 
-        return $this->handle_unconfigured_for_user($user);
+        $this->handle_unconfigured_for_user($user);
     }
 
     /**
@@ -232,7 +233,7 @@ abstract class disguise {
         $SESSION->disguiseredirect = qualified_me();
 
         // Fallback and redirect to the user configuration path.
-        return redirect($this->user_configuration_path($user));
+        redirect($this->user_configuration_path($user));
     }
 
     /**
@@ -315,7 +316,7 @@ abstract class disguise {
      * A convenience function to ensure the current user has the required
      * capabilities to reveal user identities.
      *
-     * @throws required_capability_exception
+     * @throws \required_capability_exception
      * @return bool
      */
     final public function require_toggle_real_identity() {
@@ -390,9 +391,6 @@ abstract class disguise {
      * @link disguise_displayname
      */
     public function displayname(\stdClass $user, $options) {
-        // The 'override' setting for when we need to call displayname() too.
-        $override = isset($options['usefullnamedisplay']) && $options['usefullnamedisplay'];
-
         if ($this->should_use_disguise($options)) {
             if ($this->should_show_real_identity()) {
                 $a = new \stdClass();
@@ -577,7 +575,7 @@ abstract class disguise {
     /**
      * Export the raw settings of this disguise.
      *
-     * @return stdClass
+     * @return \stdClass
      */
     final public function to_record() {
         return (object) array(
@@ -595,9 +593,9 @@ abstract class disguise {
     /**
      * Prepare a user record for use in web services.
      *
-     * @param stdClass $user                A {@link $USER} object to prepare.
-     * @param array    $options             Any relevant options.
-     * @return stdClass
+     * @param \stdClass $user                A {@link $USER} object to prepare.
+     * @param array     $options             Any relevant options.
+     * @return \stdClass
      */
     public function prepare_external_user(\stdClass $user, array $options = array()) {
         if ($this->should_use_disguise($options) && !$this->should_show_real_identity()) {
@@ -612,8 +610,8 @@ abstract class disguise {
      *
      * Generally, this function should not be overridden. @link add_disguise_navigation instead.
      *
-     * @param settings_navigation   $settings   The settings navigation object
-     * @param navigation_node       $parentnav  The node to add settings to
+     * @param \settings_navigation   $settingsnav  The settings navigation object
+     * @param \navigation_node       $parentnav    The node to add settings to
      */
     public function add_settings_navigation(\settings_navigation $settingsnav, \navigation_node $parentnav) {
         $nodes = array();
@@ -654,8 +652,8 @@ abstract class disguise {
     /**
      * Add disguise-specific navigation links to the settings navigation tree.
      *
-     * @param settings_navigation   $settings   The settings navigation object
-     * @param navigation_node       $parentnav  The node to add settings to
+     * @param \settings_navigation   $settings   The settings navigation object
+     * @param \navigation_node       $parentnav  The node to add settings to
      * @return array An array of nodes to add
      */
     public abstract function add_disguise_navigation();
@@ -663,7 +661,7 @@ abstract class disguise {
     /**
      * Create the URL required to toggle the user identity.
      *
-     * @return moodle_url
+     * @return \moodle_url
      */
     protected function get_toggle_reveal_link() {
         global $PAGE;

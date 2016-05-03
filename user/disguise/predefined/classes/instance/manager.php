@@ -39,7 +39,7 @@ class manager {
     protected static $settingsbase = '/user/disguise/predefined/setup.php';
 
     /**
-     * @var     contect $context        The context of this disguise instance.
+     * @var     \context $context       The context of this disguise instance.
      */
     protected $context;
 
@@ -55,6 +55,9 @@ class manager {
 
     /**
      * This is the entry point for this controller class.
+     *
+     * @param \context $context
+     * @param string $action
      */
     public function execute(\context $context, $action) {
         global $PAGE;
@@ -97,6 +100,7 @@ class manager {
     /**
      * Print out the page header.
      *
+     * @param string|null $title
      * @return void
      */
     protected function header($title = null) {
@@ -170,7 +174,7 @@ class manager {
     /**
      * Process the disguise configuration form.
      *
-     * @param   mform   $mform
+     * @param   \moodleform   $form
      */
     protected function process_disguise_config_form($form) {
         if ($data = $form->get_data()) {
@@ -189,7 +193,7 @@ class manager {
     /**
      * Process the add names to disguise form.
      *
-     * @param   mform   $mform
+     * @param   \moodleform   $form
      */
     protected function process_add_names_form($form) {
         if ($data = $form->get_data()) {
@@ -240,8 +244,8 @@ class manager {
     /**
      * Get the link to delete a name from a set.
      *
-     * @param   context     $context    The context that the disguise is applied to.
-     * @return  moodle_url
+     * @param   \context     $context    The context that the disguise is applied to.
+     * @return  \moodle_url
      */
     public static function get_index_link(\context $context) {
         $link = new \moodle_url(self::$settingsbase, [
@@ -255,8 +259,8 @@ class manager {
     /**
      * Get the link to import from a set.
      *
-     * @param   context     $context    The context that the disguise is applied to.
-     * @return  moodle_url
+     * @param   \context     $context    The context that the disguise is applied to.
+     * @return  \moodle_url
      */
     public static function get_import_from_set_link(\context $context) {
         $link = new \moodle_url(self::$settingsbase, [

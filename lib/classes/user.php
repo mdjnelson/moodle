@@ -226,7 +226,7 @@ class core_user {
      * @return stdClass user record.
      */
     public static function get_disguised_user(\stdClass $user, \context $context) {
-        global $CFG;
+        global $CFG, $PAGE;
 
         if ($context === null) {
             // No context specified - use page context instead.
@@ -923,6 +923,8 @@ class core_user {
      * @return stdClass
      */
     public static function prepare_external_user(\stdClass $user, \context $context = null, array $options = []) {
+        global $PAGE;
+
         if ($context === null) {
             // No context specified - use page context instead.
             $context = $PAGE->context;

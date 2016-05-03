@@ -147,7 +147,7 @@ EOF;
      * Fetch a single name, complete with assignment state.
      *
      * @param int $nameid
-     * @return stdClass
+     * @return \stdClass
      */
     public function get_name($nameid) {
         global $DB;
@@ -170,7 +170,7 @@ EOF;
      *
      * @param string $name
      * @param bool $enabled
-     * @return stdClass
+     * @return \stdClass
      */
     public function add_name($name, $enabled = true) {
         global $DB;
@@ -187,9 +187,9 @@ EOF;
     /**
      * Add a new name.
      *
-     * @param string $name
+     * @param string $names
      * @param bool $enabled
-     * @return stdClass
+     * @return \stdClass
      */
     public function add_names($names, $enabled = true) {
         $records = array();
@@ -207,8 +207,8 @@ EOF;
     /**
      * Add new names from a set.
      *
-     * @param string $name
-     * @return stdClass
+     * @param array $names
+     * @return \stdClass
      */
     public function add_names_from_records(array $names) {
         global $DB;

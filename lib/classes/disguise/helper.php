@@ -69,7 +69,7 @@ class helper {
      * Instantiate an instance of the disguise.
      *
      * @param \context $context
-     * @return An instance of the core\disguise
+     * @return \core\disguise\disguise An instance of the core\disguise
      * @throws \coding_exception
      */
     public static function instance(\context $context) {
@@ -93,8 +93,11 @@ class helper {
     /**
      * Create a new disguise instance against the specified context.
      *
-     * @param context $context
+     * @param \context $context
      * @param string $disguisetype
+     * @return \core\disguise\disguise
+     * @throws \moodle_exception
+     * @throws \coding_exception
      */
     protected static function create(\context $context, $disguisetype) {
         global $DB;
@@ -128,8 +131,6 @@ class helper {
      * @return bool
      */
     public static function is_configured_for_user_in_context(\context $context, \stdClass $user) {
-        global $USER;
-
         if (!$context->disguise) {
             return true;
         }
@@ -163,11 +164,9 @@ class helper {
      *
      * @param \MoodleQuickForm  $mform      The moodleform to hook into.
      * @param \stdClass         $features   The features available to this module.
-     * @param \context          $context    The context to add the form to
+     * @param \cm_info|null     $cm         Object as cm_info, or null if input was null/false
      */
     public static function add_to_form(\MoodleQuickForm $mform, \stdClass $features, $cm = null) {
-        global $DB;
-
         $mform->addElement('header', 'userdisguises', get_string('disguisemodformtitle', 'moodle'));
 
         $cm = \cm_info::create($cm);
@@ -280,8 +279,9 @@ class helper {
     /**
      * Get the disguise data to add to a form.
      *
-     * @param context   $context    The context to add data for
-     * @param stdClass  $formdata   The form data.
+     * @param  \context   $context    The context to add data for
+     * @param  \stdClass  $data       The form data
+     * @return \stdClass|void
      */
     public static function add_form_values(\context $context, &$data) {
         if (!$context->has_own_disguise()) {
@@ -302,9 +302,9 @@ class helper {
     /**
      * Update the disguise with the data from the submitted form.
      *
-     * @param context   $context    The context to add data for
-     * @param stdClass  $formdata   The submitted form data.
-     * @return bool                 Whether changes were made
+     * @param \context   $context    The context to add data for
+     * @param \stdClass  $form       The submitted form data.
+     * @return bool                  Whether changes were made
      */
     protected static function update_from_form(\context $context, \stdClass $form) {
         global $DB;
@@ -427,7 +427,7 @@ class helper {
      * of its contexts.
      *
      * @param   int         $disguiseid
-     * @param   context     $context        The context if it is known.
+     * @param   \context    $context        The context if it is known.
      * @return bool
      */
     public static function require_configure_disguise($disguiseid, \context $context = null) {

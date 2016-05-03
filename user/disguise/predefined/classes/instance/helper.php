@@ -38,9 +38,9 @@ class helper extends \disguise_predefined\helper {
     /**
      * Create the renderable for the name inplace editable.
      *
-     * @param   context     $context    The context of the disguise
-     * @param   stdClass    $name       The name record
-     * @return  renderable              The rendered HTML of the inplace_editable
+     * @param   \context     $context    The context of the disguise
+     * @param   \stdClass    $name       The name record
+     * @return  \renderable              The rendered HTML of the inplace_editable
      */
     public static function render_name_inplace_editable(\context $context, $name) {
         return new \core\output\inplace_editable(
@@ -56,10 +56,10 @@ class helper extends \disguise_predefined\helper {
     /**
      * Update the name of the specified name record.
      *
-     * @param   context     $context    The context of the disguise
+     * @param   \context    $context    The context of the disguise
      * @param   int         $itemid     The value being updated
      * @param   mixed       $newvalue   The new value
-     * @return  renderable              The rendered HTML of the inplace_editable
+     * @return  \renderable             The rendered HTML of the inplace_editable
      */
     public static function update_name(\context $context, $itemid, $newvalue) {
         global $DB, $PAGE;
@@ -81,9 +81,9 @@ class helper extends \disguise_predefined\helper {
     /**
      * Create the renderable for the enabled inplace editable.
      *
-     * @param   context     $context    The context of the disguise
-     * @param  stdClass     $name   The enabled record
-     * @return renderable           The rendered HTML of the inplace_editable
+     * @param  \context     $context    The context of the disguise
+     * @param  \stdClass    $name       The enabled record
+     * @return \renderable              The rendered HTML of the inplace_editable
      */
     public static function render_enabled_inplace_editable($context, $name) {
         global $OUTPUT;
@@ -110,10 +110,10 @@ class helper extends \disguise_predefined\helper {
     /**
      * Update the enabled state of the specified name record.
      *
-     * @param   context     $context    The context of the disguise
+     * @param   \context    $context    The context of the disguise
      * @param   int         $itemid     The value being updated
      * @param   mixed       $newvalue   The new value
-     * @return  renderable              The rendered HTML of the inplace_editable
+     * @return  \renderable             The rendered HTML of the inplace_editable
      */
     public static function set_name_enabled(\context $context, $itemid, $newvalue) {
         global $DB, $PAGE;

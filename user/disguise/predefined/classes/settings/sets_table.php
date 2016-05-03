@@ -66,7 +66,7 @@ class sets_table extends \flexible_table {
     /**
      * Formatter for the name column.
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_name($row) {
@@ -77,7 +77,7 @@ class sets_table extends \flexible_table {
     /**
      * Formatter for the name format column.
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_wrapper($row) {
@@ -88,7 +88,7 @@ class sets_table extends \flexible_table {
     /**
      * Formatter for the name count column.
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_count($row) {
@@ -98,7 +98,7 @@ class sets_table extends \flexible_table {
     /**
      * Formatter for the actions column.
      *
-     * @param   stdClass    $row    Database row for formatting
+     * @param   \stdClass   $row    Database row for formatting
      * @return  string              The formatted row
      */
     public function col_actions($row) {
