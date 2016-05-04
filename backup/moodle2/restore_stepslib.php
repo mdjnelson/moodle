@@ -1686,6 +1686,9 @@ class restore_course_structure_step extends restore_structure_step {
         // Apply for plagiarism plugins optional paths at course level
         $this->add_plugin_structure('plagiarism', $course);
 
+        // Apply for 'disguise' plugins optional paths at course level
+        $this->add_plugin_structure('disguise', $course);
+
         // Apply for local plugins optional paths at course level
         $this->add_plugin_structure('local', $course);
 

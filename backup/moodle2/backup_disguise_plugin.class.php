@@ -36,50 +36,13 @@ abstract class backup_disguise_plugin extends backup_plugin {
      * @return  \backup_nested_element  The backup structure.
      */
     public function define_module_plugin_structure() {
-        // Check whether the plugin is enabled.
-        $enabledplugins = \core\plugininfo\disguise::get_enabled_plugins();
-        if (!array_key_exists($this->pluginname, $enabledplugins)) {
-            return;
-        }
+        $plugin = $this->get_plugin_element(null, $this->get_include_condition(), 'include');
 
-        $contextid = $this->task->get_contextid();
-        $context = \context::instance_by_id($contextid);
-
-        if (!$context->disguise) {
-            // No disguise at this context.
-            return;
-        }
-
-        return $this->backup_disguise($context);
-    }
-
-    /**
-     * Produce the backup structure for the disguise at the specified context.
-     *
-     * @param   \context    $context    The context being backed up.
-     * @return  \backup_nested_element  The backup structure.
-     */
-    protected function backup_disguise(\context $context) {
-        $plugin = $this->get_plugin_element();
-
-        // Connect our visible container to the parent.
-        $plugin->add_child($this->define_disguise_backup($context));
-
-        return $plugin;
-    }
-
-    /**
-     * Perform the disguise-plugin-specific backup.
-     *
-     * @param   \context    $context    The context being backed up.
-     * @return  \backup_nested_element  The backup structure.
-     */
-    protected function define_disguise_backup(\context $context) {
         // Create a visible container for our data.
-        $pluginwrapper = new backup_nested_element('disguise');
+        $pluginwrapper = new backup_nested_element($this->get_recommended_name());
 
         // Define our elements.
-        $disguise = new backup_nested_element('configuration', null, [
+        $disguise = new backup_nested_element('disguise', null, [
             'type',
             'lockdisguise',
             'showrealidentity',
@@ -93,8 +56,44 @@ abstract class backup_disguise_plugin extends backup_plugin {
         // Build elements hierarchy.
         $pluginwrapper->add_child($disguise);
 
+        $contextid = $this->task->get_contextid();
+        $context = \context::instance_by_id($contextid);
         $disguise->set_source_table('disguises', ['id' => ['sqlparam' => $context->disguiseid]]);
 
-        return $pluginwrapper;
+        // Connect our visible container to the parent.
+        $plugin->add_child($pluginwrapper);
+
+        // Now let the children have their fun.
+        $pluginwrapper->add_child($this->define_backup());
+    }
+
+    /**
+     * Perform the backup of additional information unique to the disguise type.
+     *
+     * @return  \backup_nested_element  The backup structure.
+     */
+    abstract protected function define_backup();
+
+    /**
+     * Returns a condition for whether we include this plugin in the backup or not.
+     *
+     * @return array
+     */
+    protected function get_include_condition() {
+        // Check whether the plugin is enabled.
+        $enabledplugins = \core\plugininfo\disguise::get_enabled_plugins();
+        if (!array_key_exists($this->pluginname, $enabledplugins)) {
+            return array('sqlparam' => '');
+        }
+
+        $contextid = $this->task->get_contextid();
+        $context = \context::instance_by_id($contextid);
+
+        if (!$context->disguise) {
+            // No disguise at this context.
+            return array('sqlparam' => '');
+        }
+
+        return array('sqlparam' => 'include');
     }
 }

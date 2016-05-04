@@ -94,28 +94,31 @@ class helper {
      * Create a new disguise instance against the specified context.
      *
      * @param \context $context
-     * @param string $disguisetype
+     * @param array $params
      * @return \core\disguise\disguise
      * @throws \moodle_exception
      * @throws \coding_exception
      */
-    protected static function create(\context $context, $disguisetype) {
+    public static function create(\context $context, $params = array()) {
         global $DB;
 
         if ($context->has_disguise()) {
             throw new \moodle_exception('Disguise is aready set for this context');
         }
 
-        $classname = '\\disguise_' . $disguisetype . '\\disguise';
+        $params = (object) $params;
+        if (!isset($params->type)) {
+            throw new \moodle_exception('Disguise type not specified, abort abort!');
+        }
+
+        $classname = '\\disguise_' . $params->type . '\\disguise';
         if (!class_exists($classname)) {
             throw new \coding_exception('Unknown disguise type');
         }
 
-        $record = new \stdClass();
-        $record->type = $disguisetype;
-        $record->id = $DB->insert_record('disguises', $record);
+        $recordid = $DB->insert_record('disguises', $params);
 
-        $record = $DB->get_record('disguises', array('id' => $record->id));
+        $record = $DB->get_record('disguises', array('id' => $recordid));
 
         $disguise = new $classname($record, $context);
         $context->set_disguise($disguise);

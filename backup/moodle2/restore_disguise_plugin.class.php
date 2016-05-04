@@ -31,7 +31,51 @@ defined('MOODLE_INTERNAL') || die();
  * Class extending standard backup_plugin in order to implement some helper methods related with the disguise plugins.
  */
 abstract class restore_disguise_plugin extends restore_plugin {
-    protected function define_structure() {
-        $paths = [];
+
+    /**
+     * The id of the restored disguise.
+     */
+    protected $disguiseid = '';
+
+    /**
+     * Perform a restore of a module.
+     *
+     * @return  \backup_nested_element  The backup structure.
+     */
+    public function define_module_plugin_structure() {
+        // Check whether the plugin is enabled.
+        $enabledplugins = \core\plugininfo\disguise::get_enabled_plugins();
+        if (!array_key_exists($this->pluginname, $enabledplugins)) {
+            return;
+        }
+
+        $paths = array();
+        $paths[] = new restore_path_element('disguise', $this->get_pathfor('/disguise'));
+
+        return array_merge($paths, $this->define_restore());
+    }
+
+    /**
+     * Perform the restore.
+     *
+     * This defines the 'disguise' restore path. It is up to the diguise types
+     * to define any other paths they might have.
+     *
+     * @return  \restore_path_element[]  The restore structure.
+     */
+    abstract protected function define_restore();
+
+    /**
+     * Process the disguise element.
+     *
+     * @param array|object $data disguise object.
+     */
+    public function process_disguise($data) {
+        $contextid = $this->task->get_contextid();
+        $context = \context::instance_by_id($contextid);
+        $disguise = \core\disguise\helper::create($context, $data);
+
+        // Set the disguise variable.
+        $this->disguiseid = $disguise->get_id();
     }
 }

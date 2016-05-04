@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Basic Disguise.
+ * Predefined disguise backup.
  *
  * @package    disguise_predefined
  * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
@@ -27,35 +27,31 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/backup/moodle2/backup_disguise_plugin.class.php');
 
 /**
- * Basic Disguise.
+ * Predefined disguise backup class.
  *
  * @package    disguise_predefined
  * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_disguise_predefined_plugin extends backup_disguise_plugin {
+
     /**
-     * Perform the disguise-plugin-specific backup.
+     * Perform the predefined disguise type specific backup.
      *
-     * @param   \context    $context    The context being backed up.
      * @return  \backup_nested_element  The backup structure.
      */
-    protected function define_disguise_backup(\context $context) {
-        $pluginwrapper = parent::define_disguise_backup($context);
-
+    protected function define_backup() {
         // Define our elements.
-        $namewrapper = new backup_nested_element('names');
-        $pluginwrapper->add_child($namewrapper);
-
-        $names = new backup_nested_element('name', null, [
+        $names = new backup_nested_element('names');
+        $name = new backup_nested_element('name', null, [
             'name',
             'enabled',
             'userid',
         ]);
+        $names->add_child($name);
 
-        // Build elements hierarchy.
-        $namewrapper->add_child($names);
-        //$names->set_source_table('disguise_predefined_names', ['disguiseid' => ['sqlparam' => $context->disguiseid]]);
+        $contextid = $this->task->get_contextid();
+        $context = \context::instance_by_id($contextid);
 
         if ($this->get_setting_value('users')) {
             $sql = '
@@ -71,9 +67,8 @@ class backup_disguise_predefined_plugin extends backup_disguise_plugin {
                     WHERE n.disguiseid = ?
                 ';
         }
+        $name->set_source_sql($sql, ['disguiseid' => ['sqlparam' => $context->disguiseid]]);
 
-        $names->set_source_sql($sql, ['disguiseid' => ['sqlparam' => $context->disguiseid]]);
-
-        return $pluginwrapper;
+        return $names;
     }
 }
