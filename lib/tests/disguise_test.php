@@ -27,9 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->libdir . '/tests/fixtures/disguise/helper.php');
-
-use \core\tests\fixtures\disguise as fixture;
 use \core\disguise\helper as helper;
 
 /**
@@ -108,7 +105,7 @@ class core_disguise_testcase extends advanced_testcase {
         $roleid = $DB->get_field('role', 'id', array('shortname' => 'student'), MUST_EXIST);
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $roleid);
 
-        $disguise = fixture\helper::create($coursecontext, 'basic');
+        $disguise = helper::create($coursecontext, ['type' => 'basic']);
 
         if ($hascapability) {
             assign_capability('moodle/disguise:disablelock', CAP_ALLOW, $roleid, $coursecontext->id);
@@ -127,42 +124,42 @@ class core_disguise_testcase extends advanced_testcase {
     public function should_show_real_identity_provider() {
         return [
             'Identity always shown' => [
-                'showrealidentity'      => \core\disguise\helper::IDENTITY_SHOWN,
+                'showrealidentity'      => helper::IDENTITY_SHOWN,
                 'disabledisguisefrom'   => null,
                 'cantoggle'             => null,
                 'istoggled'             => null,
                 'expectation'           => true,
             ],
             'Identity shown after time in past (previously hidden)' => [
-                'showrealidentity'      => \core\disguise\helper::IDENTITY_HIDDEN,
+                'showrealidentity'      => helper::IDENTITY_HIDDEN,
                 'disabledisguisefrom'   => time() - DAYSECS,
                 'cantoggle'             => null,
                 'istoggled'             => null,
                 'expectation'           => true,
             ],
             'Identity shown after time in past (previously restricted)' => [
-                'showrealidentity'      => \core\disguise\helper::IDENTITY_RESTRICTED,
+                'showrealidentity'      => helper::IDENTITY_RESTRICTED,
                 'disabledisguisefrom'   => time() - DAYSECS,
                 'cantoggle'             => null,
                 'istoggled'             => null,
                 'expectation'           => true,
             ],
             'Identity is currently revealed' => [
-                'showrealidentity'      => \core\disguise\helper::IDENTITY_HIDDEN,
+                'showrealidentity'      => helper::IDENTITY_HIDDEN,
                 'disabledisguisefrom'   => 0,
                 'cantoggle'             => true,
                 'istoggled'             => true,
                 'expectation'           => true,
             ],
             'Identity is not currently revealed' => [
-                'showrealidentity'      => \core\disguise\helper::IDENTITY_HIDDEN,
+                'showrealidentity'      => helper::IDENTITY_HIDDEN,
                 'disabledisguisefrom'   => 0,
                 'cantoggle'             => true,
                 'istoggled'             => false,
                 'expectation'           => false,
             ],
             'Identity is not revealable' => [
-                'showrealidentity'      => \core\disguise\helper::IDENTITY_HIDDEN,
+                'showrealidentity'      => helper::IDENTITY_HIDDEN,
                 'disabledisguisefrom'   => 0,
                 'cantoggle'             => false,
                 'istoggled'             => false,
@@ -223,31 +220,31 @@ class core_disguise_testcase extends advanced_testcase {
         return [
             'Hidden: Always hidden' => [
                 'revealcap'     => false,
-                'showreal'      => \core\disguise\helper::IDENTITY_HIDDEN,
+                'showreal'      => helper::IDENTITY_HIDDEN,
                 'showcap'       => false,
                 'expectation'   => false,
             ],
             'Hidden: Always hidden even with show cap' => [
                 'revealcap'     => false,
-                'showreal'      => \core\disguise\helper::IDENTITY_HIDDEN,
+                'showreal'      => helper::IDENTITY_HIDDEN,
                 'showcap'       => true,
                 'expectation'   => false,
             ],
             'Hidden: Restricted but no cap' => [
                 'revealcap'     => false,
-                'showreal'      => \core\disguise\helper::IDENTITY_RESTRICTED,
+                'showreal'      => helper::IDENTITY_RESTRICTED,
                 'showcap'       => false,
                 'expectation'   => false,
             ],
             'Visible: Restricted with cap' => [
                 'revealcap'     => false,
-                'showreal'      => \core\disguise\helper::IDENTITY_RESTRICTED,
+                'showreal'      => helper::IDENTITY_RESTRICTED,
                 'showcap'       => true,
                 'expectation'   => true,
             ],
             'Visible: Restricted with reveal cap' => [
                 'revealcap'     => true,
-                'showreal'      => \core\disguise\helper::IDENTITY_RESTRICTED,
+                'showreal'      => helper::IDENTITY_RESTRICTED,
                 'showcap'       => false,
                 'expectation'   => true,
             ],
@@ -349,47 +346,47 @@ class core_disguise_testcase extends advanced_testcase {
     public function should_use_disguise_provider() {
         return [
             'No: Disabled and no options' => [
-                'mode'          => \core\disguise\helper::DISGUISE_DISABLED,
+                'mode'          => helper::DISGUISE_DISABLED,
                 'options'       => [],
                 'expectation'   => false,
             ],
             'No: Disabled and not forced by option' => [
-                'mode'          => \core\disguise\helper::DISGUISE_DISABLED,
+                'mode'          => helper::DISGUISE_DISABLED,
                 'options'       => ['forcedisguise' => false],
                 'expectation'   => false,
             ],
             'No: Disabled and forced by option' => [
-                'mode'          => \core\disguise\helper::DISGUISE_DISABLED,
+                'mode'          => helper::DISGUISE_DISABLED,
                 'options'       => ['forcedisguise' => true],
                 'expectation'   => false,
             ],
             'No: Optional and no options' => [
-                'mode'          => \core\disguise\helper::DISGUISE_OPTIONAL,
+                'mode'          => helper::DISGUISE_OPTIONAL,
                 'options'       => [],
                 'expectation'   => false,
             ],
             'No: Optional and not forced by option' => [
-                'mode'          => \core\disguise\helper::DISGUISE_OPTIONAL,
+                'mode'          => helper::DISGUISE_OPTIONAL,
                 'options'       => ['forcedisguise' => false],
                 'expectation'   => false,
             ],
             'Yes: Optional and forced by option' => [
-                'mode'          => \core\disguise\helper::DISGUISE_OPTIONAL,
+                'mode'          => helper::DISGUISE_OPTIONAL,
                 'options'       => ['forcedisguise' => true],
                 'expectation'   => true,
             ],
             'Yes: Forced and no options' => [
-                'mode'          => \core\disguise\helper::DISGUISE_FORCED,
+                'mode'          => helper::DISGUISE_FORCED,
                 'options'       => [],
                 'expectation'   => true,
             ],
             'Yes: Forced and not forced by option' => [
-                'mode'          => \core\disguise\helper::DISGUISE_FORCED,
+                'mode'          => helper::DISGUISE_FORCED,
                 'options'       => ['forcedisguise' => false],
                 'expectation'   => true,
             ],
             'Yes: Forced and forced by option' => [
-                'mode'          => \core\disguise\helper::DISGUISE_FORCED,
+                'mode'          => helper::DISGUISE_FORCED,
                 'options'       => ['forcedisguise' => true],
                 'expectation'   => true,
             ],
@@ -475,18 +472,18 @@ class core_disguise_testcase extends advanced_testcase {
         $rcpm = $rc->getProperty('mode');
         $rcpm->setAccessible(true);
         if ($usedisguise) {
-            $rcpm->setValue($mock, \core\disguise\helper::DISGUISE_FORCED);
+            $rcpm->setValue($mock, helper::DISGUISE_FORCED);
         } else {
-            $rcpm->setValue($mock, \core\disguise\helper::DISGUISE_DISABLED);
+            $rcpm->setValue($mock, helper::DISGUISE_DISABLED);
         }
 
         // Set the showrealidentity based on whether to show it.
         $rcps = $rc->getProperty('showrealidentity');
         $rcps->setAccessible(true);
         if ($showrealidentity) {
-            $rcps->setValue($mock, \core\disguise\helper::IDENTITY_SHOWN);
+            $rcps->setValue($mock, helper::IDENTITY_SHOWN);
         } else {
-            $rcps->setValue($mock, \core\disguise\helper::IDENTITY_HIDDEN);
+            $rcps->setValue($mock, helper::IDENTITY_HIDDEN);
         }
 
         if ($expectdisguiseddisplaycall) {
@@ -575,18 +572,18 @@ class core_disguise_testcase extends advanced_testcase {
         $rcpm = $rc->getProperty('mode');
         $rcpm->setAccessible(true);
         if ($usedisguise) {
-            $rcpm->setValue($mock, \core\disguise\helper::DISGUISE_FORCED);
+            $rcpm->setValue($mock, helper::DISGUISE_FORCED);
         } else {
-            $rcpm->setValue($mock, \core\disguise\helper::DISGUISE_DISABLED);
+            $rcpm->setValue($mock, helper::DISGUISE_DISABLED);
         }
 
         // Set the showrealidentity based on whether to show it.
         $rcps = $rc->getProperty('showrealidentity');
         $rcps->setAccessible(true);
         if ($showrealidentity) {
-            $rcps->setValue($mock, \core\disguise\helper::IDENTITY_SHOWN);
+            $rcps->setValue($mock, helper::IDENTITY_SHOWN);
         } else {
-            $rcps->setValue($mock, \core\disguise\helper::IDENTITY_HIDDEN);
+            $rcps->setValue($mock, helper::IDENTITY_HIDDEN);
         }
 
         // The should_use_disguise function is protected - alter it with some reflection.
@@ -622,18 +619,18 @@ class core_disguise_testcase extends advanced_testcase {
         $rcpm = $rc->getProperty('mode');
         $rcpm->setAccessible(true);
         if ($usedisguise) {
-            $rcpm->setValue($mock, \core\disguise\helper::DISGUISE_FORCED);
+            $rcpm->setValue($mock, helper::DISGUISE_FORCED);
         } else {
-            $rcpm->setValue($mock, \core\disguise\helper::DISGUISE_DISABLED);
+            $rcpm->setValue($mock, helper::DISGUISE_DISABLED);
         }
 
         // Set the showrealidentity based on whether to show it.
         $rcps = $rc->getProperty('showrealidentity');
         $rcps->setAccessible(true);
         if ($showrealidentity) {
-            $rcps->setValue($mock, \core\disguise\helper::IDENTITY_SHOWN);
+            $rcps->setValue($mock, helper::IDENTITY_SHOWN);
         } else {
-            $rcps->setValue($mock, \core\disguise\helper::IDENTITY_HIDDEN);
+            $rcps->setValue($mock, helper::IDENTITY_HIDDEN);
         }
 
         // The should_use_disguise function is protected - alter it with some reflection.
@@ -769,7 +766,7 @@ class core_disguise_testcase extends advanced_testcase {
         $rc = new \ReflectionClass('\\core\\disguise\\disguise');
         $rcpm = $rc->getProperty('mode');
         $rcpm->setAccessible(true);
-        $rcpm->setValue($mock, \core\disguise\helper::DISGUISE_OPTIONAL);
+        $rcpm->setValue($mock, helper::DISGUISE_OPTIONAL);
 
         // When the disguise is optional, ensure_configured_for_user will return true, regardless of whether the
         // disguise is configured.
@@ -781,7 +778,7 @@ class core_disguise_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = context_course::instance($course->id);
-        fixture\helper::create($coursecontext, 'basic');
+        helper::create($coursecontext, ['type' => 'basic']);
 
         // The get_config function with no args returns an object.
         $config = $coursecontext->disguise->get_config();
@@ -835,7 +832,7 @@ class core_disguise_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = context_course::instance($course->id);
-        fixture\helper::create($coursecontext, 'basic');
+        helper::create($coursecontext, ['type' => 'basic']);
 
         $user = $this->getDataGenerator()->create_user();
         $this->setUser($user);

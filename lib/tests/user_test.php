@@ -23,7 +23,6 @@
  */
 
 global $CFG;
-require_once($CFG->libdir . '/tests/fixtures/disguise/helper.php');
 
 /**
  * Test core_user class.
@@ -433,7 +432,7 @@ class core_user_testcase extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id, $roleid);
 
         // Creating a new disguise.
-        $disguise = \core\tests\fixtures\disguise\helper::create($modcontext, 'basic');
+        $disguise = \core\disguise\helper::create($modcontext, ['type' => 'basic']);
 
         // By default the standard displayname will be used.
         $this->assertEquals(\core_user::_displayname($user), \core_user::displayname($user));

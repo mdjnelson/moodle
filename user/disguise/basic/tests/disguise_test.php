@@ -27,9 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->libdir . '/tests/fixtures/disguise/helper.php');
-
-use \core\tests\fixtures\disguise as fixture;
 use \core\disguise\helper as helper;
 
 /**
@@ -51,7 +48,7 @@ class disguisebasic_disguise_testcase extends advanced_testcase {
         $coursecontext = \context_course::instance($course->id);
 
         // Creating a new disguise.
-        fixture\helper::create($coursecontext, 'basic');
+        helper::create($coursecontext, ['type' => 'basic']);
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();
@@ -68,7 +65,7 @@ class disguisebasic_disguise_testcase extends advanced_testcase {
         $coursecontext = \context_course::instance($course->id);
 
         // Creating a new disguise.
-        fixture\helper::create($coursecontext, 'basic');
+        helper::create($coursecontext, ['type' => 'basic']);
 
         $rc = new \ReflectionClass('\\disguise_basic\\disguise');
         $rcm = $rc->getMethod('requires_user_configuration');
@@ -82,7 +79,7 @@ class disguisebasic_disguise_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = context_course::instance($course->id);
-        fixture\helper::create($coursecontext, 'basic');
+        helper::create($coursecontext, ['type' => 'basic']);
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();
@@ -98,7 +95,7 @@ class disguisebasic_disguise_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = context_course::instance($course->id);
-        fixture\helper::create($coursecontext, 'basic');
+        helper::create($coursecontext, ['type' => 'basic']);
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();

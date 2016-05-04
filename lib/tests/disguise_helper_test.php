@@ -27,9 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->libdir . '/tests/fixtures/disguise/helper.php');
-
-use \core\tests\fixtures\disguise as fixture;
 use \core\disguise\helper as helper;
 
 /**
@@ -55,7 +52,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
 
         // Creating a new disguise.
         $this->assertEquals(0, $DB->count_records('disguises'));
-        $disguise = fixture\helper::create($modcontext, 'basic');
+        $disguise = helper::create($modcontext, ['type' => 'basic']);
 
         // We should now have a disguise record.
         $this->assertEquals(1, $DB->count_records('disguises'));
@@ -77,10 +74,10 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'basic');
+        helper::create($modcontext, ['type' => 'basic']);
 
         $this->setExpectedException('\\moodle_exception', 'Disguise is aready set for this context');
-        fixture\helper::create($modcontext, 'basic');
+        helper::create($modcontext, ['type' => 'basic']);
     }
 
     /**
@@ -94,7 +91,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         $this->setExpectedException('\\coding_exception', 'Unknown disguise type');
-        fixture\helper::create($modcontext, '_invalid_type_');
+        helper::create($modcontext, ['type' => '_invalid_type_']);
     }
 
     /**
@@ -108,7 +105,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Create a new disguise.
-        $disguise = fixture\helper::create($modcontext, 'basic');
+        $disguise = helper::create($modcontext, ['type' => 'basic']);
 
         // The disguise should now be present on the context.
         $this->assertEquals($disguise, helper::instance($modcontext));
@@ -146,7 +143,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $coursecontext = context_course::instance($course->id);
 
         // Create a new disguise.
-        $disguise = fixture\helper::create($coursecontext, 'basic');
+        $disguise = helper::create($coursecontext, ['type' => 'basic']);
         $data = $disguise->to_record();
         $data->type = '';
         $DB->update_record('disguises', $data);
@@ -166,7 +163,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $coursecontext = context_course::instance($course->id);
 
         // Create a new disguise.
-        $disguise = fixture\helper::create($coursecontext, 'basic');
+        $disguise = helper::create($coursecontext, ['type' => 'basic']);
         $data = $disguise->to_record();
         $data->type = 'unknown';
         $DB->update_record('disguises', $data);
@@ -187,7 +184,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Create a new disguise.
-        $disguise = fixture\helper::create($coursecontext, 'basic');
+        $disguise = helper::create($coursecontext, ['type' => 'basic']);
 
         // The disguise should now be present on the course.
         $this->assertEquals($disguise, helper::instance($coursecontext));
@@ -211,7 +208,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $mod2context = context_module::instance($forum2->cmid);
 
         // Create a new disguise on forum1.
-        $disguise = fixture\helper::create($mod1context, 'basic');
+        $disguise = helper::create($mod1context, ['type' => 'basic']);
 
         // Set the same disguise against forum2.
         $mod2context->set_disguise($disguise);
@@ -254,7 +251,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         assign_capability('moodle/disguise:configure', CAP_ALLOW, $roleid, $mod2context->id);
 
         // Create a new disguise on forum1.
-        $disguise = fixture\helper::create($mod1context, 'basic');
+        $disguise = helper::create($mod1context, ['type' => 'basic']);
 
         // Set the same disguise against forum2.
         $mod2context->set_disguise($disguise);
@@ -284,7 +281,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $mod2context = context_module::instance($forum2->cmid);
 
         // Create a new disguise on forum1.
-        $disguise = fixture\helper::create($mod1context, 'basic');
+        $disguise = helper::create($mod1context, ['type' => 'basic']);
 
         // Set the same disguise against forum2.
         $mod2context->set_disguise($disguise);
@@ -312,7 +309,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
         $modcontext = context_module::instance($forum->cmid);
         assign_capability('moodle/disguise:configure', CAP_ALLOW, $roleid, $modcontext->id);
-        $disguise = fixture\helper::create($modcontext, 'basic');
+        $disguise = helper::create($modcontext, ['type' => 'basic']);
 
         // The user should be able to configure the disguise because they have configure rights against mod2context.
         $this->setUser($user);
@@ -334,7 +331,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
         $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
         $modcontext = context_module::instance($forum->cmid);
         assign_capability('moodle/disguise:configure', CAP_PROHIBIT, $roleid, $modcontext->id);
-        $disguise = fixture\helper::create($modcontext, 'basic');
+        $disguise = helper::create($modcontext, ['type' => 'basic']);
 
         // The user should be able to configure the disguise because they have configure rights against mod2context.
         $this->setUser($user);
@@ -355,7 +352,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
 
         $forum1 = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
         $mod1context = context_module::instance($forum1->cmid);
-        $disguise = fixture\helper::create($mod1context, 'basic');
+        $disguise = helper::create($mod1context, ['type' => 'basic']);
 
         $forum2 = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
         $mod2context = context_module::instance($forum2->cmid);
@@ -390,7 +387,7 @@ class core_disguise_helper_testcase extends advanced_testcase {
 
         $forum1 = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
         $mod1context = context_module::instance($forum1->cmid);
-        $disguise = fixture\helper::create($mod1context, 'basic');
+        $disguise = helper::create($mod1context, ['type' => 'basic']);
 
         $forum2 = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
         $mod2context = context_module::instance($forum2->cmid);

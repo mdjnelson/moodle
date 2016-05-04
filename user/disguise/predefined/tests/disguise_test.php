@@ -27,9 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->libdir . '/tests/fixtures/disguise/helper.php');
-
-use \core\tests\fixtures\disguise as fixture;
 use \core\disguise\helper as helper;
 
 /**
@@ -52,7 +49,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();
@@ -76,7 +73,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create a user in the course.
         $user1 = $this->getDataGenerator()->create_user();
@@ -107,7 +104,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();
@@ -130,7 +127,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create users.
         $user1 = $this->getDataGenerator()->create_user();
@@ -190,7 +187,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create users.
         $user1 = $this->getDataGenerator()->create_user();
@@ -245,7 +242,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create users.
         $user1 = $this->getDataGenerator()->create_user();
@@ -302,7 +299,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create users.
         $user1 = $this->getDataGenerator()->create_user();
@@ -357,7 +354,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create user.
         $user = $this->getDataGenerator()->create_user();
@@ -386,7 +383,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create user.
         $user = $this->getDataGenerator()->create_user();
@@ -404,7 +401,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $modcontext = context_module::instance($forum->cmid);
 
         // Creating a new disguise.
-        fixture\helper::create($modcontext, 'predefined');
+        helper::create($modcontext, ['type' => 'predefined']);
 
         // Create user.
         $user = $this->getDataGenerator()->create_user();
@@ -424,8 +421,8 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
         $course2context = context_course::instance($course2->id);
 
         // Creating new disguises.
-        fixture\helper::create($course1context, 'predefined');
-        fixture\helper::create($course2context, 'predefined');
+        helper::create($course1context, ['type' => 'predefined']);
+        helper::create($course2context, ['type' => 'predefined']);
 
         // Add some names to one of the contexts.
         $availablenames = [
@@ -458,7 +455,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
 
         $course1 = $this->getDataGenerator()->create_course();
         $course1context = context_course::instance($course1->id);
-        fixture\helper::create($course1context, 'predefined');
+        helper::create($course1context, ['type' => 'predefined']);
 
         // Add some names to one of the contexts.
         $availablenames = [
@@ -484,7 +481,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
 
         $course1 = $this->getDataGenerator()->create_course();
         $course1context = context_course::instance($course1->id);
-        fixture\helper::create($course1context, 'predefined');
+        helper::create($course1context, ['type' => 'predefined']);
 
         // Add some names to one of the contexts.
         $availablenames = [
@@ -512,7 +509,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
 
         $course1 = $this->getDataGenerator()->create_course();
         $course1context = context_course::instance($course1->id);
-        fixture\helper::create($course1context, 'predefined');
+        helper::create($course1context, ['type' => 'predefined']);
 
         $availablenames = [
                 'Marge',
@@ -534,7 +531,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = context_course::instance($course->id);
-        fixture\helper::create($coursecontext, 'predefined');
+        helper::create($coursecontext, ['type' => 'predefined']);
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();
@@ -550,7 +547,7 @@ class disguise_predefined_disguise_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = context_course::instance($course->id);
-        fixture\helper::create($coursecontext, 'predefined');
+        helper::create($coursecontext, ['type' => 'predefined']);
 
         // Create a user in the course.
         $user = $this->getDataGenerator()->create_user();
