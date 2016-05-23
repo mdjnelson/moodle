@@ -36,6 +36,8 @@ if (!during_initial_install()) { //do not use during installation
 
         $temp->add(new admin_setting_configtext('frontpagecourselimit', new lang_string('configfrontpagecourselimit','admin'), new lang_string('configfrontpagecourselimithelp','admin'), 200, PARAM_INT));
 
+        $temp->add(new admin_setting_configcheckbox('frontpageenableviewmorecourses', new lang_string('frontpageenableviewmorecourses', 'admin'), new lang_string('frontpageenableviewmorecourseshelp', 'admin'), 1));
+
         $temp->add(new admin_setting_sitesetcheckbox('numsections', new lang_string('sitesection'), new lang_string('sitesectionhelp','admin'), 1));
         $temp->add(new admin_setting_sitesetselect('newsitems', new lang_string('newsitemsnumber'), '', 3,
              array('0' => '0',

@@ -1360,7 +1360,8 @@ class core_course_renderer extends plugin_renderer_base {
                     $pagingbar .= html_writer::tag('div', html_writer::link($paginationurl->out(false, array('perpage' => 'all')),
                             get_string('showall', '', $totalcount)), array('class' => 'paging paging-showall'));
                 }
-            } else if ($viewmoreurl = $chelper->get_courses_display_option('viewmoreurl')) {
+            } else if ($viewmoreurl = $chelper->get_courses_display_option('viewmoreurl') &&
+                (!isset($CFG->frontpageenableviewmorecourses) || $CFG->frontpageenableviewmorecourses)) {
                 // the option for 'View more' link was specified, display more link
                 $viewmoretext = $chelper->get_courses_display_option('viewmoretext', new lang_string('viewmore'));
                 $morelink = html_writer::tag('div', html_writer::link($viewmoreurl, $viewmoretext),
