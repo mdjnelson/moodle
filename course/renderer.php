@@ -58,7 +58,6 @@ class core_course_renderer extends plugin_renderer_base {
     public function __construct(moodle_page $page, $target) {
         $this->strings = new stdClass;
         parent::__construct($page, $target);
-        $this->add_modchoosertoggle();
     }
 
     /**
@@ -66,8 +65,12 @@ class core_course_renderer extends plugin_renderer_base {
      *
      * Theme can overwrite as an empty function to exclude it (for example if theme does not
      * use modchooser at all)
+     *
+     * @deprecated
      */
     protected function add_modchoosertoggle() {
+        debugging('core_course_renderer::add_modchoosertoggle() is deprecated.', DEBUG_DEVELOPER);
+
         global $CFG;
 
         // Only needs to be done once per page.
@@ -76,13 +79,13 @@ class core_course_renderer extends plugin_renderer_base {
         }
 
         if ($this->page->state > moodle_page::STATE_PRINTING_HEADER ||
-                $this->page->course->id == SITEID ||
-                !$this->page->user_is_editing() ||
-                !($context = context_course::instance($this->page->course->id)) ||
-                !has_capability('moodle/course:manageactivities', $context) ||
-                !course_ajax_enabled($this->page->course) ||
-                !($coursenode = $this->page->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) ||
-                !($turneditingnode = $coursenode->get('turneditingonoff'))) {
+            $this->page->course->id == SITEID ||
+            !$this->page->user_is_editing() ||
+            !($context = context_course::instance($this->page->course->id)) ||
+            !has_capability('moodle/course:manageactivities', $context) ||
+            !course_ajax_enabled($this->page->course) ||
+            !($coursenode = $this->page->settingsnav->find('courseadmin', navigation_node::TYPE_COURSE)) ||
+            !($turneditingnode = $coursenode->get('turneditingonoff'))) {
             // Too late, or we are on site page, or we could not find the
             // adjacent nodes in course settings menu, or we are not allowed to edit.
             return;
@@ -182,9 +185,7 @@ class core_course_renderer extends plugin_renderer_base {
         array(array('courseid' => $course->id, 'closeButtonTitle' => get_string('close', 'editor')))
         );
         $this->page->requires->strings_for_js(array(
-                'addresourceoractivity',
-                'modchooserenable',
-                'modchooserdisable',
+                'addresourceoractivity'
         ), 'moodle');
 
         // Add the header
@@ -405,9 +406,6 @@ class core_course_renderer extends plugin_renderer_base {
 
     /**
      * Renders HTML for the menus to add activities and resources to the current course
-     *
-     * Note, if theme overwrites this function and it does not use modchooser,
-     * see also {@link core_course_renderer::add_modchoosertoggle()}
      *
      * @param stdClass $course
      * @param int $section relative section number (field course_sections.section)
