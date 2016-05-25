@@ -443,6 +443,12 @@ function user_get_user_details($user, $course = null, array $userfields = array(
     if (in_array('msn', $userfields) && $user->msn && (!isset($hiddenfields['msnid']) or $isadmin)) {
         $userdetails['msn'] = $user->msn;
     }
+    if (in_array('auth', $userfields) && $user->auth) {
+        $userdetails['auth'] = $user->auth;
+    }
+    if (in_array('lang', $userfields) && $user->lang) {
+        $userdetails['lang'] = $user->lang;
+    }
 
     if (in_array('firstaccess', $userfields) && (!isset($hiddenfields['firstaccess']) or $isadmin)) {
         if ($user->firstaccess) {
