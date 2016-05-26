@@ -2688,14 +2688,6 @@ class mod_assign_external extends external_api {
     public static function list_participants_returns() {
         // Get user description.
         $userdesc = core_user_external::user_description();
-        // List unneeded properties.
-        $unneededproperties = [
-            'auth', 'confirmed', 'lang', 'calendartype', 'theme', 'timezone', 'mailformat'
-        ];
-        // Remove unneeded properties for consistency with the previous version.
-        foreach ($unneededproperties as $prop) {
-            unset($userdesc->keys[$prop]);
-        }
 
         // Override property attributes for consistency with the previous version.
         $userdesc->keys['fullname']->type = PARAM_NOTAGS;
