@@ -130,6 +130,8 @@ class core_test_generator_testcase extends advanced_testcase {
         $user = $generator->create_user(array('interests' => 'Cats, Dogs'));
         $userdetails = user_get_user_details($user);
         $this->assertSame('Cats, Dogs', $userdetails['interests']);
+        $this->assertEquals('manual', $userdetails['auth']);
+        $this->assertEquals('en', $userdetails['lang']);
     }
 
     public function test_create() {
