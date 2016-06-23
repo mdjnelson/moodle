@@ -120,4 +120,43 @@ class api {
 
         return null;
     }
+
+    /**
+     * Returns a contact for a user.
+     *
+     * @param int $userid The user id
+     * @param int $otheruserid The id of the user whose profile we want to view.
+     * @return \core_message\output\profile
+     */
+    public static function get_profile($userid, $otheruserid) {
+        global $DB, $PAGE;
+
+        if ($user = \core_user::get_user($otheruserid)) {
+            // Create the data we are going to pass to the renderable.
+            $userfields = \user_picture::unalias($user, array('city', 'country'));
+            $data = new \stdClass();
+            $data->userid = $userfields->id;
+            $data->fullname = fullname($userfields);
+            $data->country = $userfields->country;
+            $data->city = $userfields->city;
+            $data->email = $userfields->email;
+            // Get the user picture data.
+            $userpicture = new \user_picture($userfields);
+            $userpicture->size = 1; // Size f1.
+            $data->profileimageurl = $userpicture->get_url($PAGE)->out(false);
+            $userpicture->size = 0; // Size f2.
+            $data->profileimageurlsmall = $userpicture->get_url($PAGE)->out(false);
+            // Check if the contact has been blocked.
+            $contact = $DB->get_record('message_contacts', array('userid' => $userid, 'contactid' => $otheruserid));
+            if ($contact) {
+                $data->isblocked = $contact->blocked;
+                $data->iscontact = true;
+            } else {
+                $data->isblocked = false;
+                $data->iscontact = false;
+            }
+
+            return new \core_message\output\profile($userid, $data);
+        }
+    }
 }
