@@ -1,137 +1,143 @@
 /** The message area **/
-.messaging-area {
-    border: 1px solid black;
+.messaging-area-all {
 
-    .setSelected() {
-        background-color: #CCF2FF;
-    }
+    .messaging-area {
+        border: 1px solid black;
 
-    .contacts-area {
-        border-right: 1px solid black;
-        height: 800px;
-
-        .searcharea {
-            padding: 5px;
-            text-align: center;
+        .setSelected() {
+            background-color: #CCF2FF;
         }
 
-        .contacts {
-            height: 705px;
-            overflow-y: scroll;
+        .contacts-area {
+            border-right: 1px solid black;
+            height: 800px;
 
-            .contact.selected {
-                .setSelected();
+            .searcharea {
+                padding: 5px;
+                text-align: center;
             }
 
-            .contact {
-                &:hover {
+            .contacts {
+                height: 705px;
+                overflow-y: scroll;
+
+                .contact.selected {
                     .setSelected();
-                    cursor: pointer;
                 }
 
-                .information {
-                    padding-left: 8px;
-                    padding-right: 8px;
+                .contact {
+                    &:hover {
+                        .setSelected();
+                        cursor: pointer;
+                    }
 
+                    .information {
+                        padding-left: 8px;
+                        padding-right: 8px;
+
+                        .name {
+                            font-weight: bold;
+                        }
+
+                        .lastmessage {
+                            word-wrap: break-word;
+                        }
+                    }
+                }
+            }
+
+            .tabs {
+                border-top: 1px solid black;
+
+                .tab {
+                    &:hover {
+                        .setSelected();
+                        cursor: pointer;
+                    }
+                }
+
+                .tab.selected {
+                    .setSelected();
+                }
+
+                .tabconversations {
+                    text-align: center;
+                    border-right: 1px solid black;
+                }
+
+                .tabcontacts {
+                    text-align: center;
+                }
+            }
+        }
+
+        .messages-area {
+            .profile {
+                padding: 5px;
+                font-size: 16px;
+
+                .picture {
                     .name {
                         font-weight: bold;
                     }
+                }
 
-                    .lastmessage {
-                        word-wrap: break-word;
+                .information {
+                    padding-top: 10px;
+
+                    ul {
+                        list-style: none;
+                        margin: 0;
                     }
                 }
-            }
-        }
 
-        .tabs {
-            border-top: 1px solid black;
-
-            .tab {
-                &:hover {
-                    .setSelected();
-                    cursor: pointer;
+                .actions {
+                    padding-top: 10px;
                 }
             }
 
-            .tab.selected {
-                .setSelected();
-            }
+            .messages {
+                height: 720px;
+                overflow-y: auto;
 
-            .tabconversations {
-                text-align: center;
-                border-right: 1px solid black;
-            }
-
-            .tabcontacts {
-                text-align: center;
-            }
-        }
-    }
-
-    .messages-area {
-        .profile {
-            padding: 5px;
-            font-size: 16px;
-
-            .picture {
                 .name {
                     font-weight: bold;
                 }
-            }
 
-            .information {
-                padding-top: 10px;
+                .blocktime {
+                    clear: both;
+                    font-weight: bold;
+                    text-align: center;
+                }
 
-                ul {
-                    list-style: none;
-                    margin: 0;
+                .message {
+
+                    .deletemessagecheckbox {
+                        display: none;
+                    }
+
+                    .content {
+                        border: 1px solid black;
+                        padding-left: 5px;
+                        margin-bottom: 5px;
+                        font-size: 10px;
+                        word-wrap: break-word;
+                        width: 80%;
+                    }
+
+                    .content.left {
+                        float: left;
+                    }
+
+                    .content.right {
+                        float: right;
+                    }
                 }
             }
 
-            .actions {
-                padding-top: 10px;
-            }
-        }
-
-        .messages {
-            height: 720px;
-            overflow-y: auto;
-
-            .name {
-                font-weight: bold;
-            }
-
-            .blocktime {
-                clear: both;
-                font-weight: bold;
-                text-align: center;
-            }
-
-            .left {
-                float: left;
+            .response textarea {
                 width: 80%;
             }
-
-            .right {
-                float: right;
-                padding-right: 5px;
-                margin-right: 5px;
-                max-width: 80%;
-            }
-
-            .message {
-                border: 1px solid black;
-                padding-left: 5px;
-                margin-bottom: 5px;
-                clear: both;
-                font-size: 10px;
-                word-wrap:break-word;
-            }
-        }
-
-        .response textarea {
-            width:80%;
         }
     }
 }
