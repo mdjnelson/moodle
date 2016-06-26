@@ -1,3 +1,28 @@
+/**
+ * todo: Prepend this with atto-image-resize-container class
+ * Although atto_control class is crucial for proper operation of this plugin,
+ * I hate its styling.
+ *
+ * @see atto/yui/src/editor/js/editor/clean.js for why it is
+ * crucial and how ignoring its style in atto/style.css is not gonna affect this plugin's
+ * function.
+ */
+.atto_control {
+    /* Reset atto_control except for cursor. */
+    position: static;
+    right: auto;
+    bottom: auto;
+    display: inline;
+}
+.atto_control:hover {
+    display: inline;
+    margin-bottom: 0;
+    margin-left: 0;
+}
+.atto_control:focus {
+    display: inline;
+}
+
 .atto_image_preview {
     width: 100%;
     height: 100%;
@@ -26,4 +51,8 @@
 }
 .atto_image_size label {
     display: inline-block;
+}
+
+.atto-image-helper-hide-until-save {
+    display: none;
 }

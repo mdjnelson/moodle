@@ -3,6 +3,9 @@
   "builds": {
     "moodle-atto_image-button": {
       "jsfiles": [
+        "const.js",
+        "utility.js",
+        "resizable.js",
         "button.js"
       ]
     }
