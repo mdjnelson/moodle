@@ -49,6 +49,8 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
             this.messageArea.onCustomEvent('message-sent', this._handleMessageSent.bind(this));
             this.messageArea.onCustomEvent('contact-removed', this._removeContact.bind(this));
             this.messageArea.onCustomEvent('contact-added', this._viewContacts.bind(this));
+            this.messageArea.onCustomEvent('choose-messages-to-delete', this._chooseConversationsToDelete.bind(this));
+            this.messageArea.onCustomEvent('cancel-messages-deleted', this._cancelConversationsToDelete.bind(this));
             this.messageArea.onDelegateEvent('click', "[data-action='view-contact-msg']", this._viewConversation.bind(this));
             this.messageArea.onDelegateEvent('click', "[data-action='view-contact-profile']", this._viewContact.bind(this));
         };
@@ -92,6 +94,12 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
          * @private
          */
         Contacts.prototype._viewConversation = function(event) {
+            // We do not want to select the conversation if we chose the conversation to delete.
+            var node = $(event.target);
+            if (node.parent().data('region') == 'delete-conversation-checkbox') {
+                return;
+            }
+
             var userid = $(event.currentTarget).data('userid');
             this._setSelectedUser(userid);
             this.messageArea.trigger('conversation-selected', userid);
@@ -137,6 +145,32 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
             }).then(function(html, js) {
                 templates.replaceNodeContents("[data-region='contacts-area']", html, js);
             }).fail(notification.exception);
+        };
+
+        /**
+         * Handles selecting conversations to delete.
+         *
+         * @returns {Promise} The promise resolved when the conversations to delete have been selected.
+         * @private
+         */
+        Contacts.prototype._chooseConversationsToDelete = function() {
+            // Only show the checkboxes for the contact if we are also deleting messages.
+            if (this.messageArea.find("[data-region='delete-message-checkbox']").length !== 0) {
+                this.messageArea.find("[data-region='delete-conversation-checkbox']").show();
+            }
+        };
+
+        /**
+         * Handles canceling conversations to delete.
+         *
+         * @returns {Promise} The promise resolved when the conversations to delete have been selected.
+         * @private
+         */
+        Contacts.prototype._cancelConversationsToDelete = function() {
+            // Uncheck all checkboxes.
+            this.messageArea.find("[data-region='delete-conversation-checkbox'] input:checked").removeAttr('checked');
+            // Hide the checkboxes.
+            this.messageArea.find("[data-region='delete-conversation-checkbox']").hide();
         };
 
         /**

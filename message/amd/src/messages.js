@@ -189,6 +189,8 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
             this.messageArea.find("[data-region='delete-message-checkbox'] input:checked").removeAttr('checked');
             // Hide the checkboxes.
             this.messageArea.find("[data-region='delete-message-checkbox']").hide();
+            // Trigger event letting other modules know message deletion was canceled.
+            this.messageArea.trigger('cancel-messages-deleted');
             // Remove the confirmation message.
             var responseSelector = "[data-region='messages-area'] [data-region='response']";
             this.messageArea.find(responseSelector).empty();

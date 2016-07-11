@@ -580,6 +580,16 @@ $functions = array(
         'ajax' => true,
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
+    'core_message_delete_conversation' => array(
+        'classname' => 'core_message\api',
+        'methodname' => 'delete_messages',
+        'classpath' => '',
+        'description' => 'Deletes a message.',
+        'type' => 'write',
+        'capabilities' => 'moodle/site:deleteownmessage',
+        'ajax' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ),
     'core_message_delete_message' => array(
         'classname' => 'core_message_external',
         'methodname' => 'delete_message',
