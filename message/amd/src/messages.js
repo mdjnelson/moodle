@@ -48,7 +48,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
             this.messageArea.onDelegateEvent('click', "[data-action='send-message']", this._sendMessage.bind(this));
             this.messageArea.onDelegateEvent('click', "[data-action='delete-messages']", this._deleteMessages.bind(this));
             this.messageArea.onDelegateEvent('click', "[data-action='cancel-delete-messages']",
-                this._cancelDeleteMessages.bind(this));
+                this._cancelMessagesToDelete.bind(this));
         };
 
         /**
@@ -121,24 +121,13 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
          * @private
          */
         Messages.prototype._chooseMessagesToDelete = function() {
-            // Toggle the checkboxes.
-            var checkboxes = this.messageArea.find("[data-region='delete-message-checkbox']").toggle();
+            // Show the checkboxes.
+            this.messageArea.find("[data-region='delete-message-checkbox']").show();
+            // Display the confirmation message.
             var responseSelector = "[data-region='messages-area'] [data-region='response']";
-
-            // Check if we toggled to cancel deletion.
-            if (checkboxes.is(':hidden')) {
-                this.messageArea.find(responseSelector).empty();
-                // Only show a response field if we are viewing the logged in user's messages.
-                if (this.messageArea.getLoggedInUserId() == this.messageArea.getCurrentUserId()) {
-                    return templates.render('core_message/message_response', {}).then(function(html, js) {
-                        templates.replaceNodeContents(responseSelector, html, js);
-                    });
-                }
-            } else {
-                return templates.render('core_message/message_delete_message', {}).then(function(html, js) {
-                    templates.replaceNodeContents(responseSelector, html, js);
-                });
-            }
+            return templates.render('core_message/message_delete_message', {}).then(function(html, js) {
+                templates.replaceNodeContents(responseSelector, html, js);
+            });
         };
 
         /**
@@ -183,8 +172,8 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
                         this.messageArea.find("[data-region='blocktime'][data-blocktime='" + blocktime + "']").remove();
                     }
                 }.bind(this));
-                // Simple toggle the delete button action.
-                this._chooseMessagesToDelete();
+                // Simple perform the same action as canceling to delete (hide checkboxes, replace response area etc).
+                this._cancelMessagesToDelete();
                 // Trigger event letting other modules know messages were deleted.
                 this.messageArea.trigger('messages-deleted');
             }.bind(this), notification.exception);
@@ -195,9 +184,20 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification'],
          *
          * @private
          */
-        Messages.prototype._cancelDeleteMessages = function() {
-            // Simple toggle the delete button action.
-            this._chooseMessagesToDelete();
+        Messages.prototype._cancelMessagesToDelete = function() {
+            // Uncheck all checkboxes.
+            this.messageArea.find("[data-region='delete-message-checkbox'] input:checked").removeAttr('checked');
+            // Hide the checkboxes.
+            this.messageArea.find("[data-region='delete-message-checkbox']").hide();
+            // Remove the confirmation message.
+            var responseSelector = "[data-region='messages-area'] [data-region='response']";
+            this.messageArea.find(responseSelector).empty();
+            // Only show a response text area if we are viewing the logged in user's messages.
+            if (this.messageArea.getLoggedInUserId() == this.messageArea.getCurrentUserId()) {
+                return templates.render('core_message/message_response', {}).then(function(html, js) {
+                    templates.replaceNodeContents(responseSelector, html, js);
+                });
+            }
         };
 
         /**
