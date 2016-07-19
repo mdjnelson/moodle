@@ -60,7 +60,7 @@
 
 .messaging-area .contacts-area {
     border-right: 1px solid black;
-    height: 800px;
+    height: 600px;
 }
 
 .messaging-area .contacts-area .searcharea {
@@ -69,7 +69,7 @@
 }
 
 .messaging-area .contacts-area .contacts {
-    height: 705px;
+    height: 505px;
     overflow-y: scroll;
 }
 
@@ -124,7 +124,7 @@
 }
 
 .messaging-area .messages-area .messages {
-    height: 720px;
+    height: 520px;
     overflow-y: auto;
 }
 
