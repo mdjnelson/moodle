@@ -123,13 +123,13 @@
     width: 48%;
 }
 
+.messaging-area .messages-area .name {
+    font-weight: bold;
+}
+
 .messaging-area .messages-area .messages {
     height: 520px;
     overflow-y: auto;
-}
-
-.messaging-area .messages-area .messages .name {
-    font-weight: bold;
 }
 
 .messaging-area .messages-area .messages .blocktime {
