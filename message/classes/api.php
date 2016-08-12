@@ -313,7 +313,7 @@ class api {
         if ($user = \core_user::get_user($otheruserid)) {
             // Create the data we are going to pass to the renderable.
             $userfields = user_get_user_details($user, null, array('city', 'country', 'email',
-                'profileimageurl', 'profileimageurlsmall'));
+                'profileimageurl', 'profileimageurlsmall', 'lastaccess'));
             $data = new \stdClass();
             $data->userid = $userfields['id'];
             $data->fullname = $userfields['fullname'];
@@ -322,6 +322,7 @@ class api {
             $data->email = $userfields['email'];
             $data->profileimageurl = $userfields['profileimageurl'];
             $data->profileimageurlsmall = $userfields['profileimageurlsmall'];
+            $data->isonline = \core_message\helper::is_online($userfields['lastaccess']);
             // Check if the contact has been blocked.
             $contact = $DB->get_record('message_contacts', array('userid' => $userid, 'contactid' => $otheruserid));
             if ($contact) {
