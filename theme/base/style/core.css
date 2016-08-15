@@ -4917,3 +4917,7 @@ body.lockscroll {
     vertical-align: text-bottom;
     margin-bottom: 0;
 }
+
+textarea[data-auto-rows] {
+    overflow-x: hidden;
+}
