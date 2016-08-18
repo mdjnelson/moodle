@@ -93,20 +93,20 @@
         <table class="table table-hover preference-table">
             <tbody>
                 {{#components}}
-                    <tr>
-                        <th>{{#str}} notificationsnewmessages, message {{/str}}</th>
-                        <td class="align-bottom">
-                            <div class="container-fluid">
-                                <div class="row-fluid">
-                                    <div class="span6">{{#str}} online, message {{/str}}</div>
-                                    <div class="span6">{{#str}} offline, message {{/str}}</div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
                     {{#notifications}}
+                        <tr data-region="preference-row" data-preference-key="{{preferencekey}}">
+                            <th>{{displayname}}</th>
+                            <td class="align-bottom">
+                                <div class="container-fluid">
+                                    <div class="row-fluid">
+                                        <div class="span6">{{#str}} online, message {{/str}}</div>
+                                        <div class="span6">{{#str}} offline, message {{/str}}</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                         {{#processors}}
-                            <tr class="preference-row" data-region="preference-row" data-preference-key="{{preferencekey}}">
+                            <tr class="preference-row">
                                 <td class="preference-name">{{displayname}}</td>
                                 <td {{^userconfigured}}class="disabled"{{/userconfigured}} data-processor-name="{{name}}">
                                     {{#locked}}

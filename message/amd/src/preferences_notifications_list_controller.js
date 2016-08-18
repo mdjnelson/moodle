@@ -131,6 +131,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/custom_interaction_eve
             if (!this.isDisabled()) {
                 var preferenceElement = $(e.target).closest(SELECTORS.PREFERENCE);
                 var preferenceRow = $(e.target).closest(SELECTORS.PREFERENCE_ROW);
+                if (preferenceRow.length === 0) { // Must be on messaging preference page.
+                    preferenceRow = $(e.target).closest('.preference-row').siblings(SELECTORS.PREFERENCE_ROW);
+                }
                 var preference = new NotificationPreference(preferenceRow, this.userId);
 
                 preferenceElement.addClass('loading');
