@@ -130,6 +130,11 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
          * @private
          */
         Contacts.prototype._viewConversations = function() {
+            // If conversations is empty then try load some.
+            if (this._numConversationsDisplayed === 0) {
+                this._loadConversations();
+            }
+
             this.messageArea.find(this.messageArea.SELECTORS.CONTACTS).hide();
             this.messageArea.find(this.messageArea.SELECTORS.CONVERSATIONS).show();
         };
@@ -140,7 +145,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
          * @private
          */
         Contacts.prototype._viewContacts = function() {
-            // If contacts is empty then load some.
+            // If contacts is empty then try load some.
             if (this._numContactsDisplayed === 0) {
                 this._loadContacts();
             }
@@ -214,8 +219,13 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
             var numberreceived = 0;
             // Add loading icon to the end of the list.
             return templates.render('core/loading', {}).then(function(html, js) {
-                templates.appendNodeContents(this.messageArea.SELECTORS.CONVERSATIONS,
-                    "<div style='text-align:center'>" + html + "</div>", js);
+                if (this._numConversationsDisplayed) {
+                    templates.appendNodeContents(this.messageArea.SELECTORS.CONVERSATIONS,
+                        "<div style='text-align:center'>" + html + "</div>", js);
+                } else { // No conversations, just replace contents.
+                    templates.replaceNodeContents(this.messageArea.SELECTORS.CONVERSATIONS,
+                        "<div style='text-align:center'>" + html + "</div>", js);
+                }
                 return this._getItems('core_message_data_for_messagearea_conversations',
                     this._numConversationsDisplayed, this._numConversationsToRetrieve);
             }.bind(this)).then(function(data) {
@@ -231,6 +241,9 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
                     templates.appendNodeContents(this.messageArea.SELECTORS.CONVERSATIONS, html, js);
                     // Increment the number of conversations displayed.
                     this._numConversationsDisplayed += numberreceived;
+                } else if (!this._numConversationsDisplayed) {
+                    // If we didn't receive any contacts and there are currently none, then we want to show a message.
+                    templates.replaceNodeContents(this.messageArea.SELECTORS.CONVERSATIONS, html, js);
                 }
                 // Mark that we are no longer busy loading data.
                 this._isLoadingConversations = false;
@@ -259,8 +272,13 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
             var numberreceived = 0;
             // Add loading icon to the end of the list.
             return templates.render('core/loading', {}).then(function(html, js) {
-                templates.appendNodeContents(this.messageArea.SELECTORS.CONTACTS,
-                    "<div style='text-align:center'>" + html + "</div>", js);
+                if (this._numContactsDisplayed) {
+                    templates.appendNodeContents(this.messageArea.SELECTORS.CONTACTS,
+                        "<div style='text-align:center'>" + html + "</div>", js);
+                } else { // No contacts, just replace contents.
+                    templates.replaceNodeContents(this.messageArea.SELECTORS.CONTACTS,
+                        "<div style='text-align:center'>" + html + "</div>", js);
+                }
                 return this._getItems('core_message_data_for_messagearea_contacts',
                     this._numContactsDisplayed, this._numContactsToRetrieve);
             }.bind(this)).then(function(data) {
@@ -276,6 +294,9 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
                     templates.appendNodeContents(this.messageArea.SELECTORS.CONTACTS, html, js);
                     // Increment the number of contacts displayed.
                     this._numContactsDisplayed += numberreceived;
+                } else if (!this._numContactsDisplayed) {
+                    // If we didn't receive any contacts and there are currently none, then we want to show a message.
+                    templates.replaceNodeContents(this.messageArea.SELECTORS.CONTACTS, html, js);
                 }
                 // Mark that we are no longer busy loading data.
                 this._isLoadingContacts = false;
