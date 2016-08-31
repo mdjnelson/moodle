@@ -151,7 +151,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
                     this._numMessagesDisplayed = numberreceived;
                 }
                 // Now enable the ability to infinitely scroll through messages.
-                customEvents.define(this.messageArea.SELECTORS.MESSAGES, [
+                customEvents.define(this.messageArea.find(this.messageArea.SELECTORS.MESSAGES), [
                     customEvents.events.scrollTop
                 ]);
                 // Assign the event for scrolling.

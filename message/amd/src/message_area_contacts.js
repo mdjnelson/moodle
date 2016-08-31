@@ -108,10 +108,10 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
             this.messageArea.onDelegateEvent('blur', this.messageArea.SELECTORS.SEARCHBOX, this._clearSearching.bind(this));
 
             // Now enable the ability to infinitely scroll through conversations and contacts.
-            customEvents.define(this.messageArea.SELECTORS.CONVERSATIONS, [
+            customEvents.define(this.messageArea.find(this.messageArea.SELECTORS.CONVERSATIONS), [
                 customEvents.events.scrollBottom
             ]);
-            customEvents.define(this.messageArea.SELECTORS.CONTACTS, [
+            customEvents.define(this.messageArea.find(this.messageArea.SELECTORS.CONTACTS), [
                 customEvents.events.scrollBottom
             ]);
             this.messageArea.onDelegateEvent(customEvents.events.scrollBottom, this.messageArea.SELECTORS.CONVERSATIONS,

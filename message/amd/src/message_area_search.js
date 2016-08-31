@@ -127,7 +127,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/str'
         }.bind(this));
 
         // Event listeners for scrolling through messages and people in courses.
-        customEvents.define(this.messageArea.SELECTORS.SEARCHRESULTSAREA, [
+        customEvents.define(this.messageArea.find(this.messageArea.SELECTORS.SEARCHRESULTSAREA), [
             customEvents.events.scrollBottom
         ]);
         this.messageArea.onDelegateEvent(customEvents.events.scrollBottom, this.messageArea.SELECTORS.SEARCHRESULTSAREA,
