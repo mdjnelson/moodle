@@ -47,6 +47,11 @@ class contact implements templatable, renderable {
     public $userid;
 
     /**
+     * @var int The id of the user who sent the last message.
+     */
+    public $useridfrom;
+
+    /**
      * @var string The fullname.
      */
     public $fullname;
@@ -103,6 +108,7 @@ class contact implements templatable, renderable {
      */
     public function __construct($contact) {
         $this->userid = $contact->userid;
+        $this->useridfrom = $contact->useridfrom;
         $this->fullname = $contact->fullname;
         $this->profileimageurl = $contact->profileimageurl;
         $this->profileimageurlsmall = $contact->profileimageurlsmall;
@@ -124,7 +130,11 @@ class contact implements templatable, renderable {
         $contact->messageid = $this->messageid;
         $contact->ismessaging = $this->ismessaging;
         if ($this->lastmessage) {
-            $contact->lastmessage = shorten_text($this->lastmessage, self::MAX_MSG_LENGTH);
+            $lastmessage = $this->lastmessage;
+            if ($this->useridfrom != $this->userid) {
+                $lastmessage = get_string('you', 'message') . ": " . $lastmessage;
+            }
+            $contact->lastmessage = shorten_text($lastmessage, self::MAX_MSG_LENGTH);
         } else {
             $contact->lastmessage = null;
         }

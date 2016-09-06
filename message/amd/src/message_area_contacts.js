@@ -21,8 +21,8 @@
  * @copyright  2016 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/custom_interaction_events'],
-    function($, ajax, templates, notification, customEvents) {
+define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/custom_interaction_events', 'core/str'],
+    function($, ajax, templates, notification, customEvents, Str) {
 
         /**
          * Contacts class.
@@ -171,8 +171,6 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
         Contacts.prototype._handleMessageSent = function(event, userid, text) {
             // Switch to viewing the conversations.
             this._viewConversations();
-            // Get the text we will display on the contact panel.
-            text = this._getContactText(text);
             // Get the user node.
             var user = this._getUserNode(this.messageArea.SELECTORS.CONVERSATIONS, userid);
             // If the user has not been loaded yet, let's copy the element from contact or search panel to the conversation panel.
@@ -200,10 +198,15 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
             user.prependTo(this.messageArea.find(this.messageArea.SELECTORS.CONVERSATIONS));
             // Scroll to the top.
             this.messageArea.find(this.messageArea.SELECTORS.CONVERSATIONS).scrollTop(0);
-            // Replace the text.
-            user.find(this.messageArea.SELECTORS.LASTMESSAGE).empty().append(text);
-            // Ensure user is selected.
-            this._setSelectedUser("[data-userid='" + userid + "']");
+            // Get the new text to show.
+            Str.get_string('you', 'message').done(function(string) {
+                // Get the text we will display on the contact panel.
+                text = this._getContactText(string + ": " + text);
+                // Replace it.
+                user.find(this.messageArea.SELECTORS.LASTMESSAGE).empty().append(text);
+                // Ensure user is selected.
+                this._setSelectedUser("[data-userid='" + userid + "']");
+            }.bind(this));
         };
 
         /**
@@ -442,8 +445,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
             // Check if the last message needs updating.
             var user = this._getUserNode(this.messageArea.SELECTORS.CONVERSATIONS, userid);
             if (user.length !== 0) {
-                var lastmessagelisted = user.find(this.messageArea.SELECTORS.LASTMESSAGE);
-                lastmessagelisted = lastmessagelisted.html();
+                var lastmessagelistedtext = user.find(this.messageArea.SELECTORS.LASTMESSAGE).html().trim();
                 // Go through and get the actual last message after all the deletions.
                 var messages = this.messageArea.find(this.messageArea.SELECTORS.MESSAGESAREA + " " +
                     this.messageArea.SELECTORS.MESSAGE);
@@ -451,10 +453,19 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
 
                 messages.each(function(index, element) {
                     if (index === messageslength - 1) {
-                        var actuallastmessage = $(element).find(this.messageArea.SELECTORS.MESSAGETEXT).html().trim();
-                        if (lastmessagelisted != actuallastmessage) {
-                            user.find(this.messageArea.SELECTORS.LASTMESSAGE).empty().append(
-                                this._getContactText(actuallastmessage));
+                        var lastmessage = $(element);
+                        var lastmessagetext = lastmessage.find(this.messageArea.SELECTORS.MESSAGETEXT).html().trim();
+                        if (lastmessagelistedtext != lastmessagetext) {
+                            if (lastmessage.data('useridfrom') != userid) {
+                                Str.get_string('you', 'message').done(function(string) {
+                                    // Get the text we will display on the contact panel.
+                                    lastmessagetext = this._getContactText(string + ": " + lastmessagetext);
+                                    user.find(this.messageArea.SELECTORS.LASTMESSAGE).empty().append(lastmessagetext);
+                                }.bind(this));
+                            } else {
+                                lastmessagetext = this._getContactText(lastmessagetext);
+                                user.find(this.messageArea.SELECTORS.LASTMESSAGE).empty().append(lastmessagetext);
+                            }
                         }
                     }
                 }.bind(this));

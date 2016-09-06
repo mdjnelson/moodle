@@ -455,6 +455,8 @@ class core_message_external extends external_api {
         return new external_single_structure(
             array(
                 'id' => new external_value(PARAM_INT, 'The id of the message'),
+                'useridfrom' => new external_value(PARAM_INT, 'The id of the user who sent the message'),
+                'useridto' => new external_value(PARAM_INT, 'The id of the user who received the message'),
                 'text' => new external_value(PARAM_RAW, 'The text of the message'),
                 'displayblocktime' => new external_value(PARAM_BOOL, 'Should we display the block time?'),
                 'blocktime' => new external_value(PARAM_NOTAGS, 'The time to display above the message'),
