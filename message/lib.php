@@ -293,8 +293,8 @@ function message_count_unread_messages($user1=null, $user2=null) {
  * Returns the count of unread conversations (collection of messages from a single user) for
  * the given user.
  *
- * @param object $user the user who's conversations should be counted
- * @return in the count of $user's unread conversations
+ * @param stdClass $user the user who's conversations should be counted
+ * @return int the count of $user's unread conversations
  */
 function message_count_unread_conversations($user = null) {
     global $USER, $DB;
@@ -303,7 +303,7 @@ function message_count_unread_conversations($user = null) {
         $user = $USER;
     }
 
-    return $DB->count_records_select('message', 'useridto = ?',
+    return $DB->count_records_select('message', 'useridto = ? AND timeusertodeleted = 0 AND notification = 0',
         [$user->id], "COUNT(DISTINCT(useridfrom))");
 }
 
