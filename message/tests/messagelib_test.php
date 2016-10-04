@@ -263,27 +263,6 @@ class core_message_messagelib_testcase extends advanced_testcase {
         $this->assertEquals(1, message_count_unread_messages($userto, $userfrom1));
     }
 
-    /**
-     * Test message_count_blocked_users.
-     *
-     */
-    public function test_message_count_blocked_users() {
-        // Set this user as the admin.
-        $this->setAdminUser();
-
-        // Create users to add to the admin's contact list.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-
-        $this->assertEquals(0, message_count_blocked_users());
-
-        // Add 1 blocked and 1 normal contact to admin's contact list.
-        message_add_contact($user1->id);
-        message_add_contact($user2->id, 1);
-
-        $this->assertEquals(0, message_count_blocked_users($user2));
-        $this->assertEquals(1, message_count_blocked_users());
-    }
 
     /**
      * Test message_add_contact.
@@ -305,7 +284,7 @@ class core_message_messagelib_testcase extends advanced_testcase {
         $this->assertNotEmpty(message_get_contact($user1->id));
         $this->assertNotEmpty(message_get_contact($user2->id));
         $this->assertEquals(false, message_get_contact($user3->id));
-        $this->assertEquals(1, message_count_blocked_users());
+        $this->assertEquals(1, \core_message\api::count_blocked_users());
     }
 
     /**
@@ -342,11 +321,11 @@ class core_message_messagelib_testcase extends advanced_testcase {
         message_add_contact($user1->id);
         message_add_contact($user2->id);
 
-        $this->assertEquals(0, message_count_blocked_users());
+        $this->assertEquals(0, \core_message\api::count_blocked_users());
 
         // Block 1 user.
         message_block_contact($user2->id);
-        $this->assertEquals(1, message_count_blocked_users());
+        $this->assertEquals(1, \core_message\api::count_blocked_users());
 
     }
 
@@ -365,11 +344,11 @@ class core_message_messagelib_testcase extends advanced_testcase {
         message_add_contact($user1->id);
         message_add_contact($user2->id, 1); // Add blocked contact.
 
-        $this->assertEquals(1, message_count_blocked_users());
+        $this->assertEquals(1, \core_message\api::count_blocked_users());
 
         // Unblock user.
         message_unblock_contact($user2->id);
-        $this->assertEquals(0, message_count_blocked_users());
+        $this->assertEquals(0, \core_message\api::count_blocked_users());
     }
 
     /**

@@ -4695,7 +4695,8 @@ function message_count_messages($messagearray, $field='', $value='') {
  * @return int the number of blocked users
  */
 function message_count_blocked_users($user1=null) {
-    debugging('message_count_blocked_users() is deprecated and is no longer used.', DEBUG_DEVELOPER);
+    debugging('message_count_blocked_users() is deprecated, please use \core_message\api::count_blocked_users() instead.',
+        DEBUG_DEVELOPER);
 
     global $USER, $DB;
 
@@ -5277,9 +5278,10 @@ function message_get_contact_block_link($incontactlist, $isblocked, $contact, $s
  * @return void
  */
 function message_mark_messages_read($touserid, $fromuserid) {
-    debugging('message_mark_messages_read() is deprecated and is no longer used.', DEBUG_DEVELOPER);
+    debugging('message_mark_messages_read() is deprecated and is no longer used, please use 
+        \core_message\api::mark_all_read_for_user() instead.', DEBUG_DEVELOPER);
 
-    return \core_message\api::mark_all_read_for_user($touserid, $fromuserid);
+    \core_message\api::mark_all_read_for_user($touserid, $fromuserid);
 }
 
 /**
@@ -5306,31 +5308,10 @@ function message_page_type_list($pagetype, $parentcontext, $currentcontext) {
  * @return bool true if user is permitted, false otherwise.
  */
 function message_can_post_message($recipient, $sender = null) {
-    debugging('message_can_post_message() is deprecated and is no longer used.', DEBUG_DEVELOPER);
+    debugging('message_can_post_message() is deprecated and is no longer used, please use 
+        \core_message\api::can_post_message() instead.', DEBUG_DEVELOPER);
 
-    global $USER, $DB;
-
-    if (is_null($sender)) {
-        // The message is from the logged in user, unless otherwise specified.
-        $sender = $USER;
-    }
-
-    if (!has_capability('moodle/site:sendmessage', context_system::instance(), $sender)) {
-        return false;
-    }
-
-    // The recipient blocks messages from non-contacts and the
-    // sender isn't a contact.
-    if (message_is_user_non_contact_blocked($recipient, $sender)) {
-        return false;
-    }
-
-    // The recipient has specifically blocked this sender.
-    if (message_is_user_blocked($recipient, $sender)) {
-        return false;
-    }
-
-    return true;
+    return \core_message\api::can_post_message($recipient, $sender);
 }
 
 /**
@@ -5344,29 +5325,10 @@ function message_can_post_message($recipient, $sender = null) {
  * @return bool true if $sender is blocked, false otherwise.
  */
 function message_is_user_non_contact_blocked($recipient, $sender = null) {
-    debugging('message_is_user_non_contact_blocked() is deprecated and is no longer used.', DEBUG_DEVELOPER);
+    debugging('message_is_user_non_contact_blocked() is deprecated and is no longer used, please use 
+        \core_message\api::is_user_non_contact_blocked() instead.', DEBUG_DEVELOPER);
 
-    global $USER, $DB;
-
-    if (is_null($sender)) {
-        // The message is from the logged in user, unless otherwise specified.
-        $sender = $USER;
-    }
-
-    $blockednoncontacts = get_user_preferences('message_blocknoncontacts', '', $recipient->id);
-    if (!empty($blockednoncontacts)) {
-        // Confirm the sender is a contact of the recipient.
-        $exists = $DB->record_exists('message_contacts', array('userid' => $recipient->id, 'contactid' => $sender->id));
-        if ($exists) {
-            // All good, the recipient is a contact of the sender.
-            return false;
-        } else {
-            // Oh no, the recipient is not a contact. Looks like we can't send the message.
-            return true;
-        }
-    }
-
-    return false;
+    return \core_message\api::is_user_non_contact_blocked($recipient, $sender);
 }
 
 /**
@@ -5381,25 +5343,8 @@ function message_is_user_non_contact_blocked($recipient, $sender = null) {
  * @return bool true if $sender is blocked, false otherwise.
  */
 function message_is_user_blocked($recipient, $sender = null) {
-    debugging('message_is_user_blocked() is deprecated and is no longer used.', DEBUG_DEVELOPER);
+    debugging('message_is_user_blocked() is deprecated and is no longer used, please use 
+        \core_message\api::is_user_blocked() instead.', DEBUG_DEVELOPER);
 
-    global $USER, $DB;
-
-    if (is_null($sender)) {
-        // The message is from the logged in user, unless otherwise specified.
-        $sender = $USER;
-    }
-
-    $systemcontext = context_system::instance();
-    if (has_capability('moodle/site:readallmessages', $systemcontext, $sender)) {
-        return false;
-    }
-
-    if ($contact = $DB->get_record('message_contacts', array('userid' => $recipient->id, 'contactid' => $sender->id))) {
-        if ($contact->blocked) {
-            return true;
-        }
-    }
-
-    return false;
+    return \core_message\api::is_user_blocked($recipient, $sender);
 }
