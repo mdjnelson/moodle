@@ -48,7 +48,7 @@ define(['jquery', 'core/templates', 'core/notification', 'core/custom_interactio
      * @param {int} userId The user id of the current user
      */
     var ContentArea = function(root, userId) {
-        this.root  = $(root);
+        this.root = $(root);
         this.container = this.root.closest(SELECTORS.CONTAINER);
         this.userId = userId;
         this.header = this.root.find(SELECTORS.HEADER);

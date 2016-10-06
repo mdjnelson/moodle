@@ -51,12 +51,12 @@ $personalcontext = context_user::instance($user->id);
 $PAGE->set_context($personalcontext);
 $PAGE->set_pagelayout('admin');
 
-/// Display page header
+// Display page header.
 $title = get_string('notifications', 'message');
 $PAGE->set_title("{$SITE->shortname}: " . $title);
 $PAGE->set_heading(fullname($user));
 
-// Grab the renderer
+// Grab the renderer.
 $renderer = $PAGE->get_renderer('core', 'message');
 $context = [
     'notificationid' => $notificationid,

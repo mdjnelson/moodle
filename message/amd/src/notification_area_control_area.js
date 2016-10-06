@@ -43,7 +43,7 @@ define(['jquery', 'core/templates', 'core/notification', 'core/custom_interactio
      * @param {int} userId The user id of the current user
      */
     var ControlArea = function(root, userId) {
-        this.root  = $(root);
+        this.root = $(root);
         this.container = this.root.closest(SELECTORS.CONTAINER);
         this.userId = userId;
         this.content = this.root.find(SELECTORS.CONTENT);
@@ -380,8 +380,12 @@ define(['jquery', 'core/templates', 'core/notification', 'core/custom_interactio
                 this.incrementOffset();
                 return this.renderNotifications(notifications);
             }
+
+            return false;
         }.bind(this))
-        .always(function() { this.stopLoading(); }.bind(this));
+        .always(function() {
+            this.stopLoading();
+        }.bind(this));
 
         return promise;
     };

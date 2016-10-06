@@ -207,7 +207,9 @@ define(['jquery', 'theme_bootstrapbase/bootstrap', 'core/ajax', 'core/templates'
     /**
      * Find the notification element for the given id.
      *
+     * @param {int} id
      * @method getNotificationElement
+     * @return {object|null} The notification element
      */
     NotificationPopoverController.prototype.getNotificationElement = function(id) {
         var element = this.root.find(SELECTORS.NOTIFICATION + '[data-id="' + id + '"]');

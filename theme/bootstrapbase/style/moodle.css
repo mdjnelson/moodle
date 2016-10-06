@@ -6495,7 +6495,6 @@ a.ygtvspacer:hover {
 .notification-area .content-area .header .image-container {
   display: inline-block;
   height: 25px;
-  vertical-align: top;
   width: 24px;
   float: left;
 }
@@ -7864,7 +7863,6 @@ body.path-question-type .mform fieldset.hidden {
   display: inline-block;
   width: 24px;
   height: 24px;
-  vertical-align: top;
   float: left;
 }
 .content-item-container.notification .content-item-body .notification-image img {
