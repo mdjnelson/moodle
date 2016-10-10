@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * External message popup API
@@ -46,7 +47,7 @@ class message_popup_external extends external_api {
     public static function get_popup_notifications_parameters() {
         return new external_function_parameters(
             array(
-                'useridto' => new external_value(PARAM_INT, 'the user id who received the message, 0 for current user', VALUE_REQUIRED),
+                'useridto' => new external_value(PARAM_INT, 'the user id who received the message, 0 for current user'),
                 'newestfirst' => new external_value(
                     PARAM_BOOL, 'true for ordering by newest first, false for oldest first',
                     VALUE_DEFAULT, true),

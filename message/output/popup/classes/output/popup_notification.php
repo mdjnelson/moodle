@@ -51,9 +51,6 @@ class popup_notification implements templatable, renderable {
      * Constructor.
      *
      * @param \stdClass $notification
-     * @param \stdClass $embeduserto
-     * @param \stdClass $embeduserfrom
-     * @param string $usertofullname
      */
     public function __construct($notification) {
         $this->notification = $notification;

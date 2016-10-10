@@ -30,6 +30,12 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 require_once($CFG->dirroot . '/message/output/popup/externallib.php');
 require_once($CFG->dirroot . '/message/output/popup/tests/base.php');
 
+/**
+ * Class for external message popup functions unit tests.
+ *
+ * @copyright  2016 Ryan Wyllie <ryan@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class message_popup_externallib_testcase extends advanced_testcase {
     use message_popup_test_helper;
 
