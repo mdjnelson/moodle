@@ -275,6 +275,14 @@
                     }
                 }
 
+                .tab.inactive {
+                    cursor: inherit;
+
+                    &:hover {
+                        color: inherit;
+                    }
+                }
+
                 .tab.selected {
                     @include setSelectedTab();
                 }

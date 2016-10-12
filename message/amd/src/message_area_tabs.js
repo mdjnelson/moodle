@@ -93,15 +93,19 @@ define(['core/custom_interaction_events', 'core_message/message_area_events'], f
                 this._toggleTabs.bind(this));
 
         this.messageArea.onCustomEvent(Events.CHOOSEMESSAGESTODELETE, function() {
+            this._deactivateTab(SELECTORS.VIEWCONTACTS);
             this._isDeleting = true;
         }.bind(this));
         this.messageArea.onCustomEvent(Events.MESSAGESDELETED, function() {
+            this._activateTab(SELECTORS.VIEWCONTACTS);
             this._isDeleting = false;
         }.bind(this));
         this.messageArea.onCustomEvent(Events.CONVERSATIONDELETED, function() {
+            this._activateTab(SELECTORS.VIEWCONTACTS);
             this._isDeleting = false;
         }.bind(this));
         this.messageArea.onCustomEvent(Events.CANCELDELETEMESSAGES, function() {
+            this._activateTab(SELECTORS.VIEWCONTACTS);
             this._isDeleting = false;
         }.bind(this));
         this.messageArea.onCustomEvent(Events.MESSAGESENT, function() {
@@ -178,6 +182,28 @@ define(['core/custom_interaction_events', 'core_message/message_area_events'], f
         e.stopPropagation();
         data.originalEvent.preventDefault();
         data.originalEvent.stopPropagation();
+    };
+
+    /**
+     * Set a tab so that it appears inactive.
+     *
+     * @param {String} tab The name of the tab to deactivate
+     * @private
+     */
+    Tabs.prototype._deactivateTab = function(tab) {
+        tab = this.messageArea.find(tab);
+        tab.addClass('inactive');
+    };
+
+    /**
+     * Set a tab so that it appears active.
+     *
+     * @param {String} tab The name of the tab to activate
+     * @private
+     */
+    Tabs.prototype._activateTab = function(tab) {
+        tab = this.messageArea.find(tab);
+        tab.removeClass('inactive');
     };
 
     return Tabs;

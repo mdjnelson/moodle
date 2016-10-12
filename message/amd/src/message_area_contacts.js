@@ -368,7 +368,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
          */
         Contacts.prototype._viewConversation = function(event) {
             if (this._isDeleting) {
-                this.messageArea.trigger(Events.CANCELDELETEMESSAGES, userid);
+                return false;
             }
 
             var userid = $(event.currentTarget).data('userid');

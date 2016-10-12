@@ -6028,6 +6028,12 @@ a.ygtvspacer:hover {
 .messaging-area-container .messaging-area .contacts-area .tabs .tab .tabimage img {
   height: 20px;
 }
+.messaging-area-container .messaging-area .contacts-area .tabs .tab.inactive {
+  cursor: inherit;
+}
+.messaging-area-container .messaging-area .contacts-area .tabs .tab.inactive:hover {
+  color: inherit;
+}
 .messaging-area-container .messaging-area .contacts-area .tabs .tab.selected {
   color: #4f94cd;
 }
