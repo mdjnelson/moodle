@@ -113,7 +113,8 @@ if ($onlyuselegacyreader) {
     // If legacy reader is not logging then get data from new log table.
     // Get minimum log time for this course from preferred log reader.
     $minloginternalreader = $DB->get_field_sql('SELECT min(timecreated) FROM {' . $logtable . '}
-                                                 WHERE courseid = ?', array($course->id));
+                                                 WHERE courseid = ?
+                                                   AND anonymous = 0', array($course->id));
     // If new log store has oldest data then don't use old log table.
     if (empty($minlog) || ($minloginternalreader <= $minlog)) {
         $uselegacyreader = false;
