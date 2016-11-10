@@ -130,20 +130,39 @@ class helper {
      * @return \stdClass
      */
     public static function create_contact($contact, $prefix = '') {
-        global $PAGE;
+        global $CFG, $PAGE;
 
-        // Create the data we are going to pass to the renderable.
+        require_once($CFG->dirroot . '/user/lib.php');
+
+        // Get the user fields - ensuring we only view what we can.
         $userfields = \user_picture::unalias($contact, array('lastaccess'), $prefix . 'id', $prefix);
+        $userfields = user_get_user_details($userfields, null, array('email',
+            'profileimageurl', 'profileimageurlsmall', 'lastaccess'));
+
         $data = new \stdClass();
-        $data->userid = $userfields->id;
+        $id = $prefix . 'id';
+        $data->userid = $contact->$id;
+        $data->fullname = fullname($contact);
         $data->useridfrom = null;
-        $data->fullname = fullname($userfields);
-        // Get the user picture data.
-        $userpicture = new \user_picture($userfields);
-        $userpicture->size = 1; // Size f1.
-        $data->profileimageurl = $userpicture->get_url($PAGE)->out(false);
-        $userpicture->size = 0; // Size f2.
-        $data->profileimageurlsmall = $userpicture->get_url($PAGE)->out(false);
+        // Set the images to the default ones.
+        $renderer = $PAGE->get_renderer('core');
+        $data->profileimageurl = $renderer->pix_url('u/f1')->out();
+        $data->profileimageurlsmall = $renderer->pix_url('u/f2')->out();
+        $data->isonline = false;
+
+        if ($userfields) {
+            // Get the user picture data.
+            if (isset($userfields['profileimageurl'])) {
+                $data->profileimageurl = $userfields['profileimageurl'];
+            }
+            if (isset($userfields['profileimageurlsmall'])) {
+                $data->profileimageurlsmall = $userfields['profileimageurlsmall'];
+            }
+            if (isset($userfields['lastaccess'])) {
+                $data->isonline = self::is_online($userfields['lastaccess']);
+            }
+        }
+
         // Store the message if we have it.
         $data->ismessaging = false;
         $data->lastmessage = null;
@@ -157,8 +176,7 @@ class helper {
                 $data->messageid = $contact->messageid;
             }
         }
-        // Check if the user is online.
-        $data->isonline = self::is_online($userfields->lastaccess);
+
         $data->isblocked = isset($contact->blocked) ? (bool) $contact->blocked : false;
         $data->isread = isset($contact->isread) ? (bool) $contact->isread : false;
         $data->unreadcount = isset($contact->unreadcount) ? $contact->unreadcount : null;
