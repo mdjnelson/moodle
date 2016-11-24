@@ -24,6 +24,11 @@
         {{/element.frozen}}
             {{{label}}}
         </label> {{{helpbutton}}}
+        {{#text}}
+            <div class="form-control-feedback">
+                {{{.}}}
+            </div>
+        {{/text}}
         <div class="form-control-feedback" id="id_error_{{element.name}}" {{^error}} style="display: none;"{{/error}}>
             {{{error}}}
         </div>
