@@ -1,6 +1,11 @@
 This files describes API changes in /blocks/* - activity modules,
 information provided here is intended especially for developers.
 
+=== 3.3 ===
+
+* The 'Course overview' block has been removed from core as it is being replaced by the 'My overview' block.
+  The 'Course overview' block will be available in the plugins database.
+
 === 3.1 ===
 
 * The collapsed class was removed from the navigation block to make it compatible with aria.
