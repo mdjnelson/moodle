@@ -2436,5 +2436,16 @@ function xmldb_main_upgrade($oldversion) {
     // Automatically generated Moodle v3.2.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2016120500.03) {
+
+        // If the 'Course overview' block is no longer present, replace with the 'My overview' block.
+        if (!file_exists($CFG->dirroot . '/blocks/course_overview/block_course_overview.php')) {
+            $DB->set_field('block_instances', 'configdata', '', array('blockname' => 'course_overview'));
+            $DB->set_field('block_instances', 'blockname', 'myoverview', array('blockname' => 'course_overview'));
+        }
+
+        upgrade_main_savepoint(true, 2016120500.03);
+    }
+
     return true;
 }
