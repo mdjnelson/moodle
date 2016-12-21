@@ -1118,6 +1118,8 @@ function chat_get_post_actions() {
 }
 
 /**
+ * @deprecated since 3.3
+ *
  * @global object
  * @global object
  * @param array $courses
@@ -1125,6 +1127,8 @@ function chat_get_post_actions() {
  */
 function chat_print_overview($courses, &$htmlarray) {
     global $USER, $CFG;
+
+    debugging('The function chat_print_overview() is now deprecated.', DEBUG_DEVELOPER);
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
