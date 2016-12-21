@@ -1,6 +1,10 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 3.3 ===
+
+* core_course_external::get_activities_overview has been deprecated. Please do not call this function any more.
+
 === 3.2 ===
 
 * Custom roles with access to any part of site administration that do not use the manager archetype will need
