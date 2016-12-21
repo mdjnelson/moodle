@@ -2653,6 +2653,8 @@ class core_course_external extends external_api {
     /**
      * Returns description of method parameters
      *
+     * @deprecated since 3.3
+     *
      * @return external_function_parameters
      * @since Moodle 3.2
      */
@@ -2666,6 +2668,8 @@ class core_course_external extends external_api {
 
     /**
      * Return activities overview for the given courses.
+     *
+     * @deprecated since 3.3
      *
      * @param array $courseids a list of course ids
      * @return array of warnings and the activities overview
@@ -2724,6 +2728,8 @@ class core_course_external extends external_api {
     /**
      * Returns description of method result value
      *
+     * @deprecated since 3.3
+     *
      * @return external_description
      * @since Moodle 3.2
      */
@@ -2748,6 +2754,15 @@ class core_course_external extends external_api {
                 'warnings' => new external_warnings()
             )
         );
+    }
+
+    /**
+     * Marking the method as deprecated.
+     *
+     * @return bool
+     */
+    public static function get_activities_overview_is_deprecated() {
+        return true;
     }
 
     /**
