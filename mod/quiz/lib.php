@@ -191,7 +191,7 @@ function quiz_delete_instance($id) {
 
     $events = $DB->get_records('event', array('modulename' => 'quiz', 'instance' => $quiz->id));
     foreach ($events as $event) {
-        $event = calendar_event::load($event);
+        $event = \core_calendar\event::load($event);
         $event->delete();
     }
 
@@ -223,7 +223,7 @@ function quiz_delete_override($quiz, $overrideid) {
             'instance' => $quiz->id, 'groupid' => (int)$override->groupid,
             'userid' => (int)$override->userid));
     foreach ($events as $event) {
-        $eventold = calendar_event::load($event);
+        $eventold = \core_calendar\event::load($event);
         $eventold->delete();
     }
 
@@ -1266,8 +1266,8 @@ function quiz_update_events($quiz, $override = null) {
                     unset($event->id);
                 }
                 $event->name = $eventname;
-                // The method calendar_event::create will reuse a db record if the id field is set.
-                calendar_event::create($event);
+                // The method \core_calendar\event::create will reuse a db record if the id field is set.
+                \core_calendar\event::create($event);
             } else {
                 // Separate start and end events.
                 $event->timeduration  = 0;
@@ -1278,8 +1278,8 @@ function quiz_update_events($quiz, $override = null) {
                         unset($event->id);
                     }
                     $event->name = $eventname.' ('.get_string('quizopens', 'quiz').')';
-                    // The method calendar_event::create will reuse a db record if the id field is set.
-                    calendar_event::create($event);
+                    // The method \core_calendar\event::create will reuse a db record if the id field is set.
+                    \core_calendar\event::create($event);
                 }
                 if ($timeclose && $addclose) {
                     if ($oldevent = array_shift($oldevents)) {
@@ -1290,7 +1290,7 @@ function quiz_update_events($quiz, $override = null) {
                     $event->name      = $eventname.' ('.get_string('quizcloses', 'quiz').')';
                     $event->timestart = $timeclose;
                     $event->eventtype = 'close';
-                    calendar_event::create($event);
+                    \core_calendar\event::create($event);
                 }
             }
         }
@@ -1298,7 +1298,7 @@ function quiz_update_events($quiz, $override = null) {
 
     // Delete any leftover events.
     foreach ($oldevents as $badevent) {
-        $badevent = calendar_event::load($badevent);
+        $badevent = \core_calendar\event::load($badevent);
         $badevent->delete();
     }
 }
