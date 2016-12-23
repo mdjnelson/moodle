@@ -333,7 +333,7 @@ class rrule_manager {
     /**
      * Create events for specified rrule.
      *
-     * @param \calendar_event $passedevent Properties of event to create.
+     * @param event $passedevent Properties of event to create.
      * @throws \moodle_exception
      */
     public function create_events($passedevent) {
@@ -404,7 +404,7 @@ class rrule_manager {
             }
             for ($i = 0; $i < $count; $i++, $event->timestart += $timediff) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                event::create($event, false);
             }
         } else {
             // No count specified, use datetime constraints.
@@ -415,7 +415,7 @@ class rrule_manager {
             }
             for (; $event->timestart < $until; $event->timestart += $timediff) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                event::create($event, false);
             }
         }
     }
@@ -457,7 +457,7 @@ class rrule_manager {
             }
             for ($i = 0; $i < $count; $i++) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                event::create($event, false);
                 $event->timestart = strtotime("+$monthoffset months +$yearoffset years", $event->timestart);
             }
         } else {
@@ -469,7 +469,7 @@ class rrule_manager {
             }
             for (; $event->timestart < $until;) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                event::create($event, false);
                 $event->timestart = strtotime("+$monthoffset months +$yearoffset years", $event->timestart);
 
             }
@@ -519,7 +519,7 @@ class rrule_manager {
             }
             for ($i = 0; $i < $count; $i++) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                event::create($event, false);
                 $moffset += $monthoffset;
                 $yoffset += $yearoffset;
                 $event->timestart = strtotime("+$moffset months +$yoffset years", $start);
@@ -534,7 +534,7 @@ class rrule_manager {
             }
             for (; $event->timestart < $until;) {
                 unset($event->id); // It is set during creation.
-                \calendar_event::create($event, false);
+                event::create($event, false);
                 $moffset += $monthoffset;
                 $yoffset += $yearoffset;
                 $event->timestart = strtotime("+$moffset months +$yoffset years", $start);

@@ -56,7 +56,7 @@ class core_calendar_rrule_manager_testcase extends advanced_testcase {
         $event->groupid = 0;
         $event->courseid = 0;
         $event->eventtype = 'user';
-        $eventobj = calendar_event::create($event, false);
+        $eventobj = \core_calendar\event::create($event, false);
         $DB->set_field('event', 'repeatid', $eventobj->id, array('id' => $eventobj->id));
         $eventobj->repeatid = $eventobj->id;
         $this->event = $eventobj;

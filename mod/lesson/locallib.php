@@ -1084,7 +1084,7 @@ class lesson extends lesson_base {
         $DB->delete_records("lesson_branch", array("lessonid"=>$this->properties->id));
         if ($events = $DB->get_records('event', array("modulename"=>'lesson', "instance"=>$this->properties->id))) {
             foreach($events as $event) {
-                $event = calendar_event::load($event);
+                $event = \core_calendar\event::load($event);
                 $event->delete();
             }
         }
@@ -1122,7 +1122,7 @@ class lesson extends lesson_base {
         }
         $events = $DB->get_records('event', $conds);
         foreach ($events as $event) {
-            $eventold = calendar_event::load($event);
+            $eventold = \core_calendar\event::load($event);
             $eventold->delete();
         }
 

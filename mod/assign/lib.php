@@ -294,8 +294,8 @@ function assign_update_events($assign, $override = null) {
                     unset($event->id);
                 }
                 $event->name = $eventname;
-                // The method calendar_event::create will reuse a db record if the id field is set.
-                calendar_event::create($event);
+                // The method \core_calendar\event::create will reuse a db record if the id field is set.
+                \core_calendar\event::create($event);
             } else {
                 // Separate start and end events.
                 $event->timeduration  = 0;
@@ -306,8 +306,8 @@ function assign_update_events($assign, $override = null) {
                         unset($event->id);
                     }
                     $event->name = $eventname.' ('.get_string('open', 'assign').')';
-                    // The method calendar_event::create will reuse a db record if the id field is set.
-                    calendar_event::create($event);
+                    // The method \core_calendar\event::create will reuse a db record if the id field is set.
+                    \core_calendar\event::create($event);
                 }
                 if ($duedate && $addclose) {
                     if ($oldevent = array_shift($oldevents)) {
@@ -318,7 +318,7 @@ function assign_update_events($assign, $override = null) {
                     $event->name      = $eventname.' ('.get_string('duedate', 'assign').')';
                     $event->timestart = $duedate;
                     $event->eventtype = 'close';
-                    calendar_event::create($event);
+                    \core_calendar\event::create($event);
                 }
             }
         }
@@ -326,7 +326,7 @@ function assign_update_events($assign, $override = null) {
 
     // Delete any leftover events.
     foreach ($oldevents as $badevent) {
-        $badevent = calendar_event::load($badevent);
+        $badevent = \core_calendar\event::load($badevent);
         $badevent->delete();
     }
 }
