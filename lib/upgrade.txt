@@ -6,6 +6,7 @@ information provided here is intended especially for developers.
 * YUI module moodle-core-formautosubmit has been removed, use jquery .change() instead (see lib/templates/url_select.mustache for
   an example)
 * core_course_external::get_activities_overview has been deprecated. Please do not call this function any more.
+* Class 'calendar_event' has been renamed and is now deprecated. Please use 'core_calendar\event' instead.
 
 === 3.2 ===
 
