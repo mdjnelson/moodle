@@ -2464,5 +2464,33 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2016120500.04);
     }
 
+    if ($oldversion < 2016120500.05) {
+
+        // Define fields to be added to the 'event' table.
+        $table = new xmldb_table('event');
+        $fieldtype = new xmldb_field('type', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, 0, 'instance');
+        $fieldtimesort = new xmldb_field('timesort', XMLDB_TYPE_INTEGER, '10', null, false, null, null, 'timeduration');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $fieldtype)) {
+            $dbman->add_field($table, $fieldtype);
+        }
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $fieldtimesort)) {
+            $dbman->add_field($table, $fieldtimesort);
+        }
+
+        // Now, define the index we will be adding.
+        $index = new xmldb_index('type-timesort', XMLDB_INDEX_NOTUNIQUE, array('type', 'timesort'));
+
+        // Conditionally launch add index.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        upgrade_main_savepoint(true, 2016120500.05);
+    }
+
     return true;
 }
