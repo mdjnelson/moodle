@@ -39,6 +39,43 @@ class core_calendar_lib_testcase extends advanced_testcase {
         $this->resetAfterTest(true);
     }
 
+    public function test_calendar_get_events_by_type() {
+        $time = time();
+
+        $course = $this->getDataGenerator()->create_course();
+        $data = [[
+                'name' => 'Start of assignment',
+                'courseid' => $course->id,
+                'timestart' => time(),
+                'timesort' => time() - 11,
+            ], [
+                'name' => 'Start of lesson',
+                'courseid' => $course->id,
+                'timestart' => time(),
+                'timesort' => time(),
+            ], [
+                'name' => 'Start of lesson',
+                'courseid' => $course->id,
+                'timestart' => time(),
+                'timesort' => time() + 11,
+            ]
+        ];
+
+        $createdevents = array();
+        foreach ($data as $event) {
+            $createdevents[] = \core_calendar\event::create($event, false);
+        }
+
+        // Get the event instances of type standard between a specific time.
+        $events = calendar_get_events_by_type(CALENDAR_EVENT_TYPE_STANDARD, $time - 10, $time + 10);
+        $this->assertCount(1, $events);
+
+        // Validate the event.
+        $event = reset($events);
+        $this->assertInstanceOf('\core_calendar\event', $event);
+        $this->assertEquals($createdevents[1]->id, $event->id);
+    }
+
     public function test_calendar_get_course_cached() {
         // Setup some test courses.
         $course1 = $this->getDataGenerator()->create_course();

@@ -121,6 +121,51 @@ define('CALENDAR_SUBSCRIPTION_UPDATE', 1);
 define('CALENDAR_SUBSCRIPTION_REMOVE', 2);
 
 /**
+ * CALENDAR_EVENT_TYPE_STANDARD - Standard events.
+ */
+define('CALENDAR_EVENT_TYPE_STANDARD', 0);
+
+/**
+ * CALENDAR_EVENT_TYPE_ACTION - Action events.
+ */
+define('CALENDAR_EVENT_TYPE_ACTION', 1);
+
+/**
+ * Returns calendar events of a specific type.
+ *
+ * @since Moodle 3.3
+ * @param int $type The type of event (standard, action ..)
+ * @param null|int $timesortfrom
+ * @param null|int $timesortto
+ * @param int $limitfrom
+ * @param int $limitnum
+ * @return \core_calendar\event[]
+ */
+function calendar_get_events_by_type($type, $timesortfrom = null, $timesortto = null, $limitfrom = 0, $limitnum = 0) {
+    global $DB;
+
+    $sql = "SELECT *
+              FROM {event} e
+             WHERE type = :type";
+
+    $params = array('type' => $type);
+    if ($timesortfrom) {
+        $sql .= " AND timesort >= :timesortfrom";
+        $params['timesortfrom'] = $timesortfrom;
+    }
+    if ($timesortto) {
+        $sql .= " AND timesort <= :timesortto";
+        $params['timesortto'] = $timesortto;
+    }
+
+    $records = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
+
+    return array_map(function($record) use ($type) {
+            return \core_calendar\event_factory::get_event_instance($type, $record);
+        }, $records);
+}
+
+/**
  * Return the days of the week
  *
  * @return array array of days
