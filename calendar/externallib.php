@@ -308,6 +308,53 @@ class core_calendar_external extends external_api {
     /**
      * Returns description of method parameters.
      *
+     * @since Moodle 3.3
+     * @return external_function_parameters
+     */
+    public static function get_calendar_events_by_type_parameters() {
+        return new external_function_parameters(
+            array(
+                'type' => new external_value(PARAM_INT, 'The current event type'),
+                'timesortfrom' => new external_value(PARAM_INT, 'Time sort from', VALUE_DEFAULT, null),
+                'timesortto' => new external_value(PARAM_INT, 'Time sort to', VALUE_DEFAULT, null),
+                'limitfrom' => new external_value(PARAM_INT, 'Limit from', VALUE_DEFAULT, 0),
+                'limitnum' => new external_value(PARAM_INT, 'Limit number', VALUE_DEFAULT, 0)
+            )
+        );
+    }
+
+    /**
+     * Get calendar events based on type.
+     *
+     * @since Moodle 3.3
+     * @param int $type The type of event (standard, action ..)
+     * @param null|int $timesortfrom
+     * @param null|int $timesortto
+     * @param int $limitfrom
+     * @param int $limitnum
+     */
+    public static function get_calendar_events_by_type($type, $timesortfrom = null, $timesortto = null,
+                                                       $limitfrom = 0, $limitnum = 0) {
+        global $CFG;
+
+        require_once($CFG->dirroot . '/calendar/lib.php');
+
+        $events = calendar_get_events_by_type($type, $timesortfrom, $timesortto, $limitfrom, $limitnum);
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @since Moodle 3.3
+     * @return external_description
+     */
+    public static function  get_calendar_events_by_type_returns() {
+
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
      * @return external_function_parameters.
      * @since Moodle 2.5
      */
