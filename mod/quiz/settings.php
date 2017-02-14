@@ -79,6 +79,16 @@ if ($ADMIN->fulltree) {
             get_string('graceperiodmin', 'quiz'), get_string('graceperiodmin_desc', 'quiz'),
             60, 1));
 
+    $name = new lang_string('gradingdate', 'quiz');
+    $description = new lang_string('gradingdate_help', 'quiz');
+    $setting = new admin_setting_configduration('quiz/gradingdate',
+                                                    $name,
+                                                    $description,
+                                                    1209600);
+    $setting->set_enabled_flag_options(admin_setting_flag::ENABLED, true);
+    $setting->set_advanced_flag_options(admin_setting_flag::ENABLED, false);
+    $quizsettings->add($setting);
+
     // Number of attempts.
     $options = array(get_string('unlimited'));
     for ($i = 1; $i <= QUIZ_MAX_ATTEMPT_OPTION; $i++) {

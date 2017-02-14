@@ -387,6 +387,8 @@ $string['gradeaverage'] = 'Average grade';
 $string['gradeboundary'] = 'Grade boundary';
 $string['gradeessays'] = 'Grade essays';
 $string['gradehighest'] = 'Highest grade';
+$string['gradingdate'] = 'Grading date';
+$string['gradingdate_help'] = 'The expected date that marking the submission should be completed by. This date is used to prioritise dashboard notifications for teachers.';
 $string['grademethod'] = 'Grading method';
 $string['grademethod_help'] = 'When multiple attempts are allowed, the following methods are available for calculating the final quiz grade:
 

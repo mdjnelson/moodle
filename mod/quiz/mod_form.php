@@ -97,6 +97,14 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->setAdvanced('timelimit', $quizconfig->timelimit_adv);
         $mform->setDefault('timelimit', $quizconfig->timelimit);
 
+        $name = get_string('gradingdate', 'quiz');
+        $mform->addElement('date_time_selector', 'gradingdate', $name, array('optional' => true));
+        $mform->addHelpButton('gradingdate', 'gradingdate', 'quiz');
+        $mform->setAdvanced('gradingdate', $quizconfig->gradingdate_adv);
+        if ($quizconfig->gradingdate_enabled) {
+            $mform->setDefault('gradingdate', time() + $quizconfig->gradingdate);
+        }
+
         // What to do with overdue attempts.
         $mform->addElement('select', 'overduehandling', get_string('overduehandling', 'quiz'),
                 quiz_get_overdue_handling_options());

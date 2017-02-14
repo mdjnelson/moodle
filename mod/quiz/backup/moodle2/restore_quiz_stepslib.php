@@ -103,6 +103,7 @@ class restore_quiz_activity_structure_step extends restore_questions_activity_st
 
         $data->timeopen = $this->apply_date_offset($data->timeopen);
         $data->timeclose = $this->apply_date_offset($data->timeclose);
+        $data->gradingdate = $this->apply_date_offset($data->gradingdate);
         $data->timecreated = $this->apply_date_offset($data->timecreated);
         $data->timemodified = $this->apply_date_offset($data->timemodified);
 

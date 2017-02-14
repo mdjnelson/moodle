@@ -248,5 +248,19 @@ function xmldb_quiz_upgrade($oldversion) {
     // Automatically generated Moodle v3.2.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2016120501) {
+        // Add a 'gradingdate' field to the 'quiz' table.
+        $table = new xmldb_table('quiz');
+        $field = new xmldb_field('gradingdate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, 'timelimit');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Quiz savepoint reached.
+        upgrade_mod_savepoint(true, 2016120501, 'quiz');
+    }
+
     return true;
 }
