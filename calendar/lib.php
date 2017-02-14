@@ -120,6 +120,16 @@ define('CALENDAR_SUBSCRIPTION_UPDATE', 1);
 define('CALENDAR_SUBSCRIPTION_REMOVE', 2);
 
 /**
+ * CALENDAR_EVENT_TYPE_STANDARD - Standard events.
+ */
+define('CALENDAR_EVENT_TYPE_STANDARD', 0);
+
+/**
+ * CALENDAR_EVENT_TYPE_ACTION - Action events.
+ */
+define('CALENDAR_EVENT_TYPE_ACTION', 1);
+
+/**
  * Calendar information class
  *
  * This class is used simply to organise the information pertaining to a calendar
