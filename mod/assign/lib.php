@@ -256,6 +256,7 @@ function assign_update_events($assign, $override = null) {
         }
 
         $event = new stdClass();
+        $event->type = CALENDAR_EVENT_TYPE_ACTION;
         $event->description = format_module_intro('assign', $assign->get_context(), $cmid);
         // Events module won't show user events when the courseid is nonzero.
         $event->courseid    = ($userid) ? 0 : $assign->get_context()->course;
@@ -265,8 +266,9 @@ function assign_update_events($assign, $override = null) {
         $event->instance    = $assign->get_context()->id;
         $event->timestart   = $allowsubmissionsfromdate;
         $event->timeduration = max($duedate - $allowsubmissionsfromdate, 0);
+        $event->timesort    = $event->timestart + $event->timeduration;
         $event->visible     = instance_is_visible('assign', $assign);
-        $event->eventtype   = 'open';
+        $event->eventtype   = ASSIGN_EVENT_TYPE_OPEN;
 
         // Determine the event name.
         if ($groupid) {
@@ -317,7 +319,7 @@ function assign_update_events($assign, $override = null) {
                     }
                     $event->name      = $eventname.' ('.get_string('duedate', 'assign').')';
                     $event->timestart = $duedate;
-                    $event->eventtype = 'close';
+                    $event->eventtype = ASSIGN_EVENT_TYPE_CLOSE;
                     \core_calendar\event::create($event);
                 }
             }
@@ -1728,15 +1730,68 @@ function assign_check_updates_since(cm_info $cm, $from, $filter = array()) {
     return $updates;
 }
 
-//XXX: Rubbish implementation
-function mod_assign_core_calendar_provide_event_action(
-    \core_calendar\event $event,
-    \core_calendar\action_factory $factory
-) {
+/**
+ * Is the event visible?
+ *
+ * @param \core_calendar\event $event
+ * @return bool Returns true if the event is visible to the current user, false otherwise.
+ */
+function mod_assign_core_calendar_is_event_visible(\core_calendar\event $event) {
+    global $USER;
+
+    $cm = get_fast_modinfo($event->courseid)->instances['assign'][$event->instance];
+    $context = context_module::instance($cm->id);
+
+    $assign = new assign($context, $cm, null);
+
+    if ($event->eventtype == ASSIGN_EVENT_TYPE_GRADINGDUE) {
+        return $assign->can_grade();
+    } else {
+        return !$assign->can_grade() && $assign->can_view_submission($USER->id);
+    }
+}
+
+/**
+ * Handles creating actions for events.
+ *
+ * @param \core_calendar\event $event
+ * @param \core_calendar\action_factory $factory
+ * @return \core_calendar\local\event\value_objects\action|\core_calendar\local\interfaces\action_interface|null
+ */
+function mod_assign_core_calendar_provide_event_action(\core_calendar\event $event,
+                                                       \core_calendar\action_factory $factory) {
+
+    global $CFG, $USER;
+
+    require_once($CFG->dirroot . '/mod/assign/locallib.php');
+
+    $cm = get_fast_modinfo($event->courseid)->instances['assign'][$event->instance];
+    $context = context_module::instance($cm->id);
+
+    $assign = new assign($context, $cm, null);
+
+    if ($event->eventtype == ASSIGN_EVENT_TYPE_GRADINGDUE) {
+        $name = get_string('grade');
+        $url = new \moodle_url('/mod/assign/view.php', [
+            'id' => $cm->id,
+            'action' => 'grader'
+        ]);
+        $itemcount = $assign->count_submissions_need_grading();
+        $actionable = $assign->can_grade() && (time() >= $assign->get_instance()->allowsubmissionsfromdate);
+    } else {
+        $name = get_string('addsubmission', 'assign');
+        $url = new \moodle_url('/mod/assign/view.php', [
+            'id' => $cm->id,
+            'action' => 'editsubmission'
+        ]);
+        $itemcount = 1;
+        $actionable = $assign->is_any_submission_plugin_enabled() && $assign->can_edit_submission($USER->id);
+    }
+
     return $factory->create_instance(
-        'chef',
-        new \moodle_url('http://example.com'),
-        3,
-        true
+        $name,
+        $url,
+        $itemcount,
+        $actionable
     );
 }
