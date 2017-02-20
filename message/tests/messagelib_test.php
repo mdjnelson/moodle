@@ -62,9 +62,10 @@ class core_message_messagelib_testcase extends advanced_testcase {
      * @param stdClass $userfrom user object of the one sending the message.
      * @param stdClass $userto user object of the one receiving the message.
      * @param string $message message to send.
+     * @param int $notification if the message is a notification.
      * @return int the id of the message
      */
-    protected function send_fake_message($userfrom, $userto, $message = 'Hello world!') {
+    protected function send_fake_message($userfrom, $userto, $message = 'Hello world!', $notification = 0) {
         global $DB;
 
         $record = new stdClass();
@@ -74,6 +75,7 @@ class core_message_messagelib_testcase extends advanced_testcase {
         $record->fullmessage = $message;
         $record->smallmessage = $message;
         $record->timecreated = time();
+        $record->notification = $notification;
 
         return $DB->insert_record('message', $record);
     }
@@ -232,6 +234,60 @@ class core_message_messagelib_testcase extends advanced_testcase {
 
         $this->assertEquals(0, message_count_blocked_users($user2));
         $this->assertEquals(1, message_count_blocked_users());
+    }
+
+    /**
+     * Test message_count_unread_messages with notifications.
+     */
+    public function test_message_count_unread_messages_with_notifications() {
+        // Create users to send and receive messages.
+        $userfrom1 = $this->getDataGenerator()->create_user();
+        $userfrom2 = $this->getDataGenerator()->create_user();
+        $userto = $this->getDataGenerator()->create_user();
+
+        $this->assertEquals(0, message_count_unread_messages($userto));
+
+        // Send fake messages.
+        $this->send_fake_message($userfrom1, $userto);
+        $this->send_fake_message($userfrom2, $userto);
+
+        // Send fake notifications.
+        $this->send_fake_message($userfrom1, $userto, 'Notification', 1);
+        $this->send_fake_message($userfrom2, $userto, 'Notification', 1);
+
+        // Should only count the messages.
+        $this->assertEquals(2, message_count_unread_messages($userto));
+        $this->assertEquals(1, message_count_unread_messages($userto, $userfrom1));
+    }
+
+    /**
+     * Test message_count_unread_messages with deleted messages.
+     */
+    public function test_message_count_unread_messages_with_deleted_messages() {
+        global $DB;
+
+        // Create users to send and receive messages.
+        $userfrom1 = $this->getDataGenerator()->create_user();
+        $userfrom2 = $this->getDataGenerator()->create_user();
+        $userto = $this->getDataGenerator()->create_user();
+
+        $this->assertEquals(0, message_count_unread_messages($userto));
+
+        // Send fake messages.
+        $messageid = $this->send_fake_message($userfrom1, $userto);
+        $this->send_fake_message($userfrom2, $userto);
+
+        // Send fake notifications.
+        $this->send_fake_message($userfrom1, $userto, 'Notification', 1);
+        $this->send_fake_message($userfrom2, $userto, 'Notification', 1);
+
+        // Delete a message.
+        $message = $DB->get_record('message', array('id' => $messageid));
+        message_delete_message($message, $userto->id);
+
+        // Should only count the messages that weren't deleted by the current user.
+        $this->assertEquals(1, message_count_unread_messages($userto));
+        $this->assertEquals(0, message_count_unread_messages($userto, $userfrom1));
     }
 
     /**
@@ -654,7 +710,7 @@ class core_message_messagelib_testcase extends advanced_testcase {
 
             if (isset($messagedata['state']) && $messagedata['state'] == 'unread') {
                 $table = 'message';
-                $messageid = $this->send_fake_message($from, $to, $subject, FORMAT_PLAIN);
+                $messageid = $this->send_fake_message($from, $to, $subject);
             } else {
                 // If there is no state, or the state is not 'unread', assume the message is read.
                 $table = 'message_read';
