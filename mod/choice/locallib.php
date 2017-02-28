@@ -41,15 +41,23 @@ function choice_set_events($choice) {
         $cm = get_coursemodule_from_instance('choice', $choice->id, $choice->course);
         $choice->coursemodule = $cm->id;
     }
+
     // Choice start calendar events.
     $event = new stdClass();
+    $event->eventtype = CHOICE_EVENT_TYPE_OPEN;
+    $event->type = CALENDAR_EVENT_TYPE_STANDARD;
+    // The CHOICE_EVENT_TYPE_OPEN event should only be an action event if no close time was specified.
+    if (empty($choice->timeclose)) {
+        $event->type = CALENDAR_EVENT_TYPE_ACTION;
+    }
     if ($event->id = $DB->get_field('event', 'id',
-            array('modulename' => 'choice', 'instance' => $choice->id, 'eventtype' => 'open'))) {
+            array('modulename' => 'choice', 'instance' => $choice->id, 'eventtype' => $event->eventtype))) {
         if ((!empty($choice->timeopen)) && ($choice->timeopen > 0)) {
             // Calendar event exists so update it.
             $event->name         = get_string('calendarstart', 'choice', $choice->name);
             $event->description  = format_module_intro('choice', $choice, $choice->coursemodule);
             $event->timestart    = $choice->timeopen;
+            $event->timesort     = $choice->timeopen;
             $event->visible      = instance_is_visible('choice', $choice);
             $event->timeduration = 0;
             $calendarevent = \core_calendar\event::load($event->id);
@@ -69,8 +77,8 @@ function choice_set_events($choice) {
             $event->userid       = 0;
             $event->modulename   = 'choice';
             $event->instance     = $choice->id;
-            $event->eventtype    = 'open';
             $event->timestart    = $choice->timeopen;
+            $event->timesort     = $choice->timeopen;
             $event->visible      = instance_is_visible('choice', $choice);
             $event->timeduration = 0;
             \core_calendar\event::create($event);
@@ -79,13 +87,16 @@ function choice_set_events($choice) {
 
     // Choice end calendar events.
     $event = new stdClass();
+    $event->type = CALENDAR_EVENT_TYPE_ACTION;
+    $event->eventtype = CHOICE_EVENT_TYPE_CLOSE;
     if ($event->id = $DB->get_field('event', 'id',
-            array('modulename' => 'choice', 'instance' => $choice->id, 'eventtype' => 'close'))) {
+            array('modulename' => 'choice', 'instance' => $choice->id, 'eventtype' => $event->eventtype))) {
         if ((!empty($choice->timeclose)) && ($choice->timeclose > 0)) {
             // Calendar event exists so update it.
             $event->name         = get_string('calendarend', 'choice', $choice->name);
             $event->description  = format_module_intro('choice', $choice, $choice->coursemodule);
             $event->timestart    = $choice->timeclose;
+            $event->timesort     = $choice->timeclose;
             $event->visible      = instance_is_visible('choice', $choice);
             $event->timeduration = 0;
             $calendarevent = \core_calendar\event::load($event->id);
@@ -98,7 +109,6 @@ function choice_set_events($choice) {
     } else {
         // Event doesn't exist so create one.
         if ((!empty($choice->timeclose)) && ($choice->timeclose > 0)) {
-            $event = new stdClass();
             $event->name         = get_string('calendarend', 'choice', $choice->name);
             $event->description  = format_module_intro('choice', $choice, $choice->coursemodule);
             $event->courseid     = $choice->course;
@@ -106,8 +116,8 @@ function choice_set_events($choice) {
             $event->userid       = 0;
             $event->modulename   = 'choice';
             $event->instance     = $choice->id;
-            $event->eventtype    = 'close';
             $event->timestart    = $choice->timeclose;
+            $event->timesort     = $choice->timeclose;
             $event->visible      = instance_is_visible('choice', $choice);
             $event->timeduration = 0;
             \core_calendar\event::create($event);
