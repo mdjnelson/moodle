@@ -243,11 +243,16 @@ class core_calendar_api_testcase extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
+        $course = $this->getDataGenerator()->create_course();
+        $assign = $this->getDataGenerator()->get_plugin_generator('mod_assign')->create_instance(
+            array('course' => $course->id)
+        );
+
         $params = [
             'type' => CALENDAR_EVENT_TYPE_ACTION,
             'courseid' => 1,
-            'modulename' => 'xyz',
-            'instance' => 1,
+            'modulename' => 'assign',
+            'instance' => $assign->id,
             'userid' => 1,
             'eventtype' => 'user',
             'repeats' => 0,
@@ -295,11 +300,16 @@ class core_calendar_api_testcase extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
+        $course = $this->getDataGenerator()->create_course();
+        $assign = $this->getDataGenerator()->get_plugin_generator('mod_assign')->create_instance(
+            array('course' => $course->id)
+        );
+
         $params = [
             'type' => CALENDAR_EVENT_TYPE_ACTION,
             'courseid' => 1,
-            'modulename' => 'xyz',
-            'instance' => 1,
+            'modulename' => 'assign',
+            'instance' => $assign->id,
             'userid' => 1,
             'eventtype' => 'user',
             'repeats' => 0,
@@ -346,11 +356,16 @@ class core_calendar_api_testcase extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
+        $course = $this->getDataGenerator()->create_course();
+        $assign = $this->getDataGenerator()->get_plugin_generator('mod_assign')->create_instance(
+            array('course' => $course->id)
+        );
+
         $params = [
             'type' => CALENDAR_EVENT_TYPE_ACTION,
             'courseid' => 1,
-            'modulename' => 'xyz',
-            'instance' => 1,
+            'modulename' => 'assign',
+            'instance' => $assign->id,
             'userid' => 1,
             'eventtype' => 'user',
             'repeats' => 0,
@@ -398,11 +413,16 @@ class core_calendar_api_testcase extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
+        $course = $this->getDataGenerator()->create_course();
+        $assign = $this->getDataGenerator()->get_plugin_generator('mod_assign')->create_instance(
+            array('course' => $course->id)
+        );
+
         $params = [
             'type' => CALENDAR_EVENT_TYPE_ACTION,
             'courseid' => 1,
-            'modulename' => 'xyz',
-            'instance' => 1,
+            'modulename' => 'assign',
+            'instance' => $assign->id,
             'userid' => 1,
             'eventtype' => 'user',
             'repeats' => 0,

@@ -95,9 +95,9 @@ abstract class event_abstract_factory implements event_factory_interface {
         $user = null;
         $module = null;
         $subscription = null;
+        $cm = get_coursemodule_from_instance($dbrow->modulename, $dbrow->instance);
 
         if ($dbrow->courseid == 0) {
-            $cm = get_coursemodule_from_instance($dbrow->modulename, $dbrow->instance);
             $dbrow->courseid = get_course($cm->course)->id;
         }
 
@@ -120,8 +120,8 @@ abstract class event_abstract_factory implements event_factory_interface {
 
         if ($dbrow->instance && $dbrow->modulename) {
             $modulename = $dbrow->modulename;
-            $module = new std_proxy($dbrow->instance, function($id) use ($modulename) {
-                return get_coursemodule_from_instance($modulename, $id);
+            $module = new std_proxy($cm->id, function() use ($cm) {
+                return $cm;
             },
             (object)[
                 'modname' => $modulename,
