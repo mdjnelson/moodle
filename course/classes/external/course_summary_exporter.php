@@ -60,6 +60,15 @@ class course_summary_exporter extends \core\external\exporter {
             ),
             'idnumber' => array(
                 'type' => PARAM_RAW,
+            ),
+            'summary' => array(
+                'type' => PARAM_RAW,
+            ),
+            'startdate' => array(
+                'type' => PARAM_INT,
+            ),
+            'enddate' => array(
+                'type' => PARAM_INT,
             )
         );
     }
@@ -71,16 +80,7 @@ class course_summary_exporter extends \core\external\exporter {
             ),
             'viewurl' => array(
                 'type' => PARAM_URL,
-            ),
-            'summary' => array(
-                'type' => PARAM_RAW,
-            ),
-            'startdate' => array(
-                'type' => PARAM_RAW,
-            ),
-            'enddate' => array(
-                'type' => PARAM_RAW,
-            ),
+            )
         );
     }
 }
