@@ -24,26 +24,21 @@
         "progress": "60",
     }
 }}
-<div class="progress-chart-container">
-    {{#hasprogress}}
-    <div class="progress-doughnut">
-        <div class="progress-text {{#progress}}has-percent{{/progress}}">{{progress}}&#37;</div>
-        <div class="progress-indicator">
-            <svg xmlns="http://www.w3.org/2000/svg">
-                <g>
-                    <title>{{progress}}&#37;</title>
-                    <circle class="circle percent-{{progress}}"
-                            r="32.5"
-                            cx="40"
-                            cy="40"/>
-                </g>
-            </svg>
+{{#hasprogress}}
+    <div class="progress-chart-container">
+        <div class="progress-doughnut">
+            <div class="progress-text {{#progress}}has-percent{{/progress}}">{{progress}}&#37;</div>
+            <div class="progress-indicator">
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <g>
+                        <title>{{progress}}&#37;</title>
+                        <circle class="circle percent-{{progress}}"
+                                r="32.5"
+                                cx="40"
+                                cy="40"/>
+                    </g>
+                </svg>
+            </div>
         </div>
     </div>
-    {{/hasprogress}}
-    {{^hasprogress}}
-    <div class="no-progress">
-        {{#pix}} i/course {{/pix}}
-    </div>
-    {{/hasprogress}}
-</div>
+{{/hasprogress}}
