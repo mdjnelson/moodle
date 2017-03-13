@@ -142,6 +142,13 @@ function add_moduleinfo($moduleinfo, $course, $mform = null) {
 
     $DB->set_field('course_modules', 'instance', $returnfromfunc, array('id'=>$moduleinfo->coursemodule));
 
+    if ($completion->is_enabled()) {
+        $completiontimeexpected = !empty($moduleinfo->completionexpected) ? $moduleinfo->completionexpected : null;
+        // Generate a calendar event if required (can also delete/update existing events).
+        \core_completion\api::update_completion_date_event($moduleinfo->coursemodule, $moduleinfo->modulename,
+            $moduleinfo->instance, $completiontimeexpected);
+    }
+
     // Update embedded links and save files.
     $modcontext = context_module::instance($moduleinfo->coursemodule);
     if (!empty($introeditor)) {
@@ -545,6 +552,13 @@ function update_moduleinfo($cm, $moduleinfo, $course, $mform = null) {
     }
 
     $DB->update_record('course_modules', $cm);
+
+    if ($completion->is_enabled()) {
+        $completiontimeexpected = !empty($moduleinfo->completionexpected) ? $moduleinfo->completionexpected : null;
+        // Generate a calendar event if required (can also delete/update existing events).
+        \core_completion\api::update_completion_date_event($cm->id, $moduleinfo->modulename, $moduleinfo->instance,
+            $completiontimeexpected);
+    }
 
     $modcontext = context_module::instance($moduleinfo->coursemodule);
 
