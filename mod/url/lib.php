@@ -128,6 +128,9 @@ function url_add_instance($data, $mform) {
     $data->timemodified = time();
     $data->id = $DB->insert_record('url', $data);
 
+    $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'url', $data->id, $completiontimeexpected);
+
     return $data->id;
 }
 
@@ -170,6 +173,9 @@ function url_update_instance($data, $mform) {
 
     $DB->update_record('url', $data);
 
+    $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'url', $data->id, $completiontimeexpected);
+
     return true;
 }
 
@@ -184,6 +190,9 @@ function url_delete_instance($id) {
     if (!$url = $DB->get_record('url', array('id'=>$id))) {
         return false;
     }
+
+    $cm = get_coursemodule_from_instance('url', $id);
+    \core_completion\api::update_completion_date_event($cm->id, 'url', $id, null);
 
     // note: all context files are deleted automatically
 
@@ -364,4 +373,42 @@ function url_view($url, $course, $cm, $context) {
 function url_check_updates_since(cm_info $cm, $from, $filter = array()) {
     $updates = course_check_module_updates_since($cm, $from, array('content'), $filter);
     return $updates;
+}
+
+/**
+ * Is the event visible?
+ *
+ * @param \core_calendar\event $event
+ * @return bool Returns true if the event is visible to the current user, false otherwise.
+ */
+function mod_url_core_calendar_is_event_visible(\core_calendar\event $event) {
+    $cm = get_fast_modinfo($event->courseid)->instances['url'][$event->instance];
+    $context = context_module::instance($cm->id);
+
+    return isloggedin() && has_capability('mod/url:view', $context);
+}
+
+/**
+ * Handles creating actions for events.
+ *
+ * @param \core_calendar\event $event
+ * @param \core_calendar\action_factory $factory
+ * @return \core_calendar\local\event\value_objects\action|\core_calendar\local\interfaces\action_interface|null
+ */
+function mod_url_core_calendar_provide_event_action(\core_calendar\event $event,
+                                                       \core_calendar\action_factory $factory) {
+    $cm = get_fast_modinfo($event->courseid)->instances['url'][$event->instance];
+
+    $course = new stdClass();
+    $course->id = $event->courseid;
+    $completion = new \completion_info($course);
+
+    $completiondata = $completion->get_data($cm, false);
+
+    return $factory->create_instance(
+        get_string('view'),
+        new \moodle_url('/mod/url/view.php', ['id' => $cm->id]),
+        $completiondata->completionstate == COMPLETION_INCOMPLETE ? 1 : 0,
+        true
+    );
 }

@@ -88,7 +88,12 @@ function book_add_instance($data, $mform) {
         $data->customtitles = 0;
     }
 
-    return $DB->insert_record('book', $data);
+    $id = $DB->insert_record('book', $data);
+
+    $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'book', $id, $completiontimeexpected);
+
+    return $id;
 }
 
 /**
@@ -112,6 +117,9 @@ function book_update_instance($data, $mform) {
     $book = $DB->get_record('book', array('id'=>$data->id));
     $DB->set_field('book', 'revision', $book->revision+1, array('id'=>$book->id));
 
+    $completiontimeexpected = !empty($data->completionexpected) ? $data->completionexpected : null;
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'book', $book->id, $completiontimeexpected);
+
     return true;
 }
 
@@ -127,6 +135,9 @@ function book_delete_instance($id) {
     if (!$book = $DB->get_record('book', array('id'=>$id))) {
         return false;
     }
+
+    $cm = get_coursemodule_from_instance('book', $id);
+    \core_completion\api::update_completion_date_event($cm->id, 'book', $id, null);
 
     $DB->delete_records('book_chapters', array('bookid'=>$book->id));
     $DB->delete_records('book', array('id'=>$book->id));
@@ -669,4 +680,42 @@ function book_check_updates_since(cm_info $cm, $from, $filter = array()) {
     }
 
     return $updates;
+}
+
+/**
+ * Is the event visible?
+ *
+ * @param \core_calendar\event $event
+ * @return bool Returns true if the event is visible to the current user, false otherwise.
+ */
+function mod_book_core_calendar_is_event_visible(\core_calendar\event $event) {
+    $cm = get_fast_modinfo($event->courseid)->instances['book'][$event->instance];
+    $context = context_module::instance($cm->id);
+
+    return isloggedin() && has_capability('mod/book:read', $context);
+}
+
+/**
+ * Handles creating actions for events.
+ *
+ * @param \core_calendar\event $event
+ * @param \core_calendar\action_factory $factory
+ * @return \core_calendar\local\event\value_objects\action|\core_calendar\local\interfaces\action_interface|null
+ */
+function mod_book_core_calendar_provide_event_action(\core_calendar\event $event,
+                                                     \core_calendar\action_factory $factory) {
+    $cm = get_fast_modinfo($event->courseid)->instances['book'][$event->instance];
+
+    $course = new stdClass();
+    $course->id = $event->courseid;
+    $completion = new \completion_info($course);
+
+    $completiondata = $completion->get_data($cm, false);
+
+    return $factory->create_instance(
+        get_string('view'),
+        new \moodle_url('/mod/book/view.php', ['id' => $cm->id]),
+        $completiondata->completionstate == COMPLETION_INCOMPLETE ? 1 : 0,
+        true
+    );
 }

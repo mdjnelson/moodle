@@ -88,6 +88,10 @@ function glossary_add_instance($glossary) {
     $glossary->id = $returnid;
     glossary_grade_item_update($glossary);
 
+    $completiontimeexpected = !empty($glossary->completionexpected) ? $glossary->completionexpected : null;
+    \core_completion\api::update_completion_date_event($glossary->coursemodule,
+        'glossary', $glossary->id, $completiontimeexpected);
+
     return $returnid;
 }
 
@@ -132,6 +136,10 @@ function glossary_update_instance($glossary) {
         $DB->execute("UPDATE {glossary_entries} SET approved = 1 where approved <> 1 and glossaryid = ?", array($glossary->id));
     }
     glossary_grade_item_update($glossary);
+
+    $completiontimeexpected = !empty($glossary->completionexpected) ? $glossary->completionexpected : null;
+    \core_completion\api::update_completion_date_event($glossary->coursemodule,
+        'glossary', $glossary->id, $completiontimeexpected);
 
     return true;
 }
@@ -211,6 +219,8 @@ function glossary_delete_instance($id) {
     $fs->delete_area_files($context->id);
 
     glossary_grade_item_delete($glossary);
+
+    \core_completion\api::update_completion_date_event($cm->id, 'glossary', $glossary->id, null);
 
     $DB->delete_records('glossary', array('id'=>$id));
 
@@ -4153,4 +4163,42 @@ function glossary_check_updates_since(cm_info $cm, $from, $filter = array()) {
     }
 
     return $updates;
+}
+
+/**
+ * Is the event visible?
+ *
+ * @param \core_calendar\event $event
+ * @return bool Returns true if the event is visible to the current user, false otherwise.
+ */
+function mod_glossary_core_calendar_is_event_visible(\core_calendar\event $event) {
+    $cm = get_fast_modinfo($event->courseid)->instances['glossary'][$event->instance];
+    $context = context_module::instance($cm->id);
+
+    return isloggedin() && has_capability('mod/glossary:view', $context);
+}
+
+/**
+ * Handles creating actions for events.
+ *
+ * @param \core_calendar\event $event
+ * @param \core_calendar\action_factory $factory
+ * @return \core_calendar\local\event\value_objects\action|\core_calendar\local\interfaces\action_interface|null
+ */
+function mod_glossary_core_calendar_provide_event_action(\core_calendar\event $event,
+                                                      \core_calendar\action_factory $factory) {
+    $cm = get_fast_modinfo($event->courseid)->instances['glossary'][$event->instance];
+
+    $course = new stdClass();
+    $course->id = $event->courseid;
+    $completion = new \completion_info($course);
+
+    $completiondata = $completion->get_data($cm, false);
+
+    return $factory->create_instance(
+        get_string('view'),
+        new \moodle_url('/mod/glossary/view.php', ['id' => $cm->id]),
+        $completiondata->completionstate == COMPLETION_INCOMPLETE ? 1 : 0,
+        true
+    );
 }

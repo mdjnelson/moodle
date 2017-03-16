@@ -78,7 +78,12 @@ function survey_add_instance($survey) {
     $survey->timecreated  = time();
     $survey->timemodified = $survey->timecreated;
 
-    return $DB->insert_record("survey", $survey);
+    $id = $DB->insert_record("survey", $survey);
+
+    $completiontimeexpected = !empty($survey->completionexpected) ? $survey->completionexpected : null;
+    \core_completion\api::update_completion_date_event($survey->coursemodule, 'survey', $id, $completiontimeexpected);
+
+    return $id;
 
 }
 
@@ -102,6 +107,9 @@ function survey_update_instance($survey) {
     $survey->questions    = $template->questions;
     $survey->timemodified = time();
 
+    $completiontimeexpected = !empty($survey->completionexpected) ? $survey->completionexpected : null;
+    \core_completion\api::update_completion_date_event($survey->coursemodule, 'survey', $survey->id, $completiontimeexpected);
+
     return $DB->update_record("survey", $survey);
 }
 
@@ -120,6 +128,9 @@ function survey_delete_instance($id) {
     if (! $survey = $DB->get_record("survey", array("id"=>$id))) {
         return false;
     }
+
+    $cm = get_coursemodule_from_instance('survey', $id);
+    \core_completion\api::update_completion_date_event($cm->id, 'survey', $id, null);
 
     $result = true;
 
@@ -1073,4 +1084,42 @@ function survey_check_updates_since(cm_info $cm, $from, $filter = array()) {
         $updates->answers->itemids = array_keys($answers);
     }
     return $updates;
+}
+
+/**
+ * Is the event visible?
+ *
+ * @param \core_calendar\event $event
+ * @return bool Returns true if the event is visible to the current user, false otherwise.
+ */
+function mod_survey_core_calendar_is_event_visible(\core_calendar\event $event) {
+    $cm = get_fast_modinfo($event->courseid)->instances['survey'][$event->instance];
+    $context = context_module::instance($cm->id);
+
+    return isloggedin() && has_capability('mod/survey:participate', $context);
+}
+
+/**
+ * Handles creating actions for events.
+ *
+ * @param \core_calendar\event $event
+ * @param \core_calendar\action_factory $factory
+ * @return \core_calendar\local\event\value_objects\action|\core_calendar\local\interfaces\action_interface|null
+ */
+function mod_survey_core_calendar_provide_event_action(\core_calendar\event $event,
+                                                      \core_calendar\action_factory $factory) {
+    $cm = get_fast_modinfo($event->courseid)->instances['survey'][$event->instance];
+
+    $course = new stdClass();
+    $course->id = $event->courseid;
+    $completion = new \completion_info($course);
+
+    $completiondata = $completion->get_data($cm, false);
+
+    return $factory->create_instance(
+        get_string('view'),
+        new \moodle_url('/mod/survey/view.php', ['id' => $cm->id]),
+        $completiondata->completionstate == COMPLETION_INCOMPLETE ? 1 : 0,
+        true
+    );
 }
