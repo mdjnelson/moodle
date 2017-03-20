@@ -4401,6 +4401,37 @@ class assign {
                 return true;
             }
         }
+
+        // We want to handle cases where a teacher has switched their role to student as
+        // they should still have access to their group's submission.
+        // First, check if we are looking at a team submission.
+        if (!$this->get_instance()->teamsubmission) {
+            return false;
+        }
+
+        // Now check if the user has switched their role.
+        if (!is_role_switched($this->course->id)) {
+            return false;
+        }
+
+        // Check, if the user has the capability to submit.
+        if (!has_capability('mod/assign:submit', $this->get_context(), $USER, false)) {
+            return false;
+        }
+
+        // The $submissiongroup holds either the id of the submission group of the user or false.
+        $submissiongroup = $this->get_submission_group($USER->id);
+
+        // If the user has no submission group, then the default group (id=0) should be accessible!
+        if ($submissiongroup === false && $groupid == 0) {
+            return true;
+        }
+        // If the user has a submission group, then this group should be accessible!
+        if ($submissiongroup !== false && $submissiongroup->id == $groupid) {
+            return true;
+        }
+
+        // Otherwise, the user should get no access!
         return false;
     }
 
@@ -8501,6 +8532,20 @@ class assign {
     public function set_module_viewed() {
         $completion = new completion_info($this->get_course());
         $completion->set_module_viewed($this->get_course_module());
+    }
+
+    /**
+     * Purges the local group and participant caches.
+     */
+    public function testable_purge_assign_cache() {
+        if ((defined('PHPUNIT_TEST') && PHPUNIT_TEST)) {
+            $this->participants = array();
+            $this->usersubmissiongroups = array();
+            $this->usergroups = array();
+            $this->sharedgroupmembers = array();
+        } else {
+            throw new coding_exception('testable_purge_assign_cache() must be used only from unit tests.');
+        }
     }
 }
 

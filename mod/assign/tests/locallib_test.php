@@ -1366,6 +1366,71 @@ class mod_assign_locallib_testcase extends mod_assign_base_testcase {
         $this->assertEquals(false, $assign->can_view_submission($this->extrasuspendedstudents[0]->id));
     }
 
+    /**
+     * Tests the method can_view_group_submission for teachers, switching their role to student.
+     */
+    public function test_can_view_group_submission_with_role_switched() {
+        global $DB;
+
+        // Variables used in this test.
+        $teacher = $this->editingteachers[0];
+        $group1 = $this->groups[0];
+        $group2 = $this->groups[1];
+
+        $this->setUser($teacher);
+        $assign = $this->create_instance(array('teamsubmission' => 1));
+
+        // Switch the current role of the teacher to student.
+        $teacherrole = $DB->get_record('role', array('shortname' => 'student'));
+        role_switch($teacherrole->id, $assign->get_course_context());
+
+        // Remove the teacher from all groups he is assigned to.
+        $groups = $assign->get_all_groups($teacher->id);
+        foreach ($groups as $id => $group) {
+            groups_remove_member($group, $teacher);
+        }
+
+        // The teacher belongs to no group and should therefore be able to view the default group (id=0).
+        $assign->testable_purge_assign_cache();
+        $this->assertEquals(true, $assign->can_view_group_submission(0));
+        $this->assertEquals(false, $assign->can_view_group_submission($group1->id));
+
+        // When the teacher is added to a group, he should be able to view this group and no longer the default group.
+        groups_add_member($group1, $teacher);
+        $assign->testable_purge_assign_cache();
+        $this->assertEquals(false, $assign->can_view_group_submission(0));
+        $this->assertEquals(true, $assign->can_view_group_submission($group1->id));
+
+        // When the teacher is added to a second group, he again belongs to the default group.
+        groups_add_member($group2->id, $teacher);
+        $assign->testable_purge_assign_cache();
+        $this->assertEquals(true, $assign->can_view_group_submission(0));
+        $this->assertEquals(false, $assign->can_view_group_submission($group1->id));
+        $this->assertEquals(false, $assign->can_view_group_submission($group2->id));
+    }
+
+    /**
+     * Tests the method can_view_group_submission for students.
+     */
+    public function test_can_view_group_submission() {
+
+        $student = $this->students[0];
+
+        $this->setUser($student);
+        $assign = $this->create_instance(array('teamsubmission' => 1));
+        $allgroups = $assign->get_all_groups($student->id);
+        $group = array_pop($allgroups);
+
+        // The students belongs to a group and should therefore be able to view just this group.
+        $this->assertEquals(false, $assign->can_view_group_submission(0));
+        $this->assertEquals(true, $assign->can_view_group_submission($group->id));
+
+        // When the student is removed from this group, she should be able to view the default group (id=0).
+        groups_remove_member($group, $student);
+        $assign->testable_purge_assign_cache();
+        $this->assertEquals(true, $assign->can_view_group_submission(0));
+        $this->assertEquals(false, $assign->can_view_group_submission($group->id));
+    }
 
     public function test_update_submission() {
         $this->create_extra_users();
