@@ -2023,9 +2023,10 @@ class mod_forum_lib_testcase extends advanced_testcase {
         $cm = get_coursemodule_from_instance('forum', $forum->id);
 
         // Create groups.
-        $group1 = self::getDataGenerator()->create_group(array('courseid' => $course->id));
-        $group2 = self::getDataGenerator()->create_group(array('courseid' => $course->id));
-        $group3 = self::getDataGenerator()->create_group(array('courseid' => $course->id));
+        // We need to specify the names so that the order is consistent.
+        $group1 = self::getDataGenerator()->create_group(array('courseid' => $course->id, 'name' => 'Group 1'));
+        $group2 = self::getDataGenerator()->create_group(array('courseid' => $course->id, 'name' => 'Group 2'));
+        $group3 = self::getDataGenerator()->create_group(array('courseid' => $course->id, 'name' => 'Group 3'));
 
         // Add the user1 to g1 and g2 groups.
         groups_add_member($group1->id, $user1->id);
@@ -2055,6 +2056,7 @@ class mod_forum_lib_testcase extends advanced_testcase {
         $discussiong3u3 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
 
         self::setUser($user1);
+
         // Test retrieve discussions not passing the groupid parameter. We will receive only first group discussions.
         $discussions = forum_get_discussions($cm);
         self::assertCount(2, $discussions);
