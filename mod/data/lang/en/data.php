@@ -376,6 +376,11 @@ $string['viewtodate'] = 'Read only to';
 $string['viewtodatevalidation'] = 'The read only to date cannot be before the read only from date.';
 $string['wrongdataid'] = 'Wrong data id provided';
 
+$string['removealldatatags'] = 'Remove all data tags';
+$string['tagarea_data_records'] = 'Data records';
+$string['tagsdeleted'] = 'Data tags have been deleted';
+$string['tagtitle'] = 'See the "{$a}" tag';
+
 // Deprecated since Moodle 3.2.
 $string['namedate'] = 'Date field';
 $string['namefile'] = 'File field';

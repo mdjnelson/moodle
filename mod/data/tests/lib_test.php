@@ -976,6 +976,178 @@ class mod_data_lib_testcase extends advanced_testcase {
         $this->assertEquals(1, $completiondata->completionstate);
     }
 
+    public function test_mod_data_get_tagged_records() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setup test data.
+        $datagenerator = $this->getDataGenerator()->get_plugin_generator('mod_data');
+        $course5 = $this->getDataGenerator()->create_course();
+        $course4 = $this->getDataGenerator()->create_course();
+        $course3 = $this->getDataGenerator()->create_course();
+        $course2 = $this->getDataGenerator()->create_course();
+        $course1 = $this->getDataGenerator()->create_course();
+
+        $fieldrecord = new StdClass();
+        $fieldrecord->name = 'field-1';
+        $fieldrecord->type = 'text';
+
+        $data1 = $this->getDataGenerator()->create_module('data', array('course' => $course1->id, 'approval' => true));
+        $field1 = $datagenerator->create_field($fieldrecord, $data1);
+        $data2 = $this->getDataGenerator()->create_module('data', array('course' => $course2->id));
+        $field2 = $datagenerator->create_field($fieldrecord, $data2);
+
+        $data3 = $this->getDataGenerator()->create_module('data', array('course'   => $course3->id));
+        $field3 = $datagenerator->create_field($fieldrecord, $data3);
+
+        $timefrom = time() - YEARSECS;
+        $timeto = time() - WEEKSECS;
+        $data4 = $this->getDataGenerator()->create_module('data', array('course'   => $course4->id,
+                                                                        'timeviewfrom' => $timefrom,
+                                                                        'timeviewto'   => $timeto
+        ));
+        $field4 = $datagenerator->create_field($fieldrecord, $data4);
+
+        $groupa = $this->getDataGenerator()->create_group(array('courseid' => $course5->id, 'name' => 'groupA'));
+        $groupb = $this->getDataGenerator()->create_group(array('courseid' => $course5->id, 'name' => 'groupB'));
+        $data5 = $this->getDataGenerator()->create_module('data', array('course'   => $course5->id));
+        $field5 = $datagenerator->create_field($fieldrecord, $data5);
+        set_coursemodule_groupmode($data5->cmid, SEPARATEGROUPS);
+
+        $record11 = $datagenerator->create_entry($data1, [$field1->field->id => 'value'],
+            0, ['Cats', 'Dogs']);
+        $record12 = $datagenerator->create_entry($data1, [$field1->field->id => 'value'],
+            0, ['Cats', 'mice']);
+        $record13 = $datagenerator->create_entry($data1, [$field1->field->id => 'value'],
+            0, ['Cats']);
+        $record14 = $datagenerator->create_entry($data1, [$field1->field->id => 'value'],
+            0);
+        $record15 = $datagenerator->create_entry($data1, [$field1->field->id => 'value'],
+            0, ['Cats']);
+        $record16 = $datagenerator->create_entry($data1, [$field1->field->id => 'value'],
+            0, ['Cats'], ['approved' => false]);
+
+        $record21 = $datagenerator->create_entry($data2, [$field2->field->id => 'value'],
+            0, ['Cats']);
+        $record22 = $datagenerator->create_entry($data2, [$field2->field->id => 'value'],
+            0, ['Cats', 'Dogs']);
+        $record23 = $datagenerator->create_entry($data2, [$field2->field->id => 'value'],
+            0, ['mice', 'Cats']);
+
+        $record31 = $datagenerator->create_entry($data3, [$field3->field->id => 'value'],
+            0, ['mice', 'Cats']);
+
+        $record41 = $datagenerator->create_entry($data4, [$field4->field->id => 'value'],
+            0, ['mice', 'Cats']);
+
+        $record51 = $datagenerator->create_entry($data5, [$field5->field->id => 'value'],
+            $groupa->id, ['mice', 'Cats']);
+
+        $record52 = $datagenerator->create_entry($data5, [$field5->field->id => 'value'],
+            $groupb->id, ['mice', 'Cats']);
+
+        $tag = core_tag_tag::get_by_name(0, 'Cats');
+
+        // Admin can see everything.
+        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
+            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$record = */0);
+        $this->assertRegExp("/rid=$record11&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record12&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record13&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record14&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record15&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record16&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record21&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record22&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record23&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record31&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record41&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record51&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record52&amp;/", $res->content);
+        $this->assertEmpty($res->prevpageurl);
+        $this->assertNotEmpty($res->nextpageurl);
+        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
+            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$record = */1);
+        $this->assertNotRegExp("/rid=$record11&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record12&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record13&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record14&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record15&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record16&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record21&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record22&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record23&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record31&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record41&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record51&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record52&amp;/", $res->content);
+        $this->assertNotEmpty($res->prevpageurl);
+        $this->assertNotEmpty($res->nextpageurl);
+        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
+            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$record = */2);
+        $this->assertNotRegExp("/rid=$record11&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record12&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record13&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record14&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record15&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record16&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record21&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record22&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record23&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record31&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record41&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record51&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record52&amp;/", $res->content);
+        $this->assertNotEmpty($res->prevpageurl);
+        $this->assertEmpty($res->nextpageurl);
+
+        // Create and enrol a user.
+        $student = self::getDataGenerator()->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $this->getDataGenerator()->enrol_user($student->id, $course1->id, $studentrole->id, 'manual');
+        $this->getDataGenerator()->enrol_user($student->id, $course2->id, $studentrole->id, 'manual');
+        $this->getDataGenerator()->enrol_user($student->id, $course4->id, $studentrole->id, 'manual');
+        $this->getDataGenerator()->enrol_user($student->id, $course5->id, $studentrole->id, 'manual');
+        groups_add_member($groupa, $student);
+        $this->setUser($student);
+        core_tag_index_builder::reset_caches();
+
+        // User can not see records in course 3 because he is not enrolled.
+        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
+            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$record = */1);
+        $this->assertRegExp("/rid=$record22&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record23&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record31&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record51&amp;/", $res->content);
+        // User can not see record52 as he is in the wrong group.
+        $this->assertNotRegExp("/rid=$record52&amp;/", $res->content);
+
+        // User can not see record in data 3 as it is outside the view from to range.
+        $this->assertNotRegExp("/rid=$record41&amp;/", $res->content);
+
+        // User can search data records inside a course.
+        $coursecontext = context_course::instance($course1->id);
+        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
+            /*$fromctx = */0, /*$ctx = */$coursecontext->id, /*$rec = */1, /*$record = */0);
+        $this->assertRegExp("/rid=$record11&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record12&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record13&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record14&amp;/", $res->content);
+        $this->assertRegExp("/rid=$record15&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record21&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record22&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record23&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record41&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record51&amp;/", $res->content);
+        $this->assertNotRegExp("/rid=$record52&amp;/", $res->content);
+        $this->assertEmpty($res->nextpageurl);
+
+        // User cannot see hidden records.
+        $this->assertNotRegExp("/rid=$record16&amp;/", $res->content);
+    }
+
     /**
      * Test check_updates_since callback.
      */

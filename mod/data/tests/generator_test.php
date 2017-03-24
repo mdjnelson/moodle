@@ -198,6 +198,8 @@ class mod_data_generator_testcase extends advanced_testcase {
             $fieldcontents[$fieldrecord->id] = $contents[$count++];
         }
 
+        $tags = ['Cats', 'mice'];
+
         $datarecordid = $this->getDataGenerator()->get_plugin_generator('mod_data')->create_entry($data, $fieldcontents,
                                                                                                     $groupa->id);
 
@@ -229,5 +231,7 @@ class mod_data_generator_testcase extends advanced_testcase {
         $this->assertEquals($contents[$contentstartid]->content1, '1');
         $this->assertEquals($contents[++$contentstartid]->content, 'http://example.url');
         $this->assertEquals($contents[$contentstartid]->content1, 'sampleurl');
+        $this->assertEquals(array('Cats', 'mice'),
+            array_values(core_tag_tag::get_item_tags_array('mod_data', 'data_records', $datarecordid)));
     }
 }
