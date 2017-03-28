@@ -192,6 +192,15 @@ class enrol_ldap_plugin extends enrol_plugin {
         $ignorehidden = $this->get_config('ignorehiddencourses');
         $courseidnumber = $this->get_config('course_idnumber');
         foreach($roles as $role) {
+            // Abort if ldapconnection fails.
+            // Fix for MDL-56732.
+            if ($enrolments[$role->id]['ext'] === false) {
+                $trace->output("LDAP connection failed for " . $user->username
+                        . ". Aborting LDAP enrol / unenrol actions");
+                $trace->finished();
+                return;
+            }
+
             foreach ($enrolments[$role->id]['ext'] as $enrol) {
                 $course_ext_id = $enrol[$courseidnumber][0];
                 if (empty($course_ext_id)) {
@@ -772,7 +781,13 @@ class enrol_ldap_plugin extends enrol_plugin {
             $flat_records = array();
             do {
                 if ($ldap_pagedresults) {
-                    ldap_control_paged_result($this->ldapconnection, $this->config->pagesize, true, $ldap_cookie);
+                    // Return Boolean false if ldapconnection is not set.
+                    // Fix for MDL-56732.
+                    if(is_null($this->ldapconnection)) {
+                        return false;
+                    } else {
+                        ldap_control_paged_result($this->ldapconnection, $this->config->pagesize, true, $ldap_cookie);
+                    }
                 }
 
                 if ($this->get_config('course_search_sub')) {
