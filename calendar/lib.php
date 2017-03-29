@@ -697,7 +697,7 @@ class calendar_event {
             // For each of the returned events populate an event object and call delete.
             // make sure the arg passed is false as we are already deleting all repeats.
             foreach ($events as $event) {
-                $event = new event($event);
+                $event = new calendar_event($event);
                 $event->delete(false);
             }
         }
@@ -846,15 +846,15 @@ class calendar_event {
      * it will result in an exception being thrown.
      *
      * @param int|object $param event object or event id
-     * @return event
+     * @return calendar_event
      */
     public static function load($param) {
         global $DB;
         if (is_object($param)) {
-            $event = new event($param);
+            $event = new calendar_event($param);
         } else {
             $event = $DB->get_record('event', array('id' => (int)$param), '*', MUST_EXIST);
-            $event = new event($event);
+            $event = new calendar_event($event);
         }
         return $event;
     }
@@ -866,7 +866,7 @@ class calendar_event {
      * @param bool $checkcapability Check caps or not
      * @throws \coding_exception
      *
-     * @return event|bool The event object or false if it failed
+     * @return calendar_event|bool The event object or false if it failed
      */
     public static function create($properties, $checkcapability = true) {
         if (is_array($properties)) {
@@ -875,7 +875,7 @@ class calendar_event {
         if (!is_object($properties)) {
             throw new \coding_exception('When creating an event properties should be either an object or an assoc array');
         }
-        $event = new event($properties);
+        $event = new calendar_event($properties);
         if ($event->update($properties, $checkcapability)) {
             return $event;
         } else {
