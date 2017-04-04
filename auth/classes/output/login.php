@@ -106,7 +106,8 @@ class login implements renderable, templatable {
         $identityproviders = [];
         foreach ($authsequence as $authname) {
             $authplugin = get_auth_plugin($authname);
-            $identityproviders = array_merge($identityproviders, $authplugin->loginpage_idp_list($SESSION->wantsurl));
+            $wantsurl = (isset($SESSION->wantsurl)) ? $SESSION->wantsurl : '';
+            $identityproviders = array_merge($identityproviders, $authplugin->loginpage_idp_list($wantsurl));
         }
         $this->identityproviders = $identityproviders;
     }
