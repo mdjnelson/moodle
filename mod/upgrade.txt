@@ -3,11 +3,41 @@ information provided here is intended especially for developers.
 
 === 3.3 ===
 
- * External functions that were returning file information now return the following additional file fields:
-   - mimetype (the file mime type)
-   - isexternalfile (if is a file reference to a external repository)
-   - repositorytype (the repository name in case is a external file)
-   Those fields are VALUE_OPTIONAL for backwards compatibility.
+* External functions that were returning file information now return the following additional file fields:
+  - mimetype (the file mime type)
+  - isexternalfile (if is a file reference to a external repository)
+  - repositorytype (the repository name in case is a external file)
+  Those fields are VALUE_OPTIONAL for backwards compatibility.
+* The issue MDL-55611 introduced 3 new callbacks for each module.
+  - mod_xyz_core_calendar_is_event_visible(calendar_event $event): This callback determines if an event should be visible
+    throughout the site. For example, the assignment module creates a grading event for teachers. We do not want this
+    event being visible to users who can not perform this action (eg. students), so we return false for those users.
+    If you do not implement this function then the event will always be visible.
+  - mod_xyz_core_calendar_core_calendar_provide_event_action(calendar_event $event, \core_calendar\action_factory $factory):
+    This function takes a calendar event and provides the action associated with it, or null if there is none (in which
+    case the event will not be shown). This is used by the new block_myoverview plugin. If you do not implement this
+    function then the events created by your plugin will never be shown on the block.
+
+    Eg.
+        return $factory->create_instance(
+            $name,
+            $url,
+            $itemcount,
+            $actionable
+        );
+
+       $name String The name of the event, eg. get_string('dosomething', 'mod_xyz').
+       $url \moodle_url The URL the user visits in order to perform this action.
+       $itemcount int This represents the number of items that require action (eg. Need to write 3 forum posts). If this
+           is 0 then the event is not displayed.
+       $actionable bool This determines if the event is currently able to be acted on. Eg. the activity may not currently
+           be open due to date restrictions so the event is shown to the user to let them know that there is an upcoming
+           event but the url will not be active.
+  - mod_xyz_core_calendar_event_action_shows_item_count(calendar_event $event, $itemcount = 0): This function determines
+    if a given event should display the number of items to action on block_myoverview. For example, if the event type is
+    ASSIGN_EVENT_TYPE_GRADINGDUE then we only display the item count if there are one or more assignments to grade. If
+    you do not implement this function then the item count is always hidden. This is usually fine as the majority of
+    events only have an item count of '1' (eg. Submitting an assignment) and there is no need display the item count.
 
 === 3.2 ===
 
