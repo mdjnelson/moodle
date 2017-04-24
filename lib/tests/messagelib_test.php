@@ -534,19 +534,19 @@ class core_messagelib_testcase extends advanced_testcase {
         $emails = $sink->get_messages();
         $this->assertCount(1, $emails);
         $email = reset($emails);
-        $savedmessage = $DB->get_record('message_read', array('id' => $messageid), '*', MUST_EXIST);
+        $savedmessage = $DB->get_record('message', array('id' => $messageid), '*', MUST_EXIST);
         $this->assertSame($user1->email, $email->from);
         $this->assertSame($user2->email, $email->to);
         $this->assertSame($message->subject, $email->subject);
         $this->assertNotEmpty($email->header);
         $this->assertNotEmpty($email->body);
         $sink->clear();
-        $this->assertFalse($DB->record_exists('message', array()));
-        $DB->delete_records('message_read', array());
+        $this->assertFalse($DB->record_exists('message_read', array()));
+        $DB->delete_records('message', array());
+        $DB->delete_records('message_working', array());
         $events = $eventsink->get_events();
-        $this->assertCount(2, $events);
+        $this->assertCount(1, $events);
         $this->assertInstanceOf('\core\event\message_sent', $events[0]);
-        $this->assertInstanceOf('\core\event\message_viewed', $events[1]);
         $eventsink->clear();
 
         set_user_preference('message_provider_moodle_instantmessage_loggedoff', 'email,popup', $user2);
@@ -642,13 +642,11 @@ class core_messagelib_testcase extends advanced_testcase {
         $sink->clear();
         $this->assertFalse($DB->record_exists('message_read', array()));
         $DB->delete_records('message', array());
+        $transaction->allow_commit();
         $events = $eventsink->get_events();
         $this->assertCount(1, $events);
         $this->assertInstanceOf('\core\event\message_sent', $events[0]);
         $eventsink->clear();
-        $transaction->allow_commit();
-        $events = $eventsink->get_events();
-        $this->assertCount(0, $events);
 
         set_user_preference('message_provider_moodle_instantmessage_loggedoff', 'email', $user2);
 
@@ -673,29 +671,23 @@ class core_messagelib_testcase extends advanced_testcase {
         $savedmessage = $DB->get_record('message', array('id' => $messageid), '*', MUST_EXIST);
         $sink->clear();
         $this->assertFalse($DB->record_exists('message_read', array()));
+        $transaction->allow_commit();
+        $events = $eventsink->get_events();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf('\core\event\message_sent', $events[0]);
+        $eventsink->clear();
+
+        $transaction = $DB->start_delegated_transaction();
+        message_send($message);
+        message_send($message);
+        $this->assertCount(3, $DB->get_records('message'));
         $events = $eventsink->get_events();
         $this->assertCount(0, $events);
         $transaction->allow_commit();
         $events = $eventsink->get_events();
         $this->assertCount(2, $events);
         $this->assertInstanceOf('\core\event\message_sent', $events[0]);
-        $this->assertInstanceOf('\core\event\message_viewed', $events[1]);
-        $eventsink->clear();
-
-        $transaction = $DB->start_delegated_transaction();
-        message_send($message);
-        message_send($message);
-        $this->assertCount(2, $DB->get_records('message'));
-        $this->assertCount(1, $DB->get_records('message_read'));
-        $events = $eventsink->get_events();
-        $this->assertCount(0, $events);
-        $transaction->allow_commit();
-        $events = $eventsink->get_events();
-        $this->assertCount(4, $events);
-        $this->assertInstanceOf('\core\event\message_sent', $events[0]);
-        $this->assertInstanceOf('\core\event\message_viewed', $events[1]);
-        $this->assertInstanceOf('\core\event\message_sent', $events[2]);
-        $this->assertInstanceOf('\core\event\message_viewed', $events[3]);
+        $this->assertInstanceOf('\core\event\message_sent', $events[1]);
         $eventsink->clear();
         $DB->delete_records('message', array());
         $DB->delete_records('message_read', array());
@@ -717,10 +709,10 @@ class core_messagelib_testcase extends advanced_testcase {
         $this->assertCount(0, $DB->get_records('message'));
         $this->assertCount(0, $DB->get_records('message_read'));
         message_send($message);
-        $this->assertCount(0, $DB->get_records('message'));
-        $this->assertCount(1, $DB->get_records('message_read'));
+        $this->assertCount(1, $DB->get_records('message'));
+        $this->assertCount(0, $DB->get_records('message_read'));
         $events = $eventsink->get_events();
-        $this->assertCount(2, $events);
+        $this->assertCount(1, $events);
         $sink->clear();
         $DB->delete_records('message_read', array());
     }
