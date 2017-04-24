@@ -234,6 +234,14 @@ function message_send($eventdata) {
         }
     }
 
+    // The user can not disable the 'popup' processor for messages.
+    if (empty($savemessage->notification)) {
+        // Check if the processor is missing from the list, if so add it.
+        if (!in_array('popup', $processorlist)) {
+            $processorlist[] = 'popup';
+        }
+    }
+
     // Only cache messages, not notifications.
     if (empty($savemessage->notification)) {
         // Cache the timecreated value of the last message between these two users.
