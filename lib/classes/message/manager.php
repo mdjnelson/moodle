@@ -112,8 +112,7 @@ class manager {
      * @param array $processorlist
      * @return int $messageid
      */
-    protected static function send_message_to_processors($eventdata, \stdClass $savemessage, array
-    $processorlist) {
+    protected static function send_message_to_processors($eventdata, \stdClass $savemessage, array $processorlist) {
         global $CFG, $DB;
 
         // We cannot communicate with external systems in DB transactions,
@@ -134,16 +133,11 @@ class manager {
         }
 
         $processors = get_message_processors(true);
-
-        $failed = false;
         foreach ($processorlist as $procname) {
             // Let new messaging class add custom content based on the processor.
             $proceventdata = ($eventdata instanceof message) ? $eventdata->get_eventobject_for_processor($procname) : $eventdata;
             if (!$processors[$procname]->object->send_message($proceventdata)) {
                 debugging('Error calling message processor ' . $procname);
-                $failed = true;
-                // Previously the $messageid = false here was overridden
-                // by other processors and message_mark_message_read() below.
             }
         }
 
@@ -156,25 +150,11 @@ class manager {
             )->trigger();
 
         if (empty($CFG->messaging)) {
-            // If messaging is disabled and they previously had forum notifications handled by the popup processor
-            // or any processor that puts a row in message_working then the notification will remain forever
-            // unread. To prevent this mark the message read if messaging is disabled.
-            $messageid = message_mark_message_read($savemessage, time());
-
-        } else if ($failed) {
-            // Something failed, better keep it as unread then.
-            $messageid = $savemessage->id;
-
-        } else if ($DB->count_records('message_working', array('unreadmessageid' => $savemessage->id)) == 0) {
-            // If there is no more processors that want to process this we can move message to message_read.
-            $messageid = message_mark_message_read($savemessage, time(), true);
-
-        } else {
-            // Some processor is still working on the data, let's keep it unread.
-            $messageid = $savemessage->id;
+            // Mark the message read if messaging is disabled.
+            return message_mark_message_read($savemessage, time());
         }
 
-        return $messageid;
+        return $savemessage->id;
     }
 
     /**
