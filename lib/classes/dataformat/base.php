@@ -98,11 +98,18 @@ abstract class base {
     }
 
     /**
-     * Write the start of the format
+     * Write the start of the file.
+     */
+    public function start_output() {
+        // Override me if needed.
+    }
+
+    /**
+     * Write the start of the sheet we will be adding data to.
      *
      * @param array $columns
      */
-    public function write_header($columns) {
+    public function start_sheet($columns) {
         // Override me if needed.
     }
 
@@ -115,12 +122,18 @@ abstract class base {
     abstract public function write_record($record, $rownum);
 
     /**
-     * Write the end of the format
+     * Write the end of the sheet containing the data.
      *
      * @param array $columns
      */
-    public function write_footer($columns) {
+    public function close_sheet($columns) {
         // Override me if needed.
     }
 
+    /**
+     * Write the end of the file.
+     */
+    public function close_output() {
+        // Override me if needed.
+    }
 }
