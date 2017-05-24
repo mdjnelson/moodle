@@ -76,8 +76,6 @@ abstract class base {
      * Output file headers to initialise the download of the file.
      */
     public function send_http_headers() {
-        global $CFG;
-
         if (defined('BEHAT_SITE_RUNNING')) {
             // For text based formats - we cannot test the output with behat if we force a file download.
             return;
