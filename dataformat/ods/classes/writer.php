@@ -50,8 +50,9 @@ class writer extends \core\dataformat\spout_base {
      * For some formats this will be ignored.
      *
      * @param string $title
+     * @param bool $new Do we want to save this title in a new sheet? (eg. excel)
      */
-    public function set_sheettitle($title) {
+    public function set_sheettitle($title, $new) {
         if (!$title) {
             return;
         }
@@ -64,6 +65,8 @@ class writer extends \core\dataformat\spout_base {
         $title = trim($title, "'");
 
         $this->sheettitle = $title;
+
+        $this->save_sheetttile($new);
     }
 }
 

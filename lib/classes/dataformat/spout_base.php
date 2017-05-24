@@ -54,9 +54,8 @@ abstract class spout_base extends \core\dataformat\base {
         }
         $filename = $this->filename . $this->get_extension();
         $this->writer->openToBrowser($filename);
-        if ($this->sheettitle && $this->writer instanceof \Box\Spout\Writer\AbstractMultiSheetsWriter) {
-            $sheet = $this->writer->getCurrentSheet();
-            $sheet->setName($this->sheettitle);
+        if ($this->sheettitle) {
+            $this->save_sheetttile(false);
         }
     }
 
@@ -66,12 +65,14 @@ abstract class spout_base extends \core\dataformat\base {
      * For some formats this will be ignored.
      *
      * @param string $title
+     * @param bool $new Do we want to save this title in a new sheet? (eg. excel)
      */
-    public function set_sheettitle($title) {
+    public function set_sheettitle($title, $new = false) {
         if (!$title) {
             return;
         }
         $this->sheettitle = $title;
+        $this->save_sheetttile($new);
     }
 
     /**
@@ -99,5 +100,21 @@ abstract class spout_base extends \core\dataformat\base {
     public function close_output() {
         $this->writer->close();
         $this->writer = null;
+    }
+
+    /**
+     * Helper function to save the sheettitle.
+     *
+     * @param bool $new Do we want to save this title in a new sheet? (eg. excel)
+     */
+    protected function save_sheetttile($new) {
+        if (!empty($this->writer) && $this->writer instanceof \Box\Spout\Writer\AbstractMultiSheetsWriter) {
+            if ($new) {
+                $sheet = $this->writer->addNewSheetAndMakeItCurrent();
+            } else {
+                $sheet = $this->writer->getCurrentSheet();
+            }
+            $sheet->setName($this->sheettitle);
+        }
     }
 }

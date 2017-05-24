@@ -153,12 +153,11 @@ class flexible_table {
      * download type.
      * @param string $download dataformat type. One of csv, xhtml, ods, etc
      * @param string $filename filename for downloads without file extension.
-     * @param string $sheettitle title for downloaded data.
+     * @param string $unused title for downloaded data.
      * @return string download dataformat type. One of csv, xhtml, ods, etc
      */
-    function is_downloading($download = null, $filename='', $sheettitle='') {
+    function is_downloading($download = null, $filename='', $unused = '') {
         if ($download!==null) {
-            $this->sheettitle = $sheettitle;
             $this->is_downloadable(true);
             $this->download = $download;
             $this->filename = clean_filename($filename);
@@ -704,12 +703,14 @@ class flexible_table {
     /**
      * Add a number of rows to the table at once. And optionally finish output after they have been added.
      *
+     * @deprecated since Moodle 3.4
      * @param (object|array|null)[] $rowstoadd Array of rows to add to table, a null value in array adds a separator row. Or a
      *                                  object or array is added to table. We expect properties for the row array as would be
      *                                  passed to add_data_keyed.
      * @param bool     $finish
      */
     public function format_and_add_array_of_rows($rowstoadd, $finish = true) {
+        debugging('The function format_and_add_array_of_rows() is deprecated and no longer used in core.', DEBUG_DEVELOPER);
         foreach ($rowstoadd as $row) {
             if (is_null($row)) {
                 $this->add_separator();
@@ -766,12 +767,13 @@ class flexible_table {
      * You should call this to finish outputting the table data after adding
      * data to the table with add_data or add_data_keyed.
      *
+     * @param bool $closeexportclassdoc
      */
     function finish_output($closeexportclassdoc = true) {
         if ($this->exportclass!==null) {
-            $this->exportclass->finish_table();
+            $this->exportclass->close_sheet($this->headers);
             if ($closeexportclassdoc) {
-                $this->exportclass->finish_document();
+                $this->exportclass->close_output();
             }
         } else {
             $this->finish_html();
@@ -1052,17 +1054,21 @@ class flexible_table {
      * You don't normally need to call this. It is called automatically when
      * needed when you start adding data to the table.
      *
+     * @param string $sheettitle The title of the sheet
      */
-    function start_output() {
-        $this->started_output = true;
+    function start_output($sheettitle = '') {
         if ($this->exportclass!==null) {
-            $this->exportclass->start_table($this->sheettitle);
-            $this->exportclass->output_headers($this->headers);
+            // If we have already started output and another start_output() has been called then
+            // we will have to create a new sheet (for those exporters that support it).
+            $this->exportclass->set_sheettitle($sheettitle, $this->started_output);
+            $this->exportclass->start_output();
+            $this->exportclass->start_sheet($this->headers);
         } else {
             $this->start_html();
             $this->print_headers();
             echo html_writer::start_tag('tbody');
         }
+        $this->started_output = true;
     }
 
     /**
@@ -1746,26 +1752,40 @@ class table_dataformat_export_format extends table_default_export_format_parent 
         $this->filename = $filename;
         $this->documentstarted = true;
         $this->dataformat->set_filename($filename);
-    }
-
-    /**
-     * Start export
-     *
-     * @param string $sheettitle optional spreadsheet worksheet title
-     */
-    public function start_table($sheettitle) {
-        $this->dataformat->set_sheettitle($sheettitle);
         $this->dataformat->send_http_headers();
     }
 
     /**
-     * Output headers
+     * Set the sheet title.
      *
-     * @param array $headers
+     * @param string $sheettitle
+     * @param bool $new is this a new sheet?
      */
-    public function output_headers($headers) {
-        $this->columns = $headers;
-        $this->dataformat->write_header($headers);
+    public function set_sheettitle($sheettitle, $new = false) {
+        $this->dataformat->set_sheettitle($sheettitle, $new);
+    }
+
+    /**
+     * Write the start of the file.
+     */
+    public function start_output() {
+        $this->dataformat->start_output();
+    }
+
+    /**
+     * Write the start of the sheet where we will be adding data.
+     *
+     * @param array $columns
+     */
+    public function start_sheet($columns) {
+        $this->columns = $columns;
+        if (method_exists($this->dataformat, 'write_header')) {
+            debugging('The function write_header() does not support multiple tables. In order to support multiple tables you ' .
+                'must implement start_output() and start_sheet() and remove write_header() in your dataformat.', DEBUG_DEVELOPER);
+            $this->dataformat->write_header($columns);
+        } else {
+            $this->dataformat->start_sheet($columns);
+        }
     }
 
     /**
@@ -1775,14 +1795,28 @@ class table_dataformat_export_format extends table_default_export_format_parent 
      */
     public function add_data($row) {
         $this->dataformat->write_record($row, $this->rownum++);
-        return true;
     }
 
     /**
-     * Finish export
+     * Write the end of the sheet containing the data.
+     *
+     * @param array $columns
      */
-    public function finish_table() {
-        $this->dataformat->write_footer($this->columns);
+    public function close_sheet($columns) {
+        $this->dataformat->close_sheet($columns);
+    }
+
+    /**
+     * Write the end of the file.
+     */
+    public function close_output() {
+        if (method_exists($this->dataformat, 'write_footer')) {
+            debugging('The function write_footer() does not support multiple tables. In order to support multiple tables you ' .
+                'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.', DEBUG_DEVELOPER);
+            $this->dataformat->write_footer($this->columns);
+        } else {
+            $this->dataformat->close_output();
+        }
     }
 
     /**
@@ -1792,5 +1826,52 @@ class table_dataformat_export_format extends table_default_export_format_parent 
         exit;
     }
 
+    /**
+     * Start export
+     *
+     * @deprecated since Moodle 3.4
+     * @param string $sheettitle optional spreadsheet worksheet title
+     */
+    public function start_table($sheettitle) {
+        error_log('The function start_table() is deprecated and no longer used in core.');
+        $this->dataformat->set_sheettitle($sheettitle);
+        $this->dataformat->send_http_headers();
+    }
+
+    /**
+     * Output headers
+     *
+     * @deprecated since Moodle 3.4
+     * @param array $headers
+     */
+    public function output_headers($headers) {
+        error_log('The function output_headers() is deprecated and no longer used in core.');
+        $this->columns = $headers;
+        if (method_exists($this->dataformat, 'write_header')) {
+            error_log('The function write_header() does not support multiple tables. In order to support multiple tables you ' .
+                'must implement start_output() and start_sheet() and remove write_header() in your dataformat.');
+            $this->dataformat->write_header($headers);
+        } else {
+            $this->dataformat->start_output();
+            $this->dataformat->start_sheet($headers);
+        }
+    }
+
+    /**
+     * Finish export
+     *
+     * @deprecated since Moodle 3.4
+     */
+    public function finish_table() {
+        error_log('The function output_headers() is deprecated and no longer used in core.');
+        if (method_exists($this->dataformat, 'write_footer')) {
+            error_log('The function write_footer() does not support multiple tables. In order to support multiple tables you ' .
+                'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.');
+            $this->dataformat->write_footer($this->columns);
+        } else {
+            $this->dataformat->close_sheet($this->columns);
+            $this->dataformat->close_output();
+        }
+    }
 }
 
