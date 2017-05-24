@@ -42,11 +42,11 @@ class writer extends \core\dataformat\base {
     public $extension = ".json";
 
     /**
-     * Write the start of the format
+     * Write the start of the sheet we will be adding data to.
      *
      * @param array $columns
      */
-    public function write_header($columns) {
+    public function start_sheet($columns) {
         echo "[";
     }
 
@@ -64,12 +64,11 @@ class writer extends \core\dataformat\base {
     }
 
     /**
-     * Write the end of the format
+     * Write the end of the sheet containing the data.
      *
      * @param array $columns
      */
-    public function write_footer($columns) {
+    public function close_sheet($columns) {
         echo "]";
     }
-
 }
