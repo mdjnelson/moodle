@@ -137,8 +137,7 @@ class quiz_statistics_report extends quiz_default_report {
         $courseshortname = format_string($course->shortname, true,
                 array('context' => context_course::instance($course->id)));
         $filename = quiz_report_download_filename($report, $courseshortname, $quiz->name);
-        $this->table->is_downloading($download, $filename,
-                get_string('quizstructureanalysis', 'quiz_statistics'));
+        $this->table->is_downloading($download, $filename);
         $questions = $this->load_and_initialise_questions_for_calculations($quiz);
 
         // Print the page header stuff (if not downloading.
@@ -185,10 +184,11 @@ class quiz_statistics_report extends quiz_default_report {
         if ($everything) { // Implies is downloading.
             // Overall report, then the analysis of each question.
             $quizinfo = $quizstats->get_formatted_quiz_info_data($course, $cm, $quiz);
-            $this->download_quiz_info_table($quizinfo);
-
-            if ($quizstats->s()) {
-                $this->output_quiz_structure_analysis_table($questionstats);
+            $hasattempts = $quizstats->s();
+            $this->download_quiz_info_table($quizinfo, !$hasattempts);
+            if ($hasattempts) {
+                $this->output_quiz_structure_analysis_table($questionstats, true);
+                exit();
 
                 if ($this->table->is_downloading() == 'xhtml' && $quizstats->s() != 0) {
                     $this->output_statistics_graph($quiz->id, $qubaids);
@@ -198,7 +198,6 @@ class quiz_statistics_report extends quiz_default_report {
             }
 
             $this->table->export_class_instance()->finish_document();
-
         } else if ($qid) {
             // Report on an individual sub-question indexed questionid.
             if (is_null($questionstats->for_subq($qid, $variantno))) {
@@ -447,15 +446,20 @@ class quiz_statistics_report extends quiz_default_report {
      * @param \core_question\statistics\questions\all_calculated_for_qubaid_condition $questionstats the stats for all questions in
      *                                                                                               the quiz including subqs and
      *                                                                                               variants.
+     * @param bool $finish Is the document finished?
      */
-    protected function output_quiz_structure_analysis_table($questionstats) {
+    protected function output_quiz_structure_analysis_table($questionstats, $finish = true) {
         $tooutput = array();
         $limitvariants = !$this->table->is_downloading();
         foreach ($questionstats->get_all_slots() as $slot) {
             // Output the data for these question statistics.
             $tooutput = array_merge($tooutput, $questionstats->structure_analysis_for_one_slot($slot, $limitvariants));
         }
-        $this->table->format_and_add_array_of_rows($tooutput);
+
+        $this->table->define_headers(array());
+        $this->table->start_output(get_string('quizstructureanalysis', 'quiz_statistics'));
+        //$this->table->add_data($tooutput);
+        $this->table->finish_output($finish);
     }
 
     /**
@@ -483,8 +487,9 @@ class quiz_statistics_report extends quiz_default_report {
      * Download the table of overall quiz statistics.
      *
      * @param array $quizinfo as returned by {@link get_formatted_quiz_info_data()}.
+     * @param bool $finish Are we finished with the file>
      */
-    protected function download_quiz_info_table($quizinfo) {
+    protected function download_quiz_info_table($quizinfo, $finish = true) {
         global $OUTPUT;
 
         // XHTML download is a special case.
@@ -503,11 +508,10 @@ class quiz_statistics_report extends quiz_default_report {
         }
 
         // Do the output.
-        $exportclass = $this->table->export_class_instance();
-        $exportclass->start_table(get_string('quizinformation', 'quiz_statistics'));
-        $exportclass->output_headers($headers);
-        $exportclass->add_data($row);
-        $exportclass->finish_table();
+        $this->table->define_headers($headers);
+        $this->table->start_output(get_string('quizinformation', 'quiz_statistics'));
+        $this->table->add_data($row);
+        $this->table->finish_output($finish);
     }
 
     /**
