@@ -73,13 +73,25 @@ class main implements renderable, templatable {
         $nocoursesurl = $output->image_url('courses', 'block_myoverview')->out();
         $noeventsurl = $output->image_url('activities', 'block_myoverview')->out();
 
+        // Now, let's get the view we want to show by default.
+        $config = get_config('block_myoverview');
+        $viewingtimeline = false;
+        $viewingcourses = false;
+        if ($config->defaulttab == BLOCK_MYOVERVIEW_TIMELINE_VIEW) {
+            $viewingtimeline = true;
+        } else {
+            $viewingcourses = true;
+        }
+
         return [
             'midnight' => usergetmidnight(time()),
             'coursesview' => $coursesview->export_for_template($output),
             'urls' => [
                 'nocourses' => $nocoursesurl,
                 'noevents' => $noeventsurl
-            ]
+            ],
+            'viewingtimeline' => $viewingtimeline,
+            'viewingcourses' => $viewingcourses
         ];
     }
 }
