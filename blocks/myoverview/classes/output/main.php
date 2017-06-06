@@ -29,6 +29,7 @@ use renderer_base;
 use templatable;
 use core_completion\progress;
 
+require_once($CFG->dirroot . '/blocks/myoverview/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
 
 /**
@@ -74,10 +75,17 @@ class main implements renderable, templatable {
         $noeventsurl = $output->image_url('activities', 'block_myoverview')->out();
 
         // Now, let's get the view we want to show by default.
-        $config = get_config('block_myoverview');
         $viewingtimeline = false;
         $viewingcourses = false;
-        if ($config->defaulttab == BLOCK_MYOVERVIEW_TIMELINE_VIEW) {
+        $tab = get_user_preferences('block_myoverview_last_tab');
+
+        // The user preference has priority, but if it has not been set use site setting.
+        if (!$tab) {
+            $config = get_config('block_myoverview');
+            $tab = $config->defaulttab;
+        }
+
+        if ($tab == BLOCK_MYOVERVIEW_TIMELINE_VIEW) {
             $viewingtimeline = true;
         } else {
             $viewingcourses = true;

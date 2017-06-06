@@ -25,16 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The timeline view.
- */
-define('BLOCK_MYOVERVIEW_TIMELINE_VIEW', 'timeline');
-
-/**
- * The courses view.
- */
-define('BLOCK_MYOVERVIEW_COURSES_VIEW', 'courses');
-
-/**
  * My overview block class.
  *
  * @package    block_myoverview
