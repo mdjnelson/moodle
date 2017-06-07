@@ -52,13 +52,16 @@ require(['jquery', 'core/ajax', 'core/custom_interaction_events'], function($, A
     var root = $('#block-myoverview-view-choices-{{uniqid}}');
     CustomEvents.define(root, [CustomEvents.events.activate]);
     root.on(CustomEvents.events.activate, "[data-toggle='tab']", function(e) {
+        var tabname = $(e.currentTarget).data('tabname');
+        // Bootstrap does not change the URL when using BS tabs, so need to do this here.
+        window.history.pushState(null, null, '?tab=' + tabname);
         var request = {
             methodname: 'core_user_update_user_preferences',
             args: {
                 preferences: [
                     {
                         type: 'block_myoverview_last_tab',
-                        value: $(e.currentTarget).data('tabname'),
+                        value: tabname,
                     }
                 ]
             }

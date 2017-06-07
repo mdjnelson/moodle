@@ -77,9 +77,13 @@ class main implements renderable, templatable {
         // Now, let's get the view we want to show by default.
         $viewingtimeline = false;
         $viewingcourses = false;
-        $tab = get_user_preferences('block_myoverview_last_tab');
+        $tab = optional_param('tab', null, PARAM_ALPHA);
+        // Wasn't passed in the URL, so let's see the user has any preference.
+        if (!$tab) {
+            $tab = get_user_preferences('block_myoverview_last_tab');
+        }
 
-        // The user preference has priority, but if it has not been set use site setting.
+        // The URL param and user preference have priority, but if it has not been set yet we use site setting.
         if (!$tab) {
             $config = get_config('block_myoverview');
             $tab = $config->defaulttab;
