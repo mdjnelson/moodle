@@ -2569,18 +2569,10 @@ class global_navigation extends navigation_node {
         }
 
         $coursenode = $parent->add($coursename, $url, self::TYPE_COURSE, $shortname, $course->id);
-
-        // Do some calculation to see if the course is past, current or future.
-        if ($coursetype == self::COURSE_MY) {
-            $classify = course_classify_for_timeline($course);
-
-            if ($classify == COURSE_TIMELINE_INPROGRESS) {
-                $coursenode->showinflatnavigation = true;
-            }
-        }
-
+        $coursenode->showinflatnavigation = $coursetype == self::COURSE_MY;
         $coursenode->hidden = (!$course->visible);
         $coursenode->title(format_string($course->fullname, true, array('context' => $coursecontext, 'escape' => false)));
+
         if ($canexpandcourse) {
             // This course can be expanded by the user, make it a branch to make the system aware that its expandable by ajax.
             $coursenode->nodetype = self::NODETYPE_BRANCH;
@@ -2905,9 +2897,20 @@ class global_navigation extends navigation_node {
         // Append the chosen sortorder.
         $sortorder = $sortorder . ',' . $CFG->navsortmycoursessort . ' ASC';
         $courses = enrol_get_my_courses('*', $sortorder);
-        $numcourses = count($courses);
+        $numtotalcourses = count($courses);
+
+        // Remove any courses we do not wish to display on the navigation.
+        foreach ($courses as $id => $course) {
+            $classify = course_classify_for_timeline($course);
+
+            if ($classify != COURSE_TIMELINE_INPROGRESS) {
+                unset($courses[$id]);
+            }
+        }
+
         $courses = array_slice($courses, 0, $limit);
-        if ($numcourses && $this->show_my_categories()) {
+        $numshowncourses = count($courses);
+        if ($numshowncourses && $this->show_my_categories()) {
             // Generate an array containing unique values of all the courses' categories.
             $categoryids = array();
             foreach ($courses as $course) {
@@ -2964,7 +2967,7 @@ class global_navigation extends navigation_node {
             $this->add_course($course, false, self::COURSE_MY);
         }
         // Show a link to the course page if there are more courses the user is enrolled in.
-        if ($numcourses > $limit) {
+        if ($numtotalcourses > $numshowncourses) {
             // Adding hash to URL so the link is not highlighted in the navigation when clicked.
             $url = new moodle_url('/course/index.php#');
             $parent = $this->rootnodes['mycourses'];
