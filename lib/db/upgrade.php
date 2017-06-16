@@ -2983,7 +2983,8 @@ function xmldb_main_upgrade($oldversion) {
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
         // Adding indexes to table analytics_train_samples.
-        $table->add_index('modelidandanalysableidandtimesplitting', XMLDB_INDEX_NOTUNIQUE, array('modelid', 'analysableid', 'timesplitting'));
+        $table->add_index('modelidandanalysableidandtimesplitting', XMLDB_INDEX_NOTUNIQUE,
+            array('modelid', 'analysableid', 'timesplitting'));
 
         // Conditionally launch create table for analytics_train_samples.
         if (!$dbman->table_exists($table)) {
@@ -3005,7 +3006,8 @@ function xmldb_main_upgrade($oldversion) {
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
         // Adding indexes to table analytics_predict_ranges.
-        $table->add_index('modelidandanalysableidandtimesplitting', XMLDB_INDEX_NOTUNIQUE, array('modelid', 'analysableid', 'timesplitting'));
+        $table->add_index('modelidandanalysableidandtimesplitting', XMLDB_INDEX_NOTUNIQUE,
+            array('modelid', 'analysableid', 'timesplitting'));
 
         // Conditionally launch create table for analytics_predict_ranges.
         if (!$dbman->table_exists($table)) {
