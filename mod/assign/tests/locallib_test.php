@@ -1381,8 +1381,8 @@ class mod_assign_locallib_testcase extends mod_assign_base_testcase {
         $assign = $this->create_instance(array('teamsubmission' => 1));
 
         // Switch the current role of the teacher to student.
-        $teacherrole = $DB->get_record('role', array('shortname' => 'student'));
-        role_switch($teacherrole->id, $assign->get_course_context());
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        role_switch($studentrole->id, $assign->get_course_context());
 
         // Remove the teacher from all groups he is assigned to.
         $groups = $assign->get_all_groups($teacher->id);
@@ -1394,15 +1394,17 @@ class mod_assign_locallib_testcase extends mod_assign_base_testcase {
         $assign->testable_purge_assign_cache();
         $this->assertEquals(true, $assign->can_view_group_submission(0));
         $this->assertEquals(false, $assign->can_view_group_submission($group1->id));
+        $this->assertEquals(false, $assign->can_view_group_submission($group2->id));
 
         // When the teacher is added to a group, he should be able to view this group and no longer the default group.
         groups_add_member($group1, $teacher);
         $assign->testable_purge_assign_cache();
         $this->assertEquals(false, $assign->can_view_group_submission(0));
         $this->assertEquals(true, $assign->can_view_group_submission($group1->id));
+        $this->assertEquals(false, $assign->can_view_group_submission($group2->id));
 
         // When the teacher is added to a second group, he again belongs to the default group.
-        groups_add_member($group2->id, $teacher);
+        groups_add_member($group2, $teacher);
         $assign->testable_purge_assign_cache();
         $this->assertEquals(true, $assign->can_view_group_submission(0));
         $this->assertEquals(false, $assign->can_view_group_submission($group1->id));
