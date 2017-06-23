@@ -3035,6 +3035,8 @@ function xmldb_main_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
+        \core_analytics\manager::add_builtin_models();
+
         // Main savepoint reached.
         upgrade_main_savepoint(true, 2017062200.01);
     }
