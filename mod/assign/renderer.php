@@ -538,7 +538,7 @@ class mod_assign_renderer extends plugin_renderer_base {
             if ($duedate - $time <= 0) {
                 if (!$submission ||
                         $submission->status != ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
-                    if ($status->submissionsenabled) {
+                    if ($status->submissionsenabled && $status->gradingstatus == ASSIGN_GRADING_STATUS_NOT_GRADED) {
                         $remaining = get_string('overdue', 'assign', format_time($time - $duedate));
                         $classname = 'overdue';
                     } else {
@@ -819,7 +819,7 @@ class mod_assign_renderer extends plugin_renderer_base {
             if ($duedate - $time <= 0) {
                 if (!$submission ||
                         $submission->status != ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
-                    if ($status->submissionsenabled) {
+                    if ($status->submissionsenabled && $status->gradingstatus == ASSIGN_GRADING_STATUS_NOT_GRADED) {
                         $overduestr = get_string('overdue', 'assign', format_time($time - $duedate));
                         $cell2 = new html_table_cell($overduestr);
                         $cell2->attributes = array('class'=>'overdue');

@@ -1849,8 +1849,9 @@ function mod_assign_core_calendar_provide_event_action(calendar_event $event,
         $actionable = $assign->can_grade() && (time() >= $assign->get_instance()->allowsubmissionsfromdate);
     } else {
         $usersubmission = $assign->get_user_submission($USER->id, false);
-        if ($usersubmission && $usersubmission->status === ASSIGN_SUBMISSION_STATUS_SUBMITTED) {
-            // The user has already submitted.
+        if ($usersubmission && ($usersubmission->status === ASSIGN_SUBMISSION_STATUS_SUBMITTED) ||
+                $assign->get_grading_status($USER->id) === ASSIGN_GRADING_STATUS_GRADED) {
+            // The user has already submitted, or has received a grade.
             // We do not want to change the text to edit the submission, we want to remove the event from the Dashboard entirely.
             return null;
         }

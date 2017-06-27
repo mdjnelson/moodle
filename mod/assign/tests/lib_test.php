@@ -610,6 +610,41 @@ class mod_assign_lib_testcase extends mod_assign_base_testcase {
     }
 
     /**
+     * Confirm that a student doesn't receive an action event if they have received a grade
+     * for the assignment, regardless of submission status.
+     */
+    public function test_assign_core_calendar_provide_event_action_duedate_as_student_graded() {
+        $this->setAdminUser();
+
+        // Create an assignment.
+        $assign = $this->create_instance(array('assignsubmission_onlinetext_enabled' => 1));
+
+        // Create a calendar event.
+        $event = $this->create_action_event($assign->get_instance()->id, ASSIGN_EVENT_TYPE_DUE);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Mark the assignment without a submission.
+        $this->setUser($this->teachers[0]);
+        $data = new stdClass();
+        $data->grade = '50.0';
+        $assign->testable_apply_grade_to_user($data, $this->students[0]->id, 0);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Set the user to a student.
+        $this->setUser($this->students[0]);
+
+        // Decorate action event.
+        $actionevent = mod_assign_core_calendar_provide_event_action($event, $factory);
+
+        // Confirm there was no event to action.
+        $this->assertNull($actionevent);
+    }
+
+    /**
      * Creates an action event.
      *
      * @param int $instanceid The assign id.
