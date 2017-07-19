@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Atto text editor recordrtc version file.
+ * Atto install script. Adds recordrtc to the toolbar.
  *
  * @package    atto_recordrtc
  * @author     Jesus Federico (jesus [at] blindsidenetworks [dt] com)
@@ -26,8 +26,28 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017080104;
-$plugin->requires  = 2015051100;
-$plugin->component = 'atto_recordrtc';
-$plugin->maturity = MATURITY_RC;
-$plugin->release = '1.0-rc';
+/**
+ * Enable RecordRTC plugin buttons on installation.
+ */
+function xmldb_atto_recordrtc_install() {
+    $toolbar = get_config('editor_atto', 'toolbar');
+    if (strpos($toolbar, 'recordrtc') === false) {
+        // Newline string changed in one of the latest versions from /n to /r/n.
+        $glue = "\r\n";
+        if (strpos($toolbar, $glue) === false) {
+            $glue = "\n";
+        }
+        $groups = explode($glue, $toolbar);
+        // Try to put recordrtc in files group.
+        foreach ($groups as $i => $group) {
+            $parts = explode('=', $group);
+            if (trim($parts[0]) == 'files') {
+                $groups[$i] = 'files = ' . trim($parts[1]) . ', recordrtc';
+                // Update config variable.
+                $toolbar = implode($glue, $groups);
+                set_config('toolbar', $toolbar, 'editor_atto');
+                return;
+            }
+        }
+    }
+}

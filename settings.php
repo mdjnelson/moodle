@@ -18,7 +18,8 @@
  * Settings that allow turning on and off recordrtc features
  *
  * @package    atto_recordrtc
- * @author     Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
+ * @author     Jesus Federico (jesus [at] blindsidenetworks [dt] com)
+ * @author     Jacob Prud'homme (jacob [dt] prudhomme [at] blindsidenetworks [dt] com)
  * @copyright  2017 Blindside Networks Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,24 +41,24 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configselect('atto_recordrtc/allowedtypes', $name, $desc, $default, $options);
     $settings->add($setting);
 
-    // Audio bit rate.
+    // Audio bitrate.
     $name = get_string('audiobitrate', 'atto_recordrtc');
     $desc = get_string('audiobitrate_desc', 'atto_recordrtc');
     $default = '128000';
-    $setting = new admin_setting_configtext('atto_recordrtc/audiobitrate', $name, $desc, $default, PARAM_RAW, 6);
+    $setting = new admin_setting_configtext('atto_recordrtc/audiobitrate', $name, $desc, $default, PARAM_INT, 8);
     $settings->add($setting);
 
-    // Audio video rate.
+    // Video bitrate.
     $name = get_string('videobitrate', 'atto_recordrtc');
     $desc = get_string('videobitrate_desc', 'atto_recordrtc');
     $default = '2500000';
-    $setting = new admin_setting_configtext('atto_recordrtc/videobitrate', $name, $desc, $default, PARAM_RAW, 7);
+    $setting = new admin_setting_configtext('atto_recordrtc/videobitrate', $name, $desc, $default, PARAM_INT, 8);
     $settings->add($setting);
 
     // Recording time limit.
     $name = get_string('timelimit', 'atto_recordrtc');
     $desc = get_string('timelimit_desc', 'atto_recordrtc');
     $default = '120';
-    $setting = new admin_setting_configtext_with_maxlength('atto_recordrtc/timelimit', $name, $desc, $default, PARAM_RAW, 4, 4);
+    $setting = new admin_setting_configtext('atto_recordrtc/timelimit', $name, $desc, $default, PARAM_INT, 8);
     $settings->add($setting);
 }

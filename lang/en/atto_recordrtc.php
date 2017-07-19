@@ -18,7 +18,8 @@
  * Strings for component 'atto_recordrtc', language 'en'.
  *
  * @package    atto_recordrtc
- * @author     Jesus Federico  (jesus [at] blindsidenetworks [dt] com)
+ * @author     Jesus Federico (jesus [at] blindsidenetworks [dt] com)
+ * @author     Jacob Prud'homme (jacob [dt] prudhomme [at] blindsidenetworks [dt] com)
  * @copyright  2017 Blindside Networks Inc.
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,9 +41,24 @@ $string['videobitrate_desc'] = 'Quality of video recording (larger number means 
 $string['timelimit'] = 'Time limit in seconds';
 $string['timelimit_desc'] = 'Maximum recording length allowed for the audio/video clips';
 
-$string['insecurealert'] = 'You must use this plugin either over HTTPS or from localhost!';
-$string['inputdevicealert_title'] = 'Error!';
-$string['inputdevicealert'] = 'There is no input device enabled';
+$string['nowebrtc_title'] = 'WebRTC not supported';
+$string['nowebrtc'] = 'Your browser offers limited or no support for WebRTC technologies yet, and cannot be used with this plugin. Please switch or upgrade your browser';
+$string['gumabort_title'] = 'Something happened';
+$string['gumabort'] = 'Something strange happened which prevented the webcam/microphone from being used';
+$string['gumnotallowed_title'] = 'Wrong permissions';
+$string['gumnotallowed'] = 'The user must allow the browser access to the webcam/microphone';
+$string['gumnotfound_title'] = 'Device missing';
+$string['gumnotfound'] = 'There is no input device connected or enabled';
+$string['gumnotreadable_title'] = 'Hardware error';
+$string['gumnotreadable'] = 'Something is preventing the browser from accessing the webcam/microphone';
+$string['gumoverconstrained_title'] = 'Problem with constraints';
+$string['gumoverconstrained'] = 'The current webcam/microphone can not produce a stream with the required constraints';
+$string['gumsecurity_title'] = 'No support for insecure connection';
+$string['gumsecurity'] = 'Your browser does not support recording over an insecure connection and must close the plugin';
+$string['gumtype_title'] = 'No constraints specified';
+$string['gumtype'] = 'Tried to get stream from the webcam/microphone, but no constraints were specified';
+$string['insecurealert_title'] = 'Insecure connection!';
+$string['insecurealert'] = 'Your browser might not allow this plugin to work unless it is used either over HTTPS or from localhost';
 $string['browseralert_title'] = 'Warning!';
 $string['browseralert'] = 'Use Firefox >= 29, Chrome >= 49 or Opera >= 36 for best experience';
 $string['startrecording'] = 'Start Recording';
@@ -50,12 +66,14 @@ $string['recordagain'] = 'Record Again';
 $string['stoprecording'] = 'Stop Recording';
 $string['recordingfailed'] = 'Recording failed, try again';
 $string['attachrecording'] = 'Attach Recording as Annotation';
-$string['norecordingfound'] = 'No recording was found';
+$string['norecordingfound_title'] = 'No recording found';
+$string['norecordingfound'] = 'Something appears to have gone wrong, it seems nothing has been recorded';
+$string['nearingmaxsize_title'] = 'Recording stopped';
 $string['nearingmaxsize'] = 'You have attained the maximum size limit for file uploads';
 $string['uploadprogress'] = 'completed';
 $string['uploadfailed'] = 'Upload failed:';
 $string['uploadfailed404'] = 'Upload failed: file too large';
 $string['uploadaborted'] = 'Upload aborted:';
 $string['annotationprompt'] = 'What should the annotation appear as?';
-$string['annotationaudio'] = 'Audio annotation';
-$string['annotationvideo'] = 'Video annotation';
+$string['annotation:audio'] = 'Audio annotation';
+$string['annotation:video'] = 'Video annotation';

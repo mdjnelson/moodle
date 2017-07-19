@@ -1,14 +1,21 @@
+// ESLint directives.
+/* eslint-disable */
+
+// JSHint directives.
+/* jshint ignore:start */
+
 /*!
  * Bowser - a browser detector
  * https://github.com/ded/bowser
  * MIT License | (c) Dustin Diaz 2015
  */
 
-!function (root, name, definition) {
-  if (typeof module != 'undefined' && module.exports) module.exports = definition()
-  else if (typeof define == 'function' && define.amd) define(name, definition)
-  else root[name] = definition()
-}(this, 'bowser', function () {
+define([], function() {
+//!function (root, name, definition) {
+//  if (typeof module != 'undefined' && module.exports) module.exports = definition()
+//  else if (typeof define == 'function' && define.amd) define(name, definition)
+//  else root[name] = definition()
+//}(this, 'bowser', function () {
   /**
     * See useragents.js for examples of navigator.userAgent
     */
