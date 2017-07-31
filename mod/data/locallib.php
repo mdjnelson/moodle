@@ -845,7 +845,8 @@ function mod_data_get_tagged_records($tag, $exclusivemode = false, $fromctx = 0,
         // Set accessibility of this item and all other items in the same course.
         $builder->walk(function($taggeditem) use ($courseid, $modinfo, $builder) {
             if ($taggeditem->courseid == $courseid) {
-                $accessible = check_tagged_data_accessibility($modinfo, $taggeditem);
+                $searchentry =  new \mod_data\search\entry();
+                $accessible = $searchentry->check_access($taggeditem->id);
                 $builder->set_accessible($taggeditem, $accessible);
             }
         });
@@ -883,41 +884,6 @@ function mod_data_get_tagged_records($tag, $exclusivemode = false, $fromctx = 0,
         return new core_tag\output\tagindex($tag, 'mod_data', 'data_records', $content, $exclusivemode,
             $fromctx, $ctx, $rec, $page, $totalpages);
     }
-}
-
-function check_tagged_data_accessibility($modinfo, $entry) {
-    global $USER;
-
-    $cm = $modinfo->get_cm($entry->cmid);
-
-    if (!$cm->uservisible) {
-        return false;
-    }
-
-    $now = time();
-
-    if (($entry->timeviewfrom && $now < $entry->timeviewfrom) || ($entry->timeviewto && $now > $entry->timeviewto)) {
-        return false;
-    }
-
-    if ($entry->approval && !$entry->approved && ($entry->userid != $USER->id)) {
-        $context = context_module::instance($cm->id);
-        if (!has_capability('mod/data:manageentries', $context)) {
-            return false;
-        }
-    }
-
-    $groupmode = groups_get_activity_groupmode($cm);
-    if ($groupmode == SEPARATEGROUPS) {
-        $currentgroup = groups_get_activity_group($cm, true);
-
-        $context = context_module::instance($cm->id);
-        if ($entry->groupid != $currentgroup && !has_capability('mod/data:manageentries', $context)) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 /**
