@@ -201,7 +201,7 @@ class mod_data_generator_testcase extends advanced_testcase {
         $tags = ['Cats', 'mice'];
 
         $datarecordid = $this->getDataGenerator()->get_plugin_generator('mod_data')->create_entry($data, $fieldcontents,
-                                                                                                    $groupa->id);
+                                                                                                    $groupa->id, $tags);
 
         $this->assertEquals(1, $DB->count_records('data_records', array('dataid' => $data->id)));
         $this->assertEquals(count($contents), $DB->count_records('data_content', array('recordid' => $datarecordid)));

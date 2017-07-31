@@ -219,13 +219,13 @@ class mod_data_generator extends testing_module_generator {
 
         $this->databaserecordcount++;
 
+        $recordid = data_add_record($data, $groupid);
+
         if (isset($options['approved'])) {
-            $approved = !empty($options['approved']);
+            data_approve_entry($recordid, !empty($options['approved']));
         } else {
             $approved = null;
         }
-
-        $recordid = data_add_record($data, $groupid, $approved);
 
         $fields = $DB->get_records('data_fields', array('dataid' => $data->id));
 
