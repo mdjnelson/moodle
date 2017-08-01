@@ -2653,7 +2653,7 @@ class mod_assign_external extends external_api {
         }
 
         // Override property attributes for consistency with the previous version.
-        $userdesc->keys['fullname']->type = PARAM_NOTAGS;
+        $userdesc->keys['fullname']->type = PARAM_RAW;
         $userdesc->keys['profileimageurlsmall']->required = VALUE_OPTIONAL;
         $userdesc->keys['profileimageurl']->required = VALUE_OPTIONAL;
         $userdesc->keys['email']->desc = 'Email address';
@@ -2754,7 +2754,7 @@ class mod_assign_external extends external_api {
 
         $return = array(
             'id' => $participant->id,
-            'fullname' => $participant->fullname,
+            'fullname' => strip_tags($participant->fullname),
             'submitted' => $participant->submitted,
             'requiregrading' => $participant->requiregrading,
             'grantedextension' => $participant->grantedextension,
