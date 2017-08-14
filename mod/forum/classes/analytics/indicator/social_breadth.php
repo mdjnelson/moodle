@@ -44,6 +44,10 @@ class social_breadth extends activity_base {
         return get_string('indicator:socialbreadthforum', 'mod_forum');
     }
 
+    public static function get_description() {
+        return get_string('indicator:socialbreadthforumdesc', 'mod_forum');
+    }
+
     /**
      * get_indicator_type
      *

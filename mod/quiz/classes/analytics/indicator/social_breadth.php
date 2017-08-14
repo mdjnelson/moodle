@@ -44,6 +44,10 @@ class social_breadth extends activity_base {
         return get_string('indicator:socialbreadthquiz', 'mod_quiz');
     }
 
+    public static function get_description() {
+        return get_string('indicator:socialbreadthquizdesc', 'mod_quiz');
+    }
+
     /**
      * get_indicator_type
      *

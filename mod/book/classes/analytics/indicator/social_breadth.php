@@ -44,6 +44,10 @@ class social_breadth extends activity_base {
         return get_string('indicator:socialbreadthbook', 'mod_book');
     }
 
+    public static function get_description() {
+        return get_string('indicator:socialbreadthbookdesc', 'mod_book');
+    }
+
     /**
      * get_indicator_type
      *

@@ -34,7 +34,9 @@ $string['folder:managefiles'] = 'Manage files in folder module';
 $string['folder:view'] = 'View folder content';
 $string['foldercontent'] = 'Files and subfolders';
 $string['indicator:cognitivedepthfolder'] = 'Folder cognitive';
+$string['indicator:cognitivedepthfolderdesc'] = '';
 $string['indicator:socialbreadthfolder'] = 'Folder social';
+$string['indicator:socialbreadthfolderdesc'] = '';
 $string['modulename'] = 'Folder';
 $string['modulename_help'] = 'The folder module enables a teacher to display a number of related files inside a single folder, reducing scrolling on the course page. A zipped folder may be uploaded and unzipped for display, or an empty folder created and files uploaded into it.
 

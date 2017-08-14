@@ -44,6 +44,10 @@ class cognitive_depth extends activity_base {
         return get_string('indicator:cognitivedepthlti', 'mod_lti');
     }
 
+    public static function get_description() {
+        return get_string('indicator:cognitivedepthltidesc', 'mod_lti');
+    }
+
     /**
      * get_indicator_type
      *

@@ -215,7 +215,9 @@ $string['icon_url_help'] = 'The icon URL allows the icon that shows up in the co
 LTI icon, an icon which conveys the type of activity may be specified.';
 $string['id'] = 'id';
 $string['indicator:socialbreadthlti'] = 'LTI social';
+$string['indicator:socialbreadthltidesc'] = '';
 $string['indicator:cognitivedepthlti'] = 'LTI cognitive';
+$string['indicator:cognitivedepthltidesc'] = '';
 $string['invalidid'] = 'LTI ID was incorrect';
 $string['launch_in_moodle'] = 'Launch tool in moodle';
 $string['launch_in_popup'] = 'Launch tool in a pop-up';

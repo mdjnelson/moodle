@@ -44,6 +44,10 @@ class any_access_before_start extends \core_analytics\local\indicator\binary {
         return get_string('indicator:accessesbeforestart');
     }
 
+    public static function get_description() {
+        return get_string('indicator:accessesbeforestartdesc');
+    }
+
     /**
      * required_sample_data
      *

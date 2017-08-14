@@ -44,6 +44,10 @@ class social_breadth extends activity_base {
         return get_string('indicator:socialbreadthchat', 'mod_chat');
     }
 
+    public static function get_description() {
+        return get_string('indicator:socialbreadthchatdesc', 'mod_chat');
+    }
+
     /**
      * get_indicator_type
      *

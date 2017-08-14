@@ -44,6 +44,10 @@ class read_actions extends \core_analytics\local\indicator\linear {
         return get_string('indicator:readactions');
     }
 
+    public static function get_description() {
+        return get_string('indicator:readactionsdesc');
+    }
+
     /**
      * required_sample_data
      *

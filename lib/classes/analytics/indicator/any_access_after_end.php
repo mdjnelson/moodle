@@ -44,6 +44,10 @@ class any_access_after_end extends \core_analytics\local\indicator\binary {
         return get_string('indicator:accessesafterend');
     }
 
+    public static function get_description() {
+        return get_string('indicator:accessesafterenddesc');
+    }
+
     /**
      * required_sample_data
      *

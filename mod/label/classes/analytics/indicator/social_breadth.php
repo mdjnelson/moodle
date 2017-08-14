@@ -44,6 +44,10 @@ class social_breadth extends activity_base {
         return get_string('indicator:socialbreadthlabel', 'mod_label');
     }
 
+    public static function get_description() {
+        return get_string('indicator:socialbreadthlabeldesc', 'mod_label');
+    }
+
     /**
      * get_indicator_type
      *

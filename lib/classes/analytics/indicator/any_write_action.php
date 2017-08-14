@@ -44,6 +44,10 @@ class any_write_action extends \core_analytics\local\indicator\binary {
         return get_string('indicator:anywrite');
     }
 
+    public static function get_description() {
+        return get_string('indicator:anywritedesc');
+    }
+
     /**
      * required_sample_data
      *

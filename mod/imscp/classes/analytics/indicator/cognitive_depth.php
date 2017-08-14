@@ -44,6 +44,10 @@ class cognitive_depth extends activity_base {
         return get_string('indicator:cognitivedepthimscp', 'mod_imscp');
     }
 
+    public static function get_description() {
+        return get_string('indicator:cognitivedepthimscpdesc', 'mod_imscp');
+    }
+
     /**
      * get_indicator_type
      *

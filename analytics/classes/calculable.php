@@ -79,6 +79,13 @@ abstract class calculable {
     }
 
     /**
+     * Returns a visible description for the indicator/target.
+     *
+     * @return string
+     */
+    public abstract static function get_description();
+
+    /**
      * The class id is the calculable class full qualified class name.
      *
      * @return string

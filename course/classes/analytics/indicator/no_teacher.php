@@ -51,6 +51,10 @@ class no_teacher extends \core_analytics\local\indicator\binary {
         return get_string('indicator:noteacher', 'moodle');
     }
 
+    public static function get_description() {
+        return get_string('indicator:noteacherdesc', 'moodle');
+    }
+
     /**
      * required_sample_data
      *

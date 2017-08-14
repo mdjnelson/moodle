@@ -44,6 +44,10 @@ class social_breadth extends activity_base {
         return get_string('indicator:socialbreadthchoice', 'mod_choice');
     }
 
+    public static function get_description() {
+        return get_string('indicator:socialbreadthchoicedesc', 'mod_choice');
+    }
+
     /**
      * get_indicator_type
      *

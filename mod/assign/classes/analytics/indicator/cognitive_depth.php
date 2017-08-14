@@ -44,6 +44,10 @@ class cognitive_depth extends activity_base {
         return get_string('indicator:cognitivedepthassign', 'mod_assign');
     }
 
+    public static function get_description() {
+        return get_string('indicator:cognitivedepthassigndesc', 'mod_assign');
+    }
+
     /**
      * get_indicator_type
      *

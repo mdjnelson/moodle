@@ -44,6 +44,10 @@ class user_track_forums extends \core_analytics\local\indicator\binary {
         return get_string('indicator:userforumstracking');
     }
 
+    public static function get_description() {
+        return get_string('indicator:userforumstrackingdesc');
+    }
+
     /**
      * required_sample_data
      *

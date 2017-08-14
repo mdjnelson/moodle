@@ -49,6 +49,10 @@ class course_dropout extends \core_analytics\local\target\binary {
         return get_string('target:coursedropout');
     }
 
+    public static function get_description() {
+        return get_string('target:coursedropoutdesc');
+    }
+
     /**
      * prediction_actions
      *

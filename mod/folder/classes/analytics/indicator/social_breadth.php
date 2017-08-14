@@ -44,6 +44,10 @@ class social_breadth extends activity_base {
         return get_string('indicator:socialbreadthfolder', 'mod_folder');
     }
 
+    public static function get_description() {
+        return get_string('indicator:socialbreadthfolderdesc', 'mod_folder');
+    }
+
     /**
      * get_indicator_type
      *

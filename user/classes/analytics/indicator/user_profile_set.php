@@ -44,6 +44,10 @@ class user_profile_set extends \core_analytics\local\indicator\linear {
         return get_string('indicator:completeduserprofile');
     }
 
+    public static function get_description() {
+        return get_string('indicator:completeduserprofiledesc');
+    }
+
     /**
      * required_sample_data
      *

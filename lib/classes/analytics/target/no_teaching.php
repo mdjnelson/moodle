@@ -53,6 +53,10 @@ class no_teaching extends \core_analytics\local\target\binary {
         return get_string('target:noteachingactivity');
     }
 
+    public static function get_description() {
+        return get_string('target:noteachingactivitydesc');
+    }
+
     /**
      * prediction_actions
      *

@@ -44,6 +44,10 @@ class cognitive_depth extends activity_base {
         return get_string('indicator:cognitivedepthforum', 'mod_forum');
     }
 
+    public static function get_description() {
+        return get_string('indicator:cognitivedepthforumdesc', 'mod_forum');
+    }
+
     /**
      * get_indicator_type
      *
