@@ -33,6 +33,20 @@
         "models": [
             {
                 "target": "Prevent devs at risk",
+                "targethelp": [
+                    {
+                        "title": "Help with something",
+                        "url": "http://example.org/help",
+                        "linktext": "",
+                        "icon":{
+                            "attributes": [
+                                {"name": "class", "value": "iconhelp"},
+                                {"name": "src", "value": "../../../pix/help.svg"},
+                                {"name": "alt", "value": "Help icon"}
+                            ]
+                        }
+                    }
+                ],
                 "enabled": 1,
                 "indicators": [
                     "Indicator 1",
@@ -69,7 +83,12 @@
         <tbody>
         {{#models}}
             <tr>
-                <td>{{target}}</td>
+                <td>
+                    {{target}}
+                    {{#targethelp}}
+                        {{>core/help_icon}}
+                    {{/targethelp}}
+                </td>
                 <td>
                     {{#enabled}}
                         {{#pix}}i/checked, core, {{#str}}yes{{/str}}{{/pix}}

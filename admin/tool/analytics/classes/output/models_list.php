@@ -66,6 +66,16 @@ class models_list implements \renderable, \templatable {
         foreach ($this->models as $model) {
             $modeldata = $model->export();
 
+            // Check if there is a help to show.
+            if ($modeldata->target instanceof \lang_string) {
+                $identifier = $modeldata->target->get_identifier();
+                $component = $modeldata->target->get_component();
+                if (get_string_manager()->string_exists($identifier, $component)) {
+                    $helpicon = new \help_icon($identifier, $component);
+                    $modeldata->targethelp = $helpicon->export_for_template($output);
+                }
+            }
+
             // Model predictions list.
             if ($model->uses_insights()) {
                 $predictioncontexts = $model->get_predictions_contexts();
