@@ -41,11 +41,11 @@ class social_breadth extends activity_base {
      * @return string
      */
     public static function get_name() {
-        return get_string('indicator:socialbreadthimscp', 'mod_imscp');
+        return get_string('indicator:socialbreadth', 'mod_imscp');
     }
 
     public static function get_description() {
-        return get_string('indicator:socialbreadthimscpdesc', 'mod_imscp');
+        return get_string('indicator:socialbreadthdesc', 'mod_imscp');
     }
 
     /**

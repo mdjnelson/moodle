@@ -41,11 +41,11 @@ class cognitive_depth extends activity_base {
      * @return string
      */
     public static function get_name() {
-        return get_string('indicator:cognitivedepthchat', 'mod_chat');
+        return get_string('indicator:cognitivedepth', 'mod_chat');
     }
 
     public static function get_description() {
-        return get_string('indicator:cognitivedepthchatdesc', 'mod_chat');
+        return get_string('indicator:cognitivedepthdesc', 'mod_chat');
     }
 
     /**

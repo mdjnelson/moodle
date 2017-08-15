@@ -41,11 +41,11 @@ class social_breadth extends activity_base {
      * @return string
      */
     public static function get_name() {
-        return get_string('indicator:socialbreadthquiz', 'mod_quiz');
+        return get_string('indicator:socialbreadth', 'mod_quiz');
     }
 
     public static function get_description() {
-        return get_string('indicator:socialbreadthquizdesc', 'mod_quiz');
+        return get_string('indicator:socialbreadthdesc', 'mod_quiz');
     }
 
     /**

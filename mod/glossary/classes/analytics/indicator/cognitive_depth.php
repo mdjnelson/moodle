@@ -41,11 +41,11 @@ class cognitive_depth extends activity_base {
      * @return string
      */
     public static function get_name() {
-        return get_string('indicator:cognitivedepthglossary', 'mod_glossary');
+        return get_string('indicator:cognitivedepth', 'mod_glossary');
     }
 
     public static function get_description() {
-        return get_string('indicator:cognitivedepthglossarydesc', 'mod_glossary');
+        return get_string('indicator:cognitivedepthdesc', 'mod_glossary');
     }
 
     /**
