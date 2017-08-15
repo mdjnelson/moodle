@@ -66,6 +66,7 @@ class models_list implements \renderable, \templatable {
         foreach ($this->models as $model) {
             $modeldata = $model->export();
 
+
             // Model predictions list.
             if ($model->uses_insights()) {
                 $predictioncontexts = $model->get_predictions_contexts();

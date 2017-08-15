@@ -4496,6 +4496,17 @@ EOD;
         $data = $bar->export_for_template($this);
         return $this->render_from_template('core/progress_bar', $data);
     }
+
+    /**
+     * Implementation of help icon with text.
+     *
+     * @param \core\output\help_icon_with_text $helpicon A help icon with text instance
+     * @return string HTML fragment
+     */
+    protected function render_help_icon_with_text(\core\output\help_icon_with_text $helpicon) {
+        print_object($helpicon->export_for_template($this));
+        return $this->render_from_template('core/help_icon', $helpicon->export_for_template($this));
+    }
 }
 
 /**
