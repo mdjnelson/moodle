@@ -1205,6 +1205,7 @@ class model {
 
         $data = clone $this->model;
         $data->target = $this->get_target()->get_name();
+        $data->description = $this->get_target()->get_description();
 
         if ($timesplitting = $this->get_time_splitting()) {
             $data->timesplitting = $timesplitting->get_name();
