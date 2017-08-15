@@ -33,6 +33,10 @@ defined('MOODLE_INTERNAL') || die();
  */
 class test_indicator_max extends \core_analytics\local\indicator\binary {
 
+    public static function get_name() {
+        return 'Test indicator max';
+    }
+
     /**
      * calculate_sample
      *

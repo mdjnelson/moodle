@@ -33,6 +33,10 @@ defined('MOODLE_INTERNAL') || die();
  */
 class test_indicator_min extends \core_analytics\local\indicator\binary {
 
+    public static function get_name() {
+        return 'Test indicator min';
+    }
+
     /**
      * calculate_sample
      *

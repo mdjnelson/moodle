@@ -33,6 +33,10 @@ defined('MOODLE_INTERNAL') || die();
  */
 class test_indicator_fullname extends \core_analytics\local\indicator\linear {
 
+    public static function get_name() {
+        return 'Test indicator fullname';
+    }
+
     /**
      * include_averages
      *

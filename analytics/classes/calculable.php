@@ -66,17 +66,15 @@ abstract class calculable {
     protected $sampledata = array();
 
     /**
-     * Returns a visible name for the indicator.
+     * Returns the name.
      *
      * Used as column identificator.
      *
-     * Defaults to the indicator class name.
+     * If you return a lang_string that also has a corresponding '_help' string this will be shown as well.
      *
-     * @return string
+     * @return \lang_string|string
      */
-    public static function get_name() {
-        return '\\' . get_called_class();
-    }
+    public static abstract function get_name();
 
     /**
      * The class id is the calculable class full qualified class name.

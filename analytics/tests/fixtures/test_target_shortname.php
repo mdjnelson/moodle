@@ -33,6 +33,10 @@ defined('MOODLE_INTERNAL') || die();
  */
 class test_target_shortname extends \core_analytics\local\target\binary {
 
+    public static function get_name() {
+        return 'Test target shortname';
+    }
+
     /**
      * predictions
      *

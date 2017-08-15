@@ -38,6 +38,10 @@ require_once(__DIR__ . '/test_target_shortname.php');
  */
 class test_static_target_shortname extends test_target_shortname {
 
+    public static function get_name() {
+        return 'Test target shortname';
+    }
+
     /**
      * based_on_assumptions
      *
