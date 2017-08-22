@@ -393,7 +393,7 @@ class helper {
             );
         }
         // Permissions.
-        if ($course->can_review_enrolments()) {
+        if ($course->can_review_enrolments() && has_capability('moodle/course:viewparticipants', $course->get_context())) {
             $actions['enrolledusers'] = array(
                 'url' => new \moodle_url('/user/index.php', array('id' => $course->id)),
                 'string' => \get_string('enrolledusers', 'enrol')

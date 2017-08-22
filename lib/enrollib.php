@@ -435,7 +435,8 @@ function enrol_add_course_navigation(navigation_node $coursenode, $course) {
 
     if ($course->id != SITEID) {
         // list all participants - allows assigning roles, groups, etc.
-        if (has_capability('moodle/course:enrolreview', $coursecontext)) {
+        if (has_capability('moodle/course:enrolreview', $coursecontext)
+                && has_capability('moodle/course:viewparticipants', $coursecontext)) {
             $url = new moodle_url('/user/index.php', array('id'=>$course->id));
             $usersnode->add(get_string('enrolledusers', 'enrol'), $url, navigation_node::TYPE_SETTING, null, 'review', new pix_icon('i/enrolusers', ''));
         }
