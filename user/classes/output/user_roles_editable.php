@@ -54,16 +54,21 @@ class user_roles_editable extends \core\output\inplace_editable {
      * @param \stdClass $user The current user
      * @param \stdClass[] $courseroles The list of course roles.
      * @param \stdClass[] $assignableroles The list of assignable roles in this course.
-     * @param array $value Array of role ids.
+     * @param \stdClass[] $userroles The list of user roles.
      */
-    public function __construct($course, $context, $user, $courseroles, $assignableroles, $value) {
+    public function __construct($course, $context, $user, $courseroles, $assignableroles, $userroles) {
         // Check capabilities to get editable value.
         $editable = has_capability('moodle/role:assign', $context);
 
         // Invent an itemid.
         $itemid = $course->id . ':' . $user->id;
 
-        $value = json_encode($value);
+        $getrole = function($role) {
+            return $role->roleid;
+        };
+        $ids = array_values(array_unique(array_map($getrole, $userroles)));
+
+        $value = json_encode($ids);
 
         // Remember these for the display value.
         $this->courseroles = $courseroles;
@@ -71,8 +76,15 @@ class user_roles_editable extends \core\output\inplace_editable {
 
         parent::__construct('core_user', 'user_roles', $itemid, $editable, $value, $value);
 
-        // Assignable roles.
+        // Removed the roles that were assigned to the user at a different context.
         $options = $assignableroles;
+        foreach ($userroles as $role) {
+            if (isset($assignableroles[$role->roleid])) {
+                if ($role->contextid != $context->id) {
+                    unset($options[$role->roleid]);
+                }
+            }
+        }
         $this->edithint = get_string('xroleassignments', 'role', fullname($user));
         $this->editlabel = get_string('xroleassignments', 'role', fullname($user));
 
