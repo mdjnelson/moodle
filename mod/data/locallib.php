@@ -790,6 +790,7 @@ function data_get_entries_left_to_view($data, $numentries, $canmanageentries) {
 function mod_data_get_tagged_records($tag, $exclusivemode = false, $fromctx = 0, $ctx = 0, $rec = 1, $page = 0) {
     global $OUTPUT;
     $perpage = $exclusivemode ? 20 : 5;
+    $searchentry =  new \mod_data\search\entry();
 
     // Build the SQL query.
     $ctxselect = context_helper::get_preload_record_columns_sql('ctx');
@@ -843,9 +844,8 @@ function mod_data_get_tagged_records($tag, $exclusivemode = false, $fromctx = 0,
         }
         $modinfo = get_fast_modinfo($builder->get_course($courseid));
         // Set accessibility of this item and all other items in the same course.
-        $builder->walk(function($taggeditem) use ($courseid, $modinfo, $builder) {
+        $builder->walk(function($taggeditem) use ($courseid, $modinfo, $builder, $searchentry) {
             if ($taggeditem->courseid == $courseid) {
-                $searchentry =  new \mod_data\search\entry();
                 $accessible = $searchentry->check_access($taggeditem->id);
                 $builder->set_accessible($taggeditem, $accessible);
             }
@@ -869,7 +869,7 @@ function mod_data_get_tagged_records($tag, $exclusivemode = false, $fromctx = 0,
                 'rid' => $item->id,
                 'd'        => $item->dataid
             ));
-            $pagename   = get_string('entry', 'data');
+            $pagename = $searchentry->get_title_value($item);
             $pagename   = html_writer::link($pageurl, $pagename);
             $courseurl  = course_get_url($item->courseid, $cm->sectionnum);
             $cmname     = html_writer::link($cm->url, $cm->get_formatted_name());

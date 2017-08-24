@@ -112,6 +112,11 @@ class entry extends \core_search\base_mod {
         return $doc;
     }
 
+    public function get_title_value($entry) {
+        $indexfields = $this->get_fields_for_entries($entry);
+        return $indexfields[0];
+    }
+
     /**
      * Whether the user can access the document or not.
      *
