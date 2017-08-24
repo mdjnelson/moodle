@@ -59,6 +59,7 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="required" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Required fields must have a value when inserted by a user"/>
+        <FIELD NAME="titlefield" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Title fields will be used as headers when display tag or global searches"/>
         <FIELD NAME="param1" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="param2" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="param3" TYPE="text" NOTNULL="false" SEQUENCE="false"/>

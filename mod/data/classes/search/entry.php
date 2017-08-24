@@ -270,7 +270,7 @@ class entry extends \core_search\base_mod {
         $validfieldtypes = array('text', 'textarea', 'menu', 'radiobutton', 'checkbox', 'multimenu', 'url');
 
         $sql = "SELECT dc.*, df.name AS fldname,
-                       df.type AS fieldtype, df.required
+                       df.type AS fieldtype, df.required, df.titlefield
                   FROM {data_content} dc, {data_fields} df
                  WHERE dc.fieldid = df.id
                        AND dc.recordid = :recordid";

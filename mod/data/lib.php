@@ -156,6 +156,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
         $this->field->name = '';
         $this->field->description = '';
         $this->field->required = false;
+        $this->field->titlefield = false;
 
         return true;
     }
@@ -172,6 +173,7 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
         $this->field->name        = trim($data->name);
         $this->field->description = trim($data->description);
         $this->field->required    = !empty($data->required) ? 1 : 0;
+        $this->field->titlefield    = !empty($data->titlefield) ? 1 : 0;
 
         if (isset($data->param1)) {
             $this->field->param1 = trim($data->param1);

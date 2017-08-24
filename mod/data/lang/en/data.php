@@ -171,6 +171,7 @@ $string['fieldname'] = 'Field name';
 $string['fieldnotmatched'] = 'The following fields in your file are not known in this database: {$a}';
 $string['fieldoptions'] = 'Options (one per line)';
 $string['fields'] = 'Fields';
+$string['fieldtitlefield'] = 'Title field';
 $string['fieldupdated'] = 'Field updated';
 $string['fieldwidth'] = 'Width';
 $string['fieldwidthlistview'] = 'Width in list view';

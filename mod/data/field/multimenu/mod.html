@@ -12,6 +12,10 @@
         <td class="c1"><input class="requiredfield" type="checkbox" name="required" id="required" <?php p($this->field->required?"checked=\"checked\"":""); ?>/></td>
     </tr>
     <tr>
+        <td class="c0"><label for="titlefield"><?php echo get_string('fieldtitlefield', 'data'); ?></label></td>
+        <td class="c1"><input type="checkbox" name="titlefield" id="titlefield" <?php if($this->field->titlefield) {echo 'checked="checked"';} ?> value="1" /></td>
+    </tr>
+    <tr>
         <td class="c0" valign="top"><label for="param1"><?php echo get_string('fieldoptions', 'data'); ?></label></td>
         <td class="c1"><textarea class="optionstextarea" name="param1" id="param1" cols="80" rows="10"><?php if($this->field->param1) {p($this->field->param1);} ?></textarea></td>
     </tr>

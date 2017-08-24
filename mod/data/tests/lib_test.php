@@ -993,6 +993,7 @@ class mod_data_lib_testcase extends advanced_testcase {
         $fieldrecord = new StdClass();
         $fieldrecord->name = 'field-1';
         $fieldrecord->type = 'text';
+        $fieldrecord->titlefield = true;
 
         $data1 = $this->getDataGenerator()->create_module('data', array('course' => $course1->id, 'approval' => true));
         $field1 = $datagenerator->create_field($fieldrecord, $data1);

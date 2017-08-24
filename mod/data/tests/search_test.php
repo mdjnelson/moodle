@@ -562,6 +562,24 @@ class mod_data_search_test extends advanced_testcase {
         $this->assertEquals($data10doc->get('content'), 'text area testing');
         $this->assertEquals($data10doc->get('description1'), 'multimenu1 multimenu2 multimenu3 multimenu4');
 
+        // Eleventh Case.
+        $data11 = $this->getDataGenerator()->create_module('data', $record);
+
+        $fieldtypes = [
+            array('text', 0, 1),
+            array('number', 1, 0),
+            array('url', 1, 0)
+        ];
+
+        $this->create_default_data_fields($fieldtypes, $data11);
+
+        $data11record1id = $this->create_default_data_record($data11);
+
+        $data11entry1 = $this->get_entry_for_id($data11record1id);
+
+        $data11doc = $searcharea->get_document($data11entry1);
+        $this->assertEquals($data11doc->get('title'), 'text for testing');
+
     }
 
     /**
@@ -948,6 +966,7 @@ class mod_data_search_test extends advanced_testcase {
             if (is_array($fieldtype)) {
                 $record->type = $fieldtype[0];
                 $record->required = $fieldtype[1];
+                $record->titlefield = !empty($fieldtype[2]);
             } else {
                 $record->type = $fieldtype;
                 $record->required = 0;
