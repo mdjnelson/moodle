@@ -3893,9 +3893,17 @@ function course_get_user_navigation_options($context, $course = null) {
 
     // Frontpage settings?
     if ($isfrontpage) {
+        // Even though we are on the front page it's possible the course being passed is not the site course.
+        if ($course->id == SITEID) {
+            $options->participants = has_capability('moodle/course:enrolreview', $sitecontext) ||
+                has_capability('moodle/site:viewparticipants', $sitecontext);
+        } else {
+            $coursecontext = context_course::instance($course->id);
+            $options->participants = has_capability('moodle/course:enrolreview', $coursecontext) ||
+                has_capability('moodle/course:viewparticipants', $coursecontext);
+        }
+
         // We are on the front page, so make sure we use the proper capability (site:viewparticipants).
-        $options->participants = has_capability('moodle/site:viewparticipants', $sitecontext) ||
-            has_capability('moodle/course:enrolreview', $sitecontext);
         $options->badges = !empty($CFG->enablebadges) && has_capability('moodle/badges:viewbadges', $sitecontext);
         $options->tags = !empty($CFG->usetags) && $isloggedin;
         $options->search = !empty($CFG->enableglobalsearch) && has_capability('moodle/search:query', $sitecontext);
