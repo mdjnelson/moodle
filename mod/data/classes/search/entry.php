@@ -112,11 +112,6 @@ class entry extends \core_search\base_mod {
         return $doc;
     }
 
-    public function get_title_value($entry) {
-        $indexfields = $this->get_fields_for_entries($entry);
-        return $indexfields[0];
-    }
-
     /**
      * Whether the user can access the document or not.
      *
@@ -270,7 +265,7 @@ class entry extends \core_search\base_mod {
         $validfieldtypes = array('text', 'textarea', 'menu', 'radiobutton', 'checkbox', 'multimenu', 'url');
 
         $sql = "SELECT dc.*, df.name AS fldname,
-                       df.type AS fieldtype, df.required, df.titlefield
+                       df.type AS fieldtype, df.required
                   FROM {data_content} dc, {data_fields} df
                  WHERE dc.fieldid = df.id
                        AND dc.recordid = :recordid";

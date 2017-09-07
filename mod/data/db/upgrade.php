@@ -81,18 +81,5 @@ function xmldb_data_upgrade($oldversion) {
     // Automatically generated Moodle v3.3.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2017051502) {
-        // Define field required to be added to data_fields.
-        $table = new xmldb_table('data_fields');
-        $field = new xmldb_field('titlefield', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'required');
-
-        // Conditionally launch add field required.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        upgrade_mod_savepoint(true, 2017051502, 'data');
-    }
-
     return true;
 }

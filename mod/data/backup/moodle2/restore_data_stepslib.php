@@ -122,6 +122,11 @@ class restore_data_activity_structure_step extends restore_activity_structure_st
         $this->set_mapping('data_content', $oldid, $newitemid, true); // files by this itemname
     }
 
+    /**
+     * Add tags to restored records.
+     *
+     * @param stdClass $data Tag
+     */
     protected function process_data_tag($data) {
         $data = (object)$data;
 

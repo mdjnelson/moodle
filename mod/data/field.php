@@ -147,7 +147,6 @@ switch ($mode) {
                 $field->field->name = $fieldinput->name;
                 $field->field->description = $fieldinput->description;
                 $field->field->required = !empty($fieldinput->required) ? 1 : 0;
-                $field->field->titlefield = !empty($fieldinput->titlefield) ? 1 : 0;
 
                 for ($i=1; $i<=10; $i++) {
                     if (isset($fieldinput->{'param'.$i})) {

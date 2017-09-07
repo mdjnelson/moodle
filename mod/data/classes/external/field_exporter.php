@@ -63,11 +63,6 @@ class field_exporter extends exporter {
                 'description' => 'Whether is a field required or not.',
                 'default' => 0,
             ),
-            'titlefield' => array(
-                'type' => PARAM_BOOL,
-                'description' => 'Whether a field should be used as the record title or not.',
-                'default' => 0,
-            ),
         );
         // Field possible parameters.
         for ($i = 1; $i <= 10; $i++) {

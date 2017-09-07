@@ -62,10 +62,8 @@ class sortedcontentqueue extends \SPLPriorityQueue {
         $record1 = $this->contents[$key1];
         $record2 = $this->contents[$key2];
 
-        if ($record1->titlefield != $record2->titlefield) {
-            return $record1->titlefield ? 1 : -1;
-        } else if ( ($record1->required && $record2->required) || (!$record1->required && !$record2->required)) {
-            // If a content's fieldtype is compulsory in the database than it would have priority than any other noncompulsory content.
+        // If a content's fieldtype is compulsory in the database than it would have priority than any other noncompulsory content.
+        if ( ($record1->required && $record2->required) || (!$record1->required && !$record2->required)) {
             if ($record1->priority === $record2->priority) {
                 return $key1 < $key2 ? 1 : -1;
             }

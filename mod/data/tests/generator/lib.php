@@ -120,10 +120,6 @@ class mod_data_generator extends testing_module_generator {
             throw new coding_exception('type must be present in phpunit_util::create_field() $record');
         }
 
-        if (!isset($record['titlefield'])) {
-            $record['titlefield'] = 0;
-        }
-
         if (!isset($record['required'])) {
             $record['required'] = 0;
         }

@@ -984,38 +984,14 @@ class mod_data_lib_testcase extends advanced_testcase {
 
         // Setup test data.
         $datagenerator = $this->getDataGenerator()->get_plugin_generator('mod_data');
-        $course5 = $this->getDataGenerator()->create_course();
-        $course4 = $this->getDataGenerator()->create_course();
-        $course3 = $this->getDataGenerator()->create_course();
-        $course2 = $this->getDataGenerator()->create_course();
         $course1 = $this->getDataGenerator()->create_course();
 
         $fieldrecord = new StdClass();
         $fieldrecord->name = 'field-1';
         $fieldrecord->type = 'text';
-        $fieldrecord->titlefield = true;
 
         $data1 = $this->getDataGenerator()->create_module('data', array('course' => $course1->id, 'approval' => true));
         $field1 = $datagenerator->create_field($fieldrecord, $data1);
-        $data2 = $this->getDataGenerator()->create_module('data', array('course' => $course2->id));
-        $field2 = $datagenerator->create_field($fieldrecord, $data2);
-
-        $data3 = $this->getDataGenerator()->create_module('data', array('course'   => $course3->id));
-        $field3 = $datagenerator->create_field($fieldrecord, $data3);
-
-        $timefrom = time() - YEARSECS;
-        $timeto = time() - WEEKSECS;
-        $data4 = $this->getDataGenerator()->create_module('data', array('course'   => $course4->id,
-                                                                        'timeviewfrom' => $timefrom,
-                                                                        'timeviewto'   => $timeto
-        ));
-        $field4 = $datagenerator->create_field($fieldrecord, $data4);
-
-        $groupa = $this->getDataGenerator()->create_group(array('courseid' => $course5->id, 'name' => 'groupA'));
-        $groupb = $this->getDataGenerator()->create_group(array('courseid' => $course5->id, 'name' => 'groupB'));
-        $data5 = $this->getDataGenerator()->create_module('data', array('course'   => $course5->id));
-        $field5 = $datagenerator->create_field($fieldrecord, $data5);
-        set_coursemodule_groupmode($data5->cmid, SEPARATEGROUPS);
 
         $record11 = $datagenerator->create_entry($data1, [$field1->field->id => 'value11'],
             0, ['Cats', 'Dogs']);
@@ -1025,29 +1001,6 @@ class mod_data_lib_testcase extends advanced_testcase {
             0, ['Cats']);
         $record14 = $datagenerator->create_entry($data1, [$field1->field->id => 'value14'],
             0);
-        $record15 = $datagenerator->create_entry($data1, [$field1->field->id => 'value15'],
-            0, ['Cats']);
-        $record16 = $datagenerator->create_entry($data1, [$field1->field->id => 'value16'],
-            0, ['Cats'], ['approved' => false]);
-
-        $record21 = $datagenerator->create_entry($data2, [$field2->field->id => 'value21'],
-            0, ['Cats']);
-        $record22 = $datagenerator->create_entry($data2, [$field2->field->id => 'value22'],
-            0, ['Cats', 'Dogs']);
-        $record23 = $datagenerator->create_entry($data2, [$field2->field->id => 'value23'],
-            0, ['mice', 'Cats']);
-
-        $record31 = $datagenerator->create_entry($data3, [$field3->field->id => 'value31'],
-            0, ['mice', 'Cats']);
-
-        $record41 = $datagenerator->create_entry($data4, [$field4->field->id => 'value41'],
-            0, ['mice', 'Cats']);
-
-        $record51 = $datagenerator->create_entry($data5, [$field5->field->id => 'value51'],
-            $groupa->id, ['mice', 'Cats']);
-
-        $record52 = $datagenerator->create_entry($data5, [$field5->field->id => 'value52'],
-            $groupb->id, ['mice', 'Cats']);
 
         $tag = core_tag_tag::get_by_name(0, 'Cats');
 
@@ -1058,52 +1011,40 @@ class mod_data_lib_testcase extends advanced_testcase {
         $this->assertContains('value12', $res->content);
         $this->assertContains('value13', $res->content);
         $this->assertNotContains('value14', $res->content);
-        $this->assertContains('value15', $res->content);
-        $this->assertContains('value16', $res->content);
-        $this->assertNotContains('value21', $res->content);
-        $this->assertNotContains('value22', $res->content);
-        $this->assertNotContains('value23', $res->content);
-        $this->assertNotContains('value31', $res->content);
-        $this->assertNotContains('value41', $res->content);
-        $this->assertNotContains('value51', $res->content);
-        $this->assertNotContains('value52', $res->content);
-        $this->assertEmpty($res->prevpageurl);
-        $this->assertNotEmpty($res->nextpageurl);
-        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$record = */1);
+    }
 
-        $this->assertNotContains('value11', $res->content);
-        $this->assertNotContains('value12', $res->content);
-        $this->assertNotContains('value13', $res->content);
-        $this->assertNotContains('value14', $res->content);
-        $this->assertNotContains('value15', $res->content);
-        $this->assertNotContains('value16', $res->content);
+    public function test_mod_data_get_tagged_records_approval() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setup test data.
+        $datagenerator = $this->getDataGenerator()->get_plugin_generator('mod_data');
+        $course2 = $this->getDataGenerator()->create_course();
+        $course1 = $this->getDataGenerator()->create_course();
+
+        $fieldrecord = new StdClass();
+        $fieldrecord->name = 'field-1';
+        $fieldrecord->type = 'text';
+
+        $data1 = $this->getDataGenerator()->create_module('data', array('course' => $course1->id));
+        $field1 = $datagenerator->create_field($fieldrecord, $data1);
+        $data2 = $this->getDataGenerator()->create_module('data', array('course' => $course2->id, 'approval' => true));
+        $field2 = $datagenerator->create_field($fieldrecord, $data2);
+
+        $record11 = $datagenerator->create_entry($data1, [$field1->field->id => 'value11'],
+                0, ['Cats', 'Dogs']);
+
+        $record21 = $datagenerator->create_entry($data2, [$field2->field->id => 'value21'],
+                0, ['Cats'], ['approved' => false]);
+        $tag = core_tag_tag::get_by_name(0, 'Cats');
+
+        // Admin can see everything.
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+        $this->assertContains('value11', $res->content);
         $this->assertContains('value21', $res->content);
-        $this->assertContains('value22', $res->content);
-        $this->assertContains('value23', $res->content);
-        $this->assertContains('value31', $res->content);
-        $this->assertContains('value41', $res->content);
-        $this->assertNotContains('value51', $res->content);
-        $this->assertNotContains('value52', $res->content);
-
-        $this->assertNotEmpty($res->prevpageurl);
-        $this->assertNotEmpty($res->nextpageurl);
-        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$record = */2);
-        $this->assertNotContains('value11', $res->content);
-        $this->assertNotContains('value12', $res->content);
-        $this->assertNotContains('value13', $res->content);
-        $this->assertNotContains('value14', $res->content);
-        $this->assertNotContains('value15', $res->content);
-        $this->assertNotContains('value16', $res->content);
-        $this->assertNotContains('value21', $res->content);
-        $this->assertNotContains('value22', $res->content);
-        $this->assertNotContains('value23', $res->content);
-        $this->assertNotContains('value31', $res->content);
-        $this->assertNotContains('value41', $res->content);
-        $this->assertContains('value51', $res->content);
-        $this->assertContains('value52', $res->content);
-        $this->assertNotEmpty($res->prevpageurl);
+        $this->assertEmpty($res->prevpageurl);
         $this->assertEmpty($res->nextpageurl);
 
         // Create and enrol a user.
@@ -1111,47 +1052,213 @@ class mod_data_lib_testcase extends advanced_testcase {
         $studentrole = $DB->get_record('role', array('shortname' => 'student'));
         $this->getDataGenerator()->enrol_user($student->id, $course1->id, $studentrole->id, 'manual');
         $this->getDataGenerator()->enrol_user($student->id, $course2->id, $studentrole->id, 'manual');
-        $this->getDataGenerator()->enrol_user($student->id, $course4->id, $studentrole->id, 'manual');
-        $this->getDataGenerator()->enrol_user($student->id, $course5->id, $studentrole->id, 'manual');
+        $this->setUser($student);
+
+        // User can search data records inside a course.
+        core_tag_index_builder::reset_caches();
+        $res = mod_data_get_tagged_records($tag, false,0, 0, 1,0);
+
+        $this->assertContains('value11', $res->content);
+        $this->assertNotContains('value21', $res->content);
+
+        $recordtoupdate = new stdClass();
+        $recordtoupdate->id = $record21;
+        $recordtoupdate->approved = true;
+        $DB->update_record('data_records', $recordtoupdate);
+
+        core_tag_index_builder::reset_caches();
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+
+        $this->assertContains('value11', $res->content);
+        $this->assertContains('value21', $res->content);
+    }
+
+    public function test_mod_data_get_tagged_records_time() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setup test data.
+        $datagenerator = $this->getDataGenerator()->get_plugin_generator('mod_data');
+        $course2 = $this->getDataGenerator()->create_course();
+        $course1 = $this->getDataGenerator()->create_course();
+
+        $fieldrecord = new StdClass();
+        $fieldrecord->name = 'field-1';
+        $fieldrecord->type = 'text';
+
+        $timefrom = time() - YEARSECS;
+        $timeto = time() - WEEKSECS;
+
+        $data1 = $this->getDataGenerator()->create_module('data', array('course' => $course1->id, 'approval' => true));
+        $field1 = $datagenerator->create_field($fieldrecord, $data1);
+        $data2 = $this->getDataGenerator()->create_module('data', array('course' => $course2->id,
+                                                                        'timeviewfrom' => $timefrom,
+                                                                        'timeviewto'   => $timeto));
+        $field2 = $datagenerator->create_field($fieldrecord, $data2);
+
+        $record11 = $datagenerator->create_entry($data1, [$field1->field->id => 'value11'],
+                0, ['Cats', 'Dogs']);
+
+        $record21 = $datagenerator->create_entry($data2, [$field2->field->id => 'value21'],
+                0, ['Cats']);
+        $tag = core_tag_tag::get_by_name(0, 'Cats');
+
+        // Admin can see everything.
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+        $this->assertContains('value11', $res->content);
+        $this->assertContains('value21', $res->content);
+        $this->assertEmpty($res->prevpageurl);
+        $this->assertEmpty($res->nextpageurl);
+
+        // Create and enrol a user.
+        $student = self::getDataGenerator()->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $this->getDataGenerator()->enrol_user($student->id, $course1->id, $studentrole->id, 'manual');
+        $this->getDataGenerator()->enrol_user($student->id, $course2->id, $studentrole->id, 'manual');
+        $this->setUser($student);
+
+        // User can search data records inside a course.
+        core_tag_index_builder::reset_caches();
+        $res = mod_data_get_tagged_records($tag, false,0, 0, 1,0);
+
+        $this->assertContains('value11', $res->content);
+        $this->assertNotContains('value21', $res->content);
+
+        $data2->timeviewto = time() + YEARSECS;
+        $DB->update_record('data', $data2);
+
+        core_tag_index_builder::reset_caches();
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+
+        $this->assertContains('value11', $res->content);
+        $this->assertContains('value21', $res->content);
+    }
+
+    public function test_mod_data_get_tagged_records_course_enrolment() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setup test data.
+        $datagenerator = $this->getDataGenerator()->get_plugin_generator('mod_data');
+        $course2 = $this->getDataGenerator()->create_course();
+        $course1 = $this->getDataGenerator()->create_course();
+
+        $fieldrecord = new StdClass();
+        $fieldrecord->name = 'field-1';
+        $fieldrecord->type = 'text';
+
+        $data1 = $this->getDataGenerator()->create_module('data', array('course' => $course1->id, 'approval' => true));
+        $field1 = $datagenerator->create_field($fieldrecord, $data1);
+        $data2 = $this->getDataGenerator()->create_module('data', array('course' => $course2->id));
+        $field2 = $datagenerator->create_field($fieldrecord, $data2);
+
+        $record11 = $datagenerator->create_entry($data1, [$field1->field->id => 'value11'],
+                0, ['Cats', 'Dogs']);
+
+        $record21 = $datagenerator->create_entry($data2, [$field2->field->id => 'value21'],
+                0, ['Cats']);
+        $tag = core_tag_tag::get_by_name(0, 'Cats');
+
+        // Admin can see everything.
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+        $this->assertContains('value11', $res->content);
+        $this->assertContains('value21', $res->content);
+        $this->assertEmpty($res->prevpageurl);
+        $this->assertEmpty($res->nextpageurl);
+
+        // Create and enrol a user.
+        $student = self::getDataGenerator()->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $this->getDataGenerator()->enrol_user($student->id, $course1->id, $studentrole->id, 'manual');
+        $this->setUser($student);
+        core_tag_index_builder::reset_caches();
+
+        // User can search data records inside a course.
+        $coursecontext = context_course::instance($course1->id);
+        $res = mod_data_get_tagged_records($tag, false,0, 0, 1,0);
+
+        $this->assertContains('value11', $res->content);
+        $this->assertNotContains('value21', $res->content);
+
+        $this->getDataGenerator()->enrol_user($student->id, $course2->id, $studentrole->id, 'manual');
+
+        core_tag_index_builder::reset_caches();
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+
+        $this->assertContains('value11', $res->content);
+        $this->assertContains('value21', $res->content);
+    }
+
+    public function test_mod_data_get_tagged_records_course_groups() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Setup test data.
+        $datagenerator = $this->getDataGenerator()->get_plugin_generator('mod_data');
+        $course2 = $this->getDataGenerator()->create_course();
+        $course1 = $this->getDataGenerator()->create_course();
+
+        $groupa = $this->getDataGenerator()->create_group(array('courseid' => $course2->id, 'name' => 'groupA'));
+        $groupb = $this->getDataGenerator()->create_group(array('courseid' => $course2->id, 'name' => 'groupB'));
+
+        $fieldrecord = new StdClass();
+        $fieldrecord->name = 'field-1';
+        $fieldrecord->type = 'text';
+
+        $data1 = $this->getDataGenerator()->create_module('data', array('course' => $course1->id, 'approval' => true));
+        $field1 = $datagenerator->create_field($fieldrecord, $data1);
+        $data2 = $this->getDataGenerator()->create_module('data', array('course' => $course2->id));
+        $field2 = $datagenerator->create_field($fieldrecord, $data2);
+        set_coursemodule_groupmode($data2->cmid, SEPARATEGROUPS);
+
+        $record11 = $datagenerator->create_entry($data1, [$field1->field->id => 'value11'],
+                0, ['Cats', 'Dogs']);
+
+        $record21 = $datagenerator->create_entry($data2, [$field2->field->id => 'value21'],
+                $groupa->id, ['Cats']);
+
+        $record22 = $datagenerator->create_entry($data2, [$field2->field->id => 'value22'],
+                $groupb->id, ['Cats']);
+        $tag = core_tag_tag::get_by_name(0, 'Cats');
+
+        // Admin can see everything.
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+        //$this->assertContains('value11', $res->content);
+        //$this->assertContains('value21', $res->content);
+        //$this->assertContains('value22', $res->content);
+        $this->assertEmpty($res->prevpageurl);
+        $this->assertEmpty($res->nextpageurl);
+
+        // Create and enrol a user.
+        $student = self::getDataGenerator()->create_user();
+        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $this->getDataGenerator()->enrol_user($student->id, $course1->id, $studentrole->id, 'manual');
+        $this->getDataGenerator()->enrol_user($student->id, $course2->id, $studentrole->id, 'manual');
         groups_add_member($groupa, $student);
         $this->setUser($student);
         core_tag_index_builder::reset_caches();
 
-        // User can not see records in course 3 because he is not enrolled.
-        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$record = */1);
-        $this->assertContains('value22', $res->content);
-        $this->assertContains('value23', $res->content);
-        $this->assertNotContains('value31', $res->content);
-        $this->assertContains('value51', $res->content);
-        // User can not see record52 as he is in the wrong group.
-        $this->assertNotContains('value52', $res->content);
-
-        // User can not see record in data 3 as it is outside the view from to range.
-        $this->assertNotContains('value41', $res->content);
-
         // User can search data records inside a course.
         $coursecontext = context_course::instance($course1->id);
-        $res = mod_data_get_tagged_records($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */$coursecontext->id, /*$rec = */1, /*$record = */0);
+        $res = mod_data_get_tagged_records($tag, false,0, 0, 1,0);
 
         $this->assertContains('value11', $res->content);
-        $this->assertContains('value12', $res->content);
-        $this->assertContains('value13', $res->content);
-        $this->assertNotContains('value14', $res->content);
-        $this->assertContains('value15', $res->content);
-        $this->assertNotContains('value16', $res->content);
-        $this->assertNotContains('value21', $res->content);
+        $this->assertContains('value21', $res->content);
         $this->assertNotContains('value22', $res->content);
-        $this->assertNotContains('value23', $res->content);
-        $this->assertNotContains('value31', $res->content);
-        $this->assertNotContains('value41', $res->content);
-        $this->assertNotContains('value51', $res->content);
-        $this->assertNotContains('value52', $res->content);
-        $this->assertEmpty($res->nextpageurl);
 
-        // User cannot see hidden records.
-        $this->assertNotRegExp("/rid=$record16&amp;/", $res->content);
+        groups_add_member($groupb, $student);
+        core_tag_index_builder::reset_caches();
+        $res = mod_data_get_tagged_records($tag, false, 0, 0, 1, 0);
+
+        $this->assertContains('value11', $res->content);
+        $this->assertContains('value21', $res->content);
+        $this->assertContains('value22', $res->content);
     }
 
     /**

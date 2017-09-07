@@ -156,7 +156,6 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
         $this->field->name = '';
         $this->field->description = '';
         $this->field->required = false;
-        $this->field->titlefield = false;
 
         return true;
     }
@@ -173,7 +172,6 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
         $this->field->name        = trim($data->name);
         $this->field->description = trim($data->description);
         $this->field->required    = !empty($data->required) ? 1 : 0;
-        $this->field->titlefield    = !empty($data->titlefield) ? 1 : 0;
 
         if (isset($data->param1)) {
             $this->field->param1 = trim($data->param1);
@@ -681,6 +679,9 @@ function data_generate_default_template(&$data, $template, $recordid=0, $form=fa
 }
 
 /**
+ *
+ * Build the form elements to manage tags for a record.
+ *
  * @param int $recordid
  * @param string[] $selected raw tag names
  * @return string
@@ -703,7 +704,7 @@ function data_generate_tag_form($recordid = false, $selected = []) {
     if ($showstandard) {
         $tags += $DB->get_records_menu('tag', array(
                 'isstandard' => 1,
-                'tagcollid'  => $tagcollid
+                'tagcollid' => $tagcollid
         ), $namefield, 'id,' . $namefield . ' as fieldname');
     }
 
@@ -714,7 +715,8 @@ function data_generate_tag_form($recordid = false, $selected = []) {
     if (!empty($selected)) {
         list($sql, $params) = $DB->get_in_or_equal($selected, SQL_PARAMS_NAMED);
         $params['tagcollid'] = $tagcollid;
-        $selectedtags += $DB->get_records_sql_menu("SELECT id, $namefield FROM {tag} WHERE tagcollid = :tagcollid AND rawname $sql", $params);
+        $sql = "SELECT id, $namefield FROM {tag} WHERE tagcollid = :tagcollid AND rawname $sql";
+        $selectedtags += $DB->get_records_sql_menu($sql, $params);
     }
 
     $tags += $selectedtags;
@@ -727,20 +729,19 @@ function data_generate_tag_form($recordid = false, $selected = []) {
     $str .= '</select>';
 
     $PAGE->requires->js_call_amd('core/form-autocomplete', 'enhance', $params = array(
-        '#tags',
-        $typenewtags,
-        '',
-        get_string('entertags', 'tag'),
-        false,
-        $showstandard,
-        get_string('noselection', 'form')
+            '#tags',
+            $typenewtags,
+            '',
+            get_string('entertags', 'tag'),
+            false,
+            $showstandard,
+            get_string('noselection', 'form')
     ));
 
     $str .= html_writer::end_tag('div');
 
     return $str;
 }
-
 
 /**
  * Search for a field name and replaces it with another one in all the
@@ -3108,6 +3109,7 @@ function data_export_ods($export, $dataname, $count) {
  * @param bool $userdetails whether to include the details of the record author
  * @param bool $time whether to include time created/modified
  * @param bool $approval whether to include approval status
+ * @param bool $tags whether to include tags
  * @return array
  */
 function data_get_exportdata($dataid, $fields, $selectedfields, $currentgroup=0, $context=null,
@@ -3905,13 +3907,13 @@ function data_get_recordids($alias, $searcharray, $dataid, $recordids) {
         $tagwhere = [];
         $tagselect = '';
         foreach ($nestsearch->rawtagnames as $tagrawname) {
-            $tagselect .= " INNER JOIN {tag_instance} AS ti_$i ON 
-                                        ti_$i.component = 'mod_data' 
-                                        AND ti_$i.itemtype = 'data_records' 
+            $tagselect .= " INNER JOIN {tag_instance} AS ti_$i ON
+                                        ti_$i.component = 'mod_data'
+                                        AND ti_$i.itemtype = 'data_records'
                                         AND ti_$i.itemid = r.id
-                                    INNER JOIN {tag} AS t_$i ON ti_$i.tagid = t_$i.id ";
+                            INNER JOIN {tag} AS t_$i ON ti_$i.tagid = t_$i.id ";
             $tagwhere[] = " t_$i.rawname = :trawname_$i ";
-            $params["trawname_$i"] =  $tagrawname;
+            $params["trawname_$i"] = $tagrawname;
             $i++;
         }
         $nestsql = $nestselect . $tagselect . $nestwhere . implode(' AND ', $tagwhere);
