@@ -43,6 +43,7 @@ $contextid    = optional_param('contextid', 0, PARAM_INT); // One of this or.
 $courseid     = optional_param('id', 0, PARAM_INT); // This are required.
 $newcourse    = optional_param('newcourse', false, PARAM_BOOL);
 $selectall    = optional_param('selectall', false, PARAM_BOOL); // When rendering checkboxes against users mark them all checked.
+$roleid       = optional_param('roleid', 0, PARAM_INT);
 
 $PAGE->set_url('/user/index.php', array(
         'page' => $page,
@@ -111,6 +112,19 @@ echo $OUTPUT->heading(get_string('participants'));
 $filtersapplied = optional_param_array('unified-filters', [], PARAM_TEXT);
 $filterwassubmitted = optional_param('unified-filter-submitted', 0, PARAM_BOOL);
 
+// If they passed a role make sure they can view that role.
+if ($roleid) {
+    $viewableroles = get_profile_roles($context);
+    $assignableroles = get_assignable_roles($context, ROLENAME_ALIAS, false);
+
+    // Check if the user can view this role.
+    if (array_key_exists($roleid, $viewableroles) || array_key_exists($roleid, $assignableroles)) {
+        $filtersapplied[] = USER_FILTER_ROLE . ':' . $roleid;
+    } else {
+        $roleid = 0;
+    }
+}
+
 // Default group ID.
 $groupid = false;
 $canaccessallgroups = has_capability('moodle/site:accessallgroups', $context);
@@ -132,7 +146,6 @@ if ($course->groupmode != NOGROUPS) {
 $hasgroupfilter = false;
 $lastaccess = 0;
 $searchkeywords = [];
-$roleid = 0;
 $enrolid = 0;
 $status = -1;
 foreach ($filtersapplied as $filter) {
