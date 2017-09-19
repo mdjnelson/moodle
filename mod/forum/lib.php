@@ -7016,21 +7016,25 @@ function forum_reset_userdata($data) {
                             FROM {forum_posts} fp, {forum_discussions} fd, {forum} f
                            WHERE f.course=? AND f.id=fd.forum AND fd.id=fp.discussion";
 
-    $forumssql = $forums = $rm = null;
+    $forumssql = "$allforumssql $typesql";
+    $discussionssql = "$alldiscussionssql $typesql";
+    $postsql = "$allpostssql $typesql";
 
-    if( $removeposts || !empty($data->reset_forum_ratings) ) {
-        $forumssql      = "$allforumssql $typesql";
-        $forums = $forums = $DB->get_records_sql($forumssql, $params);
-        $rm = new rating_manager();
-        $ratingdeloptions = new stdClass;
-        $ratingdeloptions->component = 'mod_forum';
-        $ratingdeloptions->ratingarea = 'post';
+    // Set this up if we have to remove ratings.
+    $rm = new rating_manager();
+    $ratingdeloptions = new stdClass;
+    $ratingdeloptions->component = 'mod_forum';
+    $ratingdeloptions->ratingarea = 'post';
+
+    // Get the forums for actions that require it.
+    if ($removeposts || !empty($data->reset_forum_ratings) || !empty($data->reset_forum_tags)) {
+        $forums = $DB->get_records_sql($forumssql, $params);
+        if ($removeposts || !empty($data->reset_forum_tags)) {
+            $posts = $DB->get_records_sql($postsql, $params);
+        }
     }
 
     if ($removeposts) {
-        $discussionssql = "$alldiscussionssql $typesql";
-        $postssql       = "$allpostssql $typesql";
-
         // now get rid of all attachments
         $fs = get_file_storage();
         if ($forums) {
@@ -7045,6 +7049,12 @@ function forum_reset_userdata($data) {
                 //remove ratings
                 $ratingdeloptions->contextid = $context->id;
                 $rm->delete_ratings($ratingdeloptions);
+            }
+        }
+
+        if ($posts) {
+            foreach ($posts as $post) {
+                core_tag_tag::remove_all_item_tags('mod_forum', 'forum_posts', $post->id);
             }
         }
 
@@ -7097,6 +7107,18 @@ function forum_reset_userdata($data) {
         if (empty($data->reset_gradebook_grades)) {
             forum_reset_gradebook($data->courseid);
         }
+    }
+
+    // Remove all the tags.
+    if (!empty($data->reset_forum_tags)) {
+        // Check if they haven't already been deleted.
+        if (!$removeposts && $posts) {
+            foreach ($posts as $post) {
+                core_tag_tag::remove_all_item_tags('mod_forum', 'forum_posts', $post->id);
+            }
+        }
+
+        $status[] = array('component' => $componentstr, 'item' => get_string('tagsdeleted', 'forum'), 'error' => false);
     }
 
     // remove all digest settings unconditionally - even for users still enrolled in course.
@@ -7155,6 +7177,9 @@ function forum_reset_course_form_definition(&$mform) {
 
     $mform->addElement('checkbox', 'reset_forum_ratings', get_string('deleteallratings'));
     $mform->disabledIf('reset_forum_ratings', 'reset_forum_all', 'checked');
+
+    $mform->addElement('advcheckbox', 'reset_forum_tags', get_string('removeallforumtags', 'forum'));
+    $mform->disabledIf('reset_forum_tags', 'reset_forum_all', 'checked');
 }
 
 /**

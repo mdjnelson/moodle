@@ -164,10 +164,47 @@ function book_print_recent_activity($course, $viewfullnames, $timestart) {
  * @return array status array
  */
 function book_reset_userdata($data) {
+    global $DB;
     // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
     // See MDL-9367.
 
-    return array();
+    // So far, this is the only things the book can reset.
+    if (empty($data->reset_book_tags)) {
+        return [];
+    }
+
+    // Get all the books in the course.
+    if (!$books = $DB->get_records('book', array('course' => $data->courseid))) {
+        return [];
+    }
+
+    // Loop through the books and remove the tags from the chapters.
+    foreach ($books as $book) {
+        if ($chapters = $DB->get_records('book_chapters', ['bookid' => $book->id])) {
+            foreach ($chapters as $chapter) {
+                core_tag_tag::remove_all_item_tags('mod_book', 'book_chapters', $chapter->id);
+            }
+        }
+    }
+
+    $status = [];
+    $status[] = [
+        'component' => get_string('modulenameplural', 'book'),
+        'item' => get_string('tagsdeleted', 'book'),
+        'error' => false
+    ];
+
+    return $status;
+}
+
+/**
+ * The elements to add the course reset form.
+ *
+ * @param moodleform $mform
+ */
+function book_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'bookheader', get_string('modulenameplural', 'book'));
+    $mform->addElement('advcheckbox', 'reset_book_tags', get_string('removeallbooktags', 'book'));
 }
 
 /**

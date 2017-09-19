@@ -2787,6 +2787,9 @@ function glossary_reset_course_form_definition(&$mform) {
 
     $mform->addElement('checkbox', 'reset_glossary_comments', get_string('deleteallcomments'));
     $mform->disabledIf('reset_glossary_comments', 'reset_glossary_all', 'checked');
+
+    $mform->addElement('advcheckbox', 'reset_glossary_tags', get_string('removeallglossarytags', 'glossary'));
+    $mform->disabledIf('reset_glossary_tags', 'reset_glossary_all', 'checked');
 }
 
 /**
@@ -2856,13 +2859,14 @@ function glossary_reset_userdata($data) {
     $ratingdeloptions->ratingarea = 'entry';
 
     // delete entries if requested
-    if (!empty($data->reset_glossary_all)
-         or (!empty($data->reset_glossary_types) and in_array('main', $data->reset_glossary_types) and in_array('secondary', $data->reset_glossary_types))) {
-
+    $removeallentries = !empty($data->reset_glossary_all) ||
+        (!empty($data->reset_glossary_types) &&
+            in_array('main', $data->reset_glossary_types) && in_array('secondary', $data->reset_glossary_types));
+    $removetypeentries = !empty($data->reset_glossary_types);
+    if ($removeallentries) {
         $params[] = 'glossary_entry';
         $DB->delete_records_select('comments', "itemid IN ($allentriessql) AND commentarea=?", $params);
         $DB->delete_records_select('glossary_alias',    "entryid IN ($allentriessql)", $params);
-        $DB->delete_records_select('glossary_entries', "glossaryid IN ($allglossariessql)", $params);
 
         // now get rid of all attachments
         if ($glossaries = $DB->get_records_sql($allglossariessql, $params)) {
@@ -2884,9 +2888,16 @@ function glossary_reset_userdata($data) {
             glossary_reset_gradebook($data->courseid);
         }
 
+        if ($entries = $DB->get_records_select('glossary_entries', "glossaryid IN ($allglossariessql)", $params)) {
+            foreach ($entries as $id => $entry) {
+                core_tag_tag::remove_all_item_tags('mod_glossary', 'glossary_entries', $id);
+            }
+            $DB->delete_records_select('glossary_entries', "glossaryid IN ($allglossariessql)", $params);
+        }
+
         $status[] = array('component'=>$componentstr, 'item'=>get_string('resetglossariesall', 'glossary'), 'error'=>false);
 
-    } else if (!empty($data->reset_glossary_types)) {
+    } else if ($removetypeentries) {
         $mainentriessql         = "$allentriessql AND g.mainglossary=1";
         $secondaryentriessql    = "$allentriessql AND g.mainglossary=0";
 
@@ -2896,7 +2907,6 @@ function glossary_reset_userdata($data) {
         if (in_array('main', $data->reset_glossary_types)) {
             $params[] = 'glossary_entry';
             $DB->delete_records_select('comments', "itemid IN ($mainentriessql) AND commentarea=?", $params);
-            $DB->delete_records_select('glossary_entries', "glossaryid IN ($mainglossariessql)", $params);
 
             if ($glossaries = $DB->get_records_sql($mainglossariessql, $params)) {
                 foreach ($glossaries as $glossaryid=>$unused) {
@@ -2912,6 +2922,14 @@ function glossary_reset_userdata($data) {
                 }
             }
 
+            // Remove the tags from the entries before we delete them.
+            if ($entries = $DB->get_records_select('glossary_entries', "glossaryid IN ($mainglossariessql)", $params)) {
+                foreach ($entries as $id => $entry) {
+                    core_tag_tag::remove_all_item_tags('mod_glossary', 'glossary_entries', $id);
+                }
+                $DB->delete_records_select('glossary_entries', "glossaryid IN ($mainglossariessql)", $params);
+            }
+
             // remove all grades from gradebook
             if (empty($data->reset_gradebook_grades)) {
                 glossary_reset_gradebook($data->courseid, 'main');
@@ -2922,7 +2940,7 @@ function glossary_reset_userdata($data) {
         } else if (in_array('secondary', $data->reset_glossary_types)) {
             $params[] = 'glossary_entry';
             $DB->delete_records_select('comments', "itemid IN ($secondaryentriessql) AND commentarea=?", $params);
-            $DB->delete_records_select('glossary_entries', "glossaryid IN ($secondaryglossariessql)", $params);
+
             // remove exported source flag from entries in main glossary
             $DB->execute("UPDATE {glossary_entries}
                              SET sourceglossaryid=0
@@ -2940,6 +2958,14 @@ function glossary_reset_userdata($data) {
                     $ratingdeloptions->contextid = $context->id;
                     $rm->delete_ratings($ratingdeloptions);
                 }
+            }
+
+            // Remove the tags from the entries before we delete them.
+            if ($entries = $DB->get_records_select('glossary_entries', "glossaryid IN ($secondaryglossariessql)", $params)) {
+                foreach ($entries as $id => $entry) {
+                    core_tag_tag::remove_all_item_tags('mod_glossary', 'glossary_entries', $id);
+                }
+                $DB->delete_records_select('glossary_entries', "glossaryid IN ($secondaryglossariessql)", $params);
             }
 
             // remove all grades from gradebook
@@ -3012,6 +3038,20 @@ function glossary_reset_userdata($data) {
         $params[] = 'glossary_entry';
         $DB->delete_records_select('comments', "itemid IN ($allentriessql) AND commentarea= ? ", $params);
         $status[] = array('component'=>$componentstr, 'item'=>get_string('deleteallcomments'), 'error'=>false);
+    }
+
+    // Remove all the tags.
+    if (!empty($data->reset_glossary_tags)) {
+        // Check if they haven't already been deleted.
+        if (!$removeallentries && !$removetypeentries) {
+            if ($entries = $DB->get_records_select('glossary_entries', "glossaryid IN ($allglossariessql)", $params)) {
+                foreach ($entries as $id => $entry) {
+                    core_tag_tag::remove_all_item_tags('mod_glossary', 'glossary_entries', $id);
+                }
+            }
+        }
+
+        $status[] = array('component' => $componentstr, 'item' => get_string('tagsdeleted', 'glossary'), 'error' => false);
     }
 
     /// updating dates - shift may be negative too
