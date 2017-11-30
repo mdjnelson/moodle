@@ -193,6 +193,11 @@ class enrol_ldap_plugin extends enrol_plugin {
         $courseidnumber = $this->get_config('course_idnumber');
         foreach($roles as $role) {
             foreach ($enrolments[$role->id]['ext'] as $enrol) {
+                if ($enrolments[$role->id]['ext'] === false) {
+                    $trace->output("LDAP connection failed for " . $user->username  . ". Aborting LDAP enrol / unenrol actions");
+                    $trace->finished();
+                    return;
+                }
                 $course_ext_id = $enrol[$courseidnumber][0];
                 if (empty($course_ext_id)) {
                     $trace->output(get_string('extcourseidinvalid', 'enrol_ldap'));
@@ -694,7 +699,7 @@ class enrol_ldap_plugin extends enrol_plugin {
      *
      * @param string $memberuid user idnumber (without magic quotes).
      * @param object role is a record from the mdl_role table.
-     * @return array
+     * @return array|bool Returns false if the LDAP connection fails.
      */
     protected function find_ext_enrolments($memberuid, $role) {
         global $CFG;
@@ -709,6 +714,10 @@ class enrol_ldap_plugin extends enrol_plugin {
         if (empty($ldap_contexts)) {
             // No role contexts, so no LDAP enrolments
             return array();
+        }
+
+        if (!$this->ldap_connect()) {
+            return false;
         }
 
         $extmemberuid = core_text::convert($memberuid, 'utf-8', $this->get_config('ldapencoding'));
