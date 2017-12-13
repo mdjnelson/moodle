@@ -59,7 +59,7 @@ function xmldb_mnetservice_enrol_upgrade($oldversion) {
         }
 
         // The mnetservice savepoint reached.
-        upgrade_mod_savepoint(true, 2017121300, 'mnetservice_enrol');
+        upgrade_plugin_savepoint(true, 2017121300, 'mnetservice', 'enrol');
     }
 
     return true;
