@@ -63,6 +63,7 @@ class message_output_popup extends message_output {
                 if (!$DB->record_exists('message_popup', ['messageid' => $eventdata->savedmessageid, 'isread' => 0])) {
                     $record = new StdClass();
                     $record->messageid = $eventdata->savedmessageid;
+                    $record->messageid = $eventdata->notification;
                     $record->isread = 0;
 
                     $DB->insert_record('message_popup', $record);
