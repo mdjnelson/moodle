@@ -157,7 +157,6 @@ class message_popup_external extends external_api {
                             'timecreatedpretty' => new external_value(PARAM_TEXT, 'Time created in a pretty format'),
                             'timeread' => new external_value(PARAM_INT, 'Time read'),
                             'read' => new external_value(PARAM_BOOL, 'notification read status'),
-                            'deleted' => new external_value(PARAM_BOOL, 'notification deletion status'),
                             'iconurl' => new external_value(PARAM_URL, 'URL for notification icon'),
                             'component' => new external_value(PARAM_TEXT, 'The component that generated the notification',
                                 VALUE_OPTIONAL),
