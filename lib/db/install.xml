@@ -2436,6 +2436,7 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="id of the table, please edit me"/>
         <FIELD NAME="unreadmessageid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="message that still needs some processing (on message table)"/>
+        <FIELD NAME="notification" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this a notification?"/>
         <FIELD NAME="processorid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The processor with processes the message"/>
       </FIELDS>
       <KEYS>
