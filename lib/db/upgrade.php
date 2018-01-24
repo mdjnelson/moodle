@@ -2085,5 +2085,21 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2018021600.01);
     }
 
+    if ($oldversion < 2018021600.02) {
+        // Need to alter the 'message_working' table so we can distinguish between messages and notifications.
+        $table = new xmldb_table('message_working');
+
+        // Define 'notification' field.
+        $field = new xmldb_field('notification', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0, 'unreadmessageid');
+
+        // Conditionally launch add field 'notification'.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2018021600.02);
+    }
+
     return true;
 }
