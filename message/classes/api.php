@@ -262,33 +262,39 @@ class api {
     public static function get_conversations($userid, $limitfrom = 0, $limitnum = 20) {
         global $DB;
 
-        // Get the last message from each conversation that the user belongs to.
-        $sql = "SELECT DISTINCT(m.id), m.conversationid, m.useridfrom, mcm2.userid as useridto, m.smallmessage, m.timecreated
-                  FROM {messages} m
-            INNER JOIN (
-                          SELECT MAX(m.id) AS messageid
-                            FROM {messages} m
-                      INNER JOIN (
-                                      SELECT m.conversationid, MAX(m.timecreated) as maxtime
-                                        FROM {messages} m
-                                  INNER JOIN {message_conversation_members} mcm
-                                          ON mcm.conversationid = m.conversationid
-                                   LEFT JOIN {message_user_actions} mua
-                                          ON (mua.messageid = m.id AND mua.userid = :userid AND mua.action = :action)
-                                       WHERE mua.id is NULL
-                                         AND mcm.userid = :userid2
-                                    GROUP BY m.conversationid
-                                 ) maxmessage
-                               ON maxmessage.maxtime = m.timecreated AND maxmessage.conversationid = m.conversationid
-                         GROUP BY m.conversationid
-                       ) lastmessage
-                    ON lastmessage.messageid = m.id
+        // Get the last message from each conversation that the user belongs to. We need to use DISTINCT
+        // as it's possible for a user to message themselves. We also can't use a CLOB with a DISTINCT in
+        // oracle, resulting in the below solution.
+        $sql = "SELECT m.id, m.conversationid, m.useridfrom, m.smallmessage, mcm2.userid as useridto, m.timecreated
+                  FROM {messages} m 
             INNER JOIN {message_conversation_members} mcm
                     ON mcm.conversationid = m.conversationid
             INNER JOIN {message_conversation_members} mcm2
                     ON mcm2.conversationid = m.conversationid
                  WHERE mcm.userid = m.useridfrom
                    AND mcm.id != mcm2.id
+                   AND m.id IN (
+                                SELECT DISTINCT m.id
+                                           FROM {messages} m
+                                     INNER JOIN (
+                                                 SELECT MAX(m.id) AS messageid
+                                                   FROM {messages} m
+                                             INNER JOIN (
+                                                         SELECT m.conversationid, MAX(m.timecreated) as maxtime
+                                                           FROM {messages} m
+                                                     INNER JOIN {message_conversation_members} mcm
+                                                             ON mcm.conversationid = m.conversationid
+                                                      LEFT JOIN {message_user_actions} mua
+                                                             ON (mua.messageid = m.id AND mua.userid = :userid AND mua.action = :action)
+                                                          WHERE mua.id is NULL
+                                                            AND mcm.userid = :userid2
+                                                       GROUP BY m.conversationid
+                                             ) maxmessage
+                                             ON maxmessage.maxtime = m.timecreated AND maxmessage.conversationid = m.conversationid
+                                         GROUP BY m.conversationid
+                                     ) lastmessage
+                                     ON lastmessage.messageid = m.id
+                               )
               ORDER BY m.timecreated DESC";
         $messages = $DB->get_records_sql($sql, ['userid' => $userid, 'action' => self::MESSAGE_ACTION_DELETED,
             'userid2' => $userid], $limitfrom, $limitnum);
@@ -328,7 +334,7 @@ class api {
 
         // Finally, let's get the unread messages count for this user so that we can add them
         // to the conversation. Remember we need to ignore the messages the user sent.
-        $unreadcountssql = 'SELECT m.useridfrom, count(m.*) as count
+        $unreadcountssql = 'SELECT m.useridfrom, count(m.id) as count
                               FROM {messages} m
                         INNER JOIN {message_conversations} mc
                                 ON mc.id = m.conversationid
@@ -427,7 +433,7 @@ class api {
         global $DB;
 
         $userfields = \user_picture::fields('u', array('lastaccess'));
-        $unreadcountssql = "SELECT $userfields, count(m.*) as messagecount
+        $unreadcountssql = "SELECT $userfields, count(m.id) as messagecount
                               FROM {message_contacts} mc
                         INNER JOIN {user} u
                                 ON u.id = mc.contactid
@@ -460,7 +466,7 @@ class api {
         global $DB;
 
         $userfields = \user_picture::fields('u', array('lastaccess'));
-        $unreadcountssql = "SELECT $userfields, count(m.*) as messagecount
+        $unreadcountssql = "SELECT $userfields, count(m.id) as messagecount
                               FROM {user} u
                         INNER JOIN {messages} m
                                 ON m.useridfrom = u.id
@@ -1210,7 +1216,7 @@ class api {
     public static function get_conversation_between_users($userid1, $userid2) {
         global $DB;
 
-        $sql = "SELECT DISTINCT(mc.*)
+        $sql = "SELECT DISTINCT mc.*
                   FROM {message_conversations} mc
             INNER JOIN {message_conversation_members} mcm
                     ON mcm.conversationid = mc.id
