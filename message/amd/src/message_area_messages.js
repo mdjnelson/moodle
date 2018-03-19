@@ -663,6 +663,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/cust
 
             // Add the message.
             return promises[0].then(function(data) {
+                window.console.log(data);
                 return this._addMessagesToDom([data], true);
             }.bind(this)).always(function() {
                 // Empty the response text area.text
