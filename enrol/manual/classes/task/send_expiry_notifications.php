@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Send expiry notifications task
+ * The send expiry notifications task.
+ *
  * @package   enrol_manual
  * @author    Farhan Karmali <farhan6318@gmail.com>
  * @copyright Farhan Karmali
@@ -27,7 +28,8 @@ namespace enrol_manual\task;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class send_expiry_notifications
+ * The send expiry notifications task.
+ *
  * @package   enrol_manual
  * @author    Farhan Karmali <farhan6318@gmail.com>
  * @copyright Farhan Karmali
@@ -37,6 +39,7 @@ class send_expiry_notifications extends \core\task\scheduled_task {
 
     /**
      * Name for this task.
+     *
      * @return string
      */
     public function get_name() {
@@ -44,10 +47,9 @@ class send_expiry_notifications extends \core\task\scheduled_task {
     }
 
     /**
-     * Run task for Send expiry notifications..
+     * Run task for sending expiry notifications.
      */
     public function execute() {
-
         if (!enrol_is_enabled('manual')) {
             mtrace(get_string('pluginnotenabled', 'enrol_manual'));
             exit(0); // Note, exit with success code, this is not an error - it's just disabled.
