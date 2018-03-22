@@ -15,8 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Process expirations task
- * @package enrol_paypal
+ * Process expirations task.
+ *
+ * @package   enrol_paypal
  * @author    Farhan Karmali <farhan6318@gmail.com>
  * @copyright Farhan Karmali
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,8 +28,9 @@ namespace enrol_paypal\task;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Process expirations task
- * @package enrol_paypal
+ * Process expirations task.
+ *
+ * @package   enrol_paypal
  * @author    Farhan Karmali <farhan6318@gmail.com>
  * @copyright Farhan Karmali
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,6 +39,7 @@ class process_expirations extends \core\task\scheduled_task {
 
     /**
      * Name for this task.
+     *
      * @return string
      */
     public function get_name() {
@@ -44,7 +47,7 @@ class process_expirations extends \core\task\scheduled_task {
     }
 
     /**
-     * Run task for process expirations
+     * Run task for processing expirations.
      */
     public function execute() {
 

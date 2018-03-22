@@ -15,8 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Send expiry notifications task
- * @package enrol_self
+ * Send expiry notifications task.
+ *
+ * @package   enrol_self
  * @author    Farhan Karmali <farhan6318@gmail.com>
  * @copyright Farhan Karmali
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,8 +28,9 @@ namespace enrol_self\task;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class send_expiry_notifications
- * @package enrol_self
+ * Send expiry notifications task.
+ *
+ * @package   enrol_self
  * @author    Farhan Karmali <farhan6318@gmail.com>
  * @copyright Farhan Karmali
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,6 +39,7 @@ class send_expiry_notifications extends \core\task\scheduled_task {
 
     /**
      * Name for this task.
+     *
      * @return string
      */
     public function get_name() {
@@ -44,7 +47,7 @@ class send_expiry_notifications extends \core\task\scheduled_task {
     }
 
     /**
-     * Run task for Send expiry notifications..
+     * Run task for sending expiry notifications.
      */
     public function execute() {
 
