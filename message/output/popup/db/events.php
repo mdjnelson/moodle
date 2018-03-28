@@ -15,15 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Popup message processor version information
+ * Event observers definition.
  *
- * @package   message_popup
- * @copyright 2008 Luis Rodrigues
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package message_popup
+ * @category event
+ * @copyright 2016 Ryan Wyllie <ryan@moodle.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018020500;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2017110800;        // Requires this Moodle version
-$plugin->component = 'message_popup';  // Full name of the plugin (used for diagnostics)
+$observers = array(
+
+    // Notification viewed.
+    array(
+        'eventname' => '\core\event\notification_viewed',
+        'callback' => 'message_output_popup::notification_viewed',
+        'includefile' => '/message/output/popup/message_output_popup.php'
+    )
+);

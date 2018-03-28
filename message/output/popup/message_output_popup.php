@@ -35,12 +35,41 @@ require_once($CFG->dirroot.'/message/output/lib.php');
 class message_output_popup extends message_output {
 
     /**
-     * Do nothing on send_message.
+     * Adds notifications to the message_popup table if the messaging processor is enabled.
+     *
+     * This table is used to determine what notifications to display.
      *
      * @param object $eventdata the event data submitted by the message sender plus $eventdata->savedmessageid
      * @return true if ok, false if error
      */
     public function send_message($eventdata) {
+        global $DB;
+
+        // Hold onto the popup processor id because /admin/cron.php sends a lot of messages at once.
+        static $processorid = null;
+
+        // Prevent users from getting popup notifications of messages to themselves (happens with forum notifications).
+        if ($eventdata->userfrom->id != $eventdata->userto->id) {
+            if (empty($processorid)) {
+                $processor = $DB->get_record('message_processors', array('name' => 'popup'));
+                $processorid = $processor->id;
+            }
+            $procmessage = new stdClass();
+            $procmessage->unreadmessageid = $eventdata->savedmessageid;
+            $procmessage->processorid     = $processorid;
+            $procmessage->notification    = $eventdata->notification;
+
+            if ($eventdata->notification) {
+                if (!$DB->record_exists('message_popup', ['messageid' => $eventdata->savedmessageid])) {
+                    $record = new stdClass();
+                    $record->messageid = $eventdata->savedmessageid;
+                    $record->isread = 0;
+
+                    $DB->insert_record('message_popup', $record);
+                }
+            }
+        }
+
         return true;
     }
 
@@ -82,6 +111,20 @@ class message_output_popup extends message_output {
      */
     public function has_message_preferences() {
         return false;
+    }
+
+    /**
+     * Handles the notification_viewed event to keep data in sync.
+     *
+     * @param \core\event\base $event The event data
+     */
+    public static function notification_viewed(\core\event\base $event) {
+        global $DB;
+
+        if ($record = $DB->get_record('message_popup', ['messageid' => $event->objectid])) {
+            $record->isread = 1;
+            $DB->update_record('message_popup', $record);
+        }
     }
 
     /**
