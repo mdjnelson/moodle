@@ -132,7 +132,7 @@ class migrate_message_data extends \core\task\adhoc_task {
         $messages = $DB->get_recordset_select('message', $select, $params);
         foreach ($messages as $message) {
             if ($message->notification) {
-                $this->migrate_notification($message);
+                $this->migrate_notification($message, false);
             } else {
                 $this->migrate_message($conversationid, $message);
             }
@@ -146,7 +146,7 @@ class migrate_message_data extends \core\task\adhoc_task {
         $messages = $DB->get_recordset_select('message_read', $select, $params);
         foreach ($messages as $message) {
             if ($message->notification) {
-                $this->migrate_notification($message);
+                $this->migrate_notification($message, true);
             } else {
                 $this->migrate_message($conversationid, $message);
             }
@@ -161,9 +161,10 @@ class migrate_message_data extends \core\task\adhoc_task {
      * Helper function to deal with migrating an individual notification.
      *
      * @param \stdClass $notification
+     * @param bool $isread Was the notification read?
      * @throws \dml_exception
      */
-    private function migrate_notification($notification) {
+    private function migrate_notification($notification, $isread) {
         global $DB;
 
         $tabledata = new \stdClass();
@@ -181,7 +182,7 @@ class migrate_message_data extends \core\task\adhoc_task {
         $tabledata->timeread = $notification->timeread ?? null;
         $tabledata->timecreated = $notification->timecreated;
 
-        $DB->insert_record('notifications', $tabledata);
+        $newid = $DB->insert_record('notifications', $tabledata);
     }
 
     /**
