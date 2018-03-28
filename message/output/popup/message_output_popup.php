@@ -60,12 +60,11 @@ class message_output_popup extends message_output {
             $procmessage->notification    = $eventdata->notification;
 
             if ($eventdata->notification) {
-                if (!$DB->record_exists('message_popup', ['messageid' => $eventdata->savedmessageid])) {
+                if (!$DB->record_exists('message_popup_notifications', ['notificationid' => $eventdata->savedmessageid])) {
                     $record = new stdClass();
-                    $record->messageid = $eventdata->savedmessageid;
-                    $record->isread = 0;
+                    $record->notificationid = $eventdata->savedmessageid;
 
-                    $DB->insert_record('message_popup', $record);
+                    $DB->insert_record('message_popup_notifications', $record);
                 }
             }
         }
@@ -111,20 +110,6 @@ class message_output_popup extends message_output {
      */
     public function has_message_preferences() {
         return false;
-    }
-
-    /**
-     * Handles the notification_viewed event to keep data in sync.
-     *
-     * @param \core\event\base $event The event data
-     */
-    public static function notification_viewed(\core\event\base $event) {
-        global $DB;
-
-        if ($record = $DB->get_record('message_popup', ['messageid' => $event->objectid])) {
-            $record->isread = 1;
-            $DB->update_record('message_popup', $record);
-        }
     }
 
     /**

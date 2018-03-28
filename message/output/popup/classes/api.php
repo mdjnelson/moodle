@@ -56,11 +56,6 @@ class api {
             $useridto = $USER->id;
         }
 
-        $params = [
-            'useridto1' => $useridto,
-            'useridto2' => $useridto,
-        ];
-
         // Is notification enabled ?
         if ($useridto == $USER->id) {
             $disabled = $USER->emailstop;
@@ -79,12 +74,12 @@ class api {
                        n.contexturlname, n.timecreated, n.component,
                        n.eventtype, n.timeread
                   FROM {notifications} n
-                 WHERE n.id IN (SELECT messageid FROM {message_popup})
-                   AND n.useridto = :useridto1
+                 WHERE n.id IN (SELECT notificationid FROM {message_popup_notifications})
+                   AND n.useridto = ?
               ORDER BY timecreated $sort, timeread $sort, id $sort";
 
         $notifications = [];
-        $records = $DB->get_recordset_sql($sql, $params, $offset, $limit);
+        $records = $DB->get_recordset_sql($sql, [$useridto], $offset, $limit);
         foreach ($records as $record) {
             $notifications[] = (object) $record;
         }
@@ -110,8 +105,9 @@ class api {
         return $DB->count_records_sql(
             "SELECT count(id)
                FROM {notifications}
-              WHERE id IN (SELECT messageid FROM {message_popup} WHERE isread = 0)
-                AND useridto = ?",
+              WHERE id IN (SELECT notificationid FROM {message_popup_notifications})
+                AND useridto = ?
+                AND timeread is NULL",
             [$useridto]
         );
     }
