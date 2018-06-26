@@ -226,66 +226,74 @@ class tool_provider extends ToolProvider {
         $tool = $this->tool;
         $context = context::instance_by_id($tool->contextid);
 
-        // Set the user data.
-        $user = new stdClass();
-        $user->username = helper::create_username($this->consumer->getKey(), $this->user->ltiUserId);
-        if (!empty($this->user->firstname)) {
-            $user->firstname = $this->user->firstname;
+        // Check if the user has come from the same site.
+        $returnurl = new moodle_url($this->returnUrl);
+        $returnurl = $returnurl->out_omit_querystring();
+        $samesite = strpos($returnurl, $CFG->wwwroot) === 0;
+        if ($samesite) {
+            $user = $DB->get_record('user', ['id' => $this->user->ltiUserId], '*', MUST_EXIST);
         } else {
-            $user->firstname = $this->user->getRecordId();
-        }
-        if (!empty($this->user->lastname)) {
-            $user->lastname = $this->user->lastname;
-        } else {
-            $user->lastname = $this->tool->contextid;
-        }
-
-        $user->email = core_user::clean_field($this->user->email, 'email');
-
-        // Get the user data from the LTI consumer.
-        $user = helper::assign_user_tool_data($tool, $user);
-
-        // Check if the user exists.
-        if (!$dbuser = $DB->get_record('user', ['username' => $user->username, 'deleted' => 0])) {
-            // If the email was stripped/not set then fill it with a default one. This
-            // stops the user from being redirected to edit their profile page.
-            if (empty($user->email)) {
-                $user->email = $user->username .  "@example.com";
+            // Set the user data.
+            $user = new stdClass();
+            $user->username = helper::create_username($this->consumer->getKey(), $this->user->ltiUserId);
+            if (!empty($this->user->firstname)) {
+                $user->firstname = $this->user->firstname;
+            } else {
+                $user->firstname = $this->user->getRecordId();
+            }
+            if (!empty($this->user->lastname)) {
+                $user->lastname = $this->user->lastname;
+            } else {
+                $user->lastname = $this->tool->contextid;
             }
 
-            $user->auth = 'lti';
-            $user->id = \user_create_user($user);
+            $user->email = core_user::clean_field($this->user->email, 'email');
 
-            // Get the updated user record.
-            $user = $DB->get_record('user', ['id' => $user->id]);
-        } else {
-            if (helper::user_match($user, $dbuser)) {
-                $user = $dbuser;
-            } else {
-                // If email is empty remove it, so we don't update the user with an empty email.
+            // Get the user data from the LTI consumer.
+            $user = helper::assign_user_tool_data($tool, $user);
+
+            // Check if the user exists.
+            if (!$dbuser = $DB->get_record('user', ['username' => $user->username, 'deleted' => 0])) {
+                // If the email was stripped/not set then fill it with a default one. This
+                // stops the user from being redirected to edit their profile page.
                 if (empty($user->email)) {
-                    unset($user->email);
+                    $user->email = $user->username . "@example.com";
                 }
 
-                $user->id = $dbuser->id;
-                \user_update_user($user);
+                $user->auth = 'lti';
+                $user->id = \user_create_user($user);
 
                 // Get the updated user record.
                 $user = $DB->get_record('user', ['id' => $user->id]);
+            } else {
+                if (helper::user_match($user, $dbuser)) {
+                    $user = $dbuser;
+                } else {
+                    // If email is empty remove it, so we don't update the user with an empty email.
+                    if (empty($user->email)) {
+                        unset($user->email);
+                    }
+
+                    $user->id = $dbuser->id;
+                    \user_update_user($user);
+
+                    // Get the updated user record.
+                    $user = $DB->get_record('user', ['id' => $user->id]);
+                }
             }
-        }
 
-        // Update user image.
-        if (isset($this->user) && isset($this->user->image) && !empty($this->user->image)) {
-            $image = $this->user->image;
-        } else {
-            // Use custom_user_image parameter as a fallback.
-            $image = $this->resourceLink->getSetting('custom_user_image');
-        }
+            // Update user image.
+            if (isset($this->user) && isset($this->user->image) && !empty($this->user->image)) {
+                $image = $this->user->image;
+            } else {
+                // Use custom_user_image parameter as a fallback.
+                $image = $this->resourceLink->getSetting('custom_user_image');
+            }
 
-        // Check if there is an image to process.
-        if ($image) {
-            helper::update_user_profile_image($user->id, $image);
+            // Check if there is an image to process.
+            if ($image) {
+                helper::update_user_profile_image($user->id, $image);
+            }
         }
 
         // Check if we need to force the page layout to embedded.
@@ -332,46 +340,48 @@ class tool_provider extends ToolProvider {
         $roleid = $isinstructor ? $tool->roleinstructor : $tool->rolelearner;
         role_assign($roleid, $user->id, $tool->contextid);
 
-        // Login user.
-        $sourceid = $this->user->ltiResultSourcedId;
-        $serviceurl = $this->resourceLink->getSetting('lis_outcome_service_url');
+        // Login user, though there is no need if it is the same site.
+        if (!$samesite) {
+            $sourceid = $this->user->ltiResultSourcedId;
+            $serviceurl = $this->resourceLink->getSetting('lis_outcome_service_url');
 
-        // Check if we have recorded this user before.
-        if ($userlog = $DB->get_record('enrol_lti_users', ['toolid' => $tool->id, 'userid' => $user->id])) {
-            if ($userlog->sourceid != $sourceid) {
-                $userlog->sourceid = $sourceid;
-            }
-            if ($userlog->serviceurl != $serviceurl) {
+            // Check if we have recorded this user before.
+            if ($userlog = $DB->get_record('enrol_lti_users', ['toolid' => $tool->id, 'userid' => $user->id])) {
+                if ($userlog->sourceid != $sourceid) {
+                    $userlog->sourceid = $sourceid;
+                }
+                if ($userlog->serviceurl != $serviceurl) {
+                    $userlog->serviceurl = $serviceurl;
+                }
+                $userlog->lastaccess = time();
+                $DB->update_record('enrol_lti_users', $userlog);
+            } else {
+                // Add the user details so we can use it later when syncing grades and members.
+                $userlog = new stdClass();
+                $userlog->userid = $user->id;
+                $userlog->toolid = $tool->id;
                 $userlog->serviceurl = $serviceurl;
+                $userlog->sourceid = $sourceid;
+                $userlog->consumerkey = $this->consumer->getKey();
+                $userlog->consumersecret = $tool->secret;
+                $userlog->lastgrade = 0;
+                $userlog->lastaccess = time();
+                $userlog->timecreated = time();
+                $userlog->membershipsurl = $this->resourceLink->getSetting('ext_ims_lis_memberships_url');
+                $userlog->membershipsid = $this->resourceLink->getSetting('ext_ims_lis_memberships_id');
+
+                $DB->insert_record('enrol_lti_users', $userlog);
             }
-            $userlog->lastaccess = time();
-            $DB->update_record('enrol_lti_users', $userlog);
-        } else {
-            // Add the user details so we can use it later when syncing grades and members.
-            $userlog = new stdClass();
-            $userlog->userid = $user->id;
-            $userlog->toolid = $tool->id;
-            $userlog->serviceurl = $serviceurl;
-            $userlog->sourceid = $sourceid;
-            $userlog->consumerkey = $this->consumer->getKey();
-            $userlog->consumersecret = $tool->secret;
-            $userlog->lastgrade = 0;
-            $userlog->lastaccess = time();
-            $userlog->timecreated = time();
-            $userlog->membershipsurl = $this->resourceLink->getSetting('ext_ims_lis_memberships_url');
-            $userlog->membershipsid = $this->resourceLink->getSetting('ext_ims_lis_memberships_id');
 
-            $DB->insert_record('enrol_lti_users', $userlog);
+            // Finalise the user log in.
+            complete_user_login($user);
         }
-
-        // Finalise the user log in.
-        complete_user_login($user);
 
         // Everything's good. Set appropriate OK flag and message values.
         $this->ok = true;
         $this->message = get_string('success');
 
-        if (empty($CFG->allowframembedding)) {
+        if (empty($CFG->allowframembedding) && !$samesite) {
             // Provide an alternative link.
             $stropentool = get_string('opentool', 'enrol_lti');
             echo html_writer::tag('p', get_string('frameembeddingnotenabled', 'enrol_lti'));
