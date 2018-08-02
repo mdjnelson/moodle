@@ -1655,3 +1655,23 @@ function grade_floats_different($f1, $f2) {
 function grade_floats_equal($f1, $f2) {
     return (grade_floatval($f1) === grade_floatval($f2));
 }
+
+/**
+ * Adds files from a draftarea as feedback to the gradebook.
+ *
+ * @param int $draftfilesid The id of the draftfiles
+ * @param context $context The context for the files
+ * @param grade_grade $grade The grade object
+ * @return bool Returns true if successful, false otherwise
+ */
+function grade_add_feedback_files(int $draftfilesid, context $context, grade_grade $grade) {
+    file_save_draft_area_files(
+        $draftfilesid,
+        $context->id,
+        'grade',
+        'feedback',
+        $grade->id
+    );
+
+    return true;
+}
