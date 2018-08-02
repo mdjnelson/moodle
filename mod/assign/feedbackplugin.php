@@ -186,4 +186,15 @@ abstract class assign_feedback_plugin extends assign_plugin {
     public function grading_batch_operation($action, $users) {
         return '';
     }
+
+    /**
+     * Save any gradebook related data after the gradebook entry has been added.
+     *
+     * @param grade_item $gradeitem The gradeitem
+     * @param stdClass $data Form data from the feedback form
+     * @return bool Returns true if successful, false otherwise
+     */
+    public function save_after_gradebook_entry(grade_item $gradeitem, stdClass $data) {
+        return true;
+    }
 }
