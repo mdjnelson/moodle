@@ -8006,6 +8006,17 @@ class assign {
         if (!isset($formdata->sendstudentnotifications) || $formdata->sendstudentnotifications) {
             $this->notify_grade_modified($grade, true);
         }
+
+        // Allow plugins to handle data once a grade has been inserted into the gradebook.
+        foreach ($this->feedbackplugins as $plugin) {
+            if ($plugin->is_enabled() && $plugin->is_visible()) {
+                $gradeitem = $this->get_grade_item();
+                $gradegrade = grade_grade::fetch(['userid' => $userid, 'itemid' => $gradeitem->id]);
+                if ($gradegrade) {
+                    $plugin->save_after_gradebook_entry($gradegrade, $formdata);
+                }
+            }
+        }
     }
 
 
