@@ -685,6 +685,14 @@ class grade_report_user extends grade_report {
                     $gradeitemdata['feedback'] = '';
                     $gradeitemdata['feedbackformat'] = $grade_grade->feedbackformat;
 
+                    if ($grade_grade->feedback) {
+                        $grade_grade->feedback = grade_rewrite_feedback_files_urls(
+                            $grade_grade->feedback,
+                            $this->context,
+                            $grade_grade
+                        );
+                    }
+
                     if ($grade_grade->overridden > 0 AND ($type == 'categoryitem' OR $type == 'courseitem')) {
                     $data['feedback']['class'] = $classfeedback.' feedbacktext';
                         $data['feedback']['content'] = get_string('overridden', 'grades').': ' . format_text($grade_grade->feedback, $grade_grade->feedbackformat);
