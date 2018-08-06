@@ -4213,10 +4213,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
             \core\session\manager::write_close(); // Unlock session during file serving.
             send_stored_file($file, 60*60, 0, $forcedownload, $sendfileoptions);
 
-        } else if ($filearea === 'feedback' and $context->contextlevel == CONTEXT_COURSE) {
-            //TODO: nobody implemented this yet in grade edit form!!
-            send_file_not_found();
-
+        } else if ($filearea === 'feedback' || $filearea == 'history') {
             if ($CFG->forcelogin || $course->id != SITEID) {
                 require_login($course);
             }
