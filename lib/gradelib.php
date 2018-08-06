@@ -1657,6 +1657,25 @@ function grade_floats_equal($f1, $f2) {
 }
 
 /**
+ * Convert encoded URLs in $text from the @@PLUGINFILE@@/... form to an actual URL.
+ *
+ * @param string $feedback The feedback
+ * @param context $context The context for the files
+ * @param grade_item $gradeitem The gradeitem
+ * @return string the processed text.
+ */
+function grade_rewrite_feedback_files_urls(string $feedback, context $context, grade_item $gradeitem) {
+    return file_rewrite_pluginfile_urls(
+        $feedback,
+        'pluginfile.php',
+        $context->id,
+        GRADE_FILE_COMPONENT,
+        GRADE_FEEDBACK_FILEAREA,
+        $gradeitem->id
+    );
+}
+
+/**
  * Adds files from a draftarea as feedback to the gradebook.
  *
  * @param int $draftfilesid The id of the draftfiles
