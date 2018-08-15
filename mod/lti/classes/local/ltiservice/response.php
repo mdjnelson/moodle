@@ -114,12 +114,16 @@ class response {
      * @return string
      */
     public function get_reason() {
-        if (empty($this->reason)) {
-            $this->reason = $this->responsecodes[$this->code];
+        $code = $this->code;
+        if (($code < 200) || ($code >= 600)) {
+            $code = 500;  // Status code must be between 200 and 599.
+        }
+        if (empty($this->reason) && array_key_exists($code, $this->responsecodes)) {
+            $this->reason = $this->responsecodes[$code];
         }
         // Use generic reason for this category (based on first digit) if a specific reason is not defined.
         if (empty($this->reason)) {
-            $this->reason = $this->responsecodes[intval($this->code / 100) * 100];
+            $this->reason = $this->responsecodes[intval($code / 100) * 100];
         }
         return $this->reason;
     }
@@ -224,11 +228,26 @@ class response {
         }
         if (($this->code >= 200) && ($this->code < 300)) {
             if (!empty($this->contenttype)) {
-                header("Content-Type: {$this->contenttype};charset=UTF-8");
+                header("Content-Type: {$this->contenttype}; charset=utf-8");
             }
             if (!empty($this->body)) {
                 echo $this->body;
             }
+        } else if ($this->code >= 400) {
+            header("Content-Type: application/json; charset=utf-8");
+            $body = new \stdClass();
+            $body->status = $this->code;
+            $body->reason = $this->get_reason();
+            $body->request = new \stdClass();
+            $body->request->method = $_SERVER['REQUEST_METHOD'];
+            $body->request->url = $_SERVER['REQUEST_URI'];
+            if (isset($_SERVER['HTTP_ACCEPT'])) {
+                $body->request->accept = $_SERVER['HTTP_ACCEPT'];
+            }
+            if (isset($_SERVER['CONTENT_TYPE'])) {
+                $body->request->contentType = $_SERVER['CONTENT_TYPE'];
+            }
+            echo json_encode($body, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         }
     }
 
