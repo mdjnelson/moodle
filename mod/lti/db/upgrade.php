@@ -143,6 +143,77 @@ function xmldb_lti_upgrade($oldversion) {
     // Automatically generated Moodle v3.6.0 release upgrade line.
     // Put any upgrade step following this.
 
-    return true;
+    if ($oldversion < 2019010400) {
+        // Add LTI Version field to lti_types table.
+        $table = new xmldb_table('lti_types');
+        $field = new xmldb_field('ltiversion', XMLDB_TYPE_CHAR, 10, null, XMLDB_NOTNULL, null, 'LTI-1p0', 'coursevisible');
+        $dbman->add_field($table, $field);
+        $DB->set_field_select('lti_types', 'ltiversion', 'LTI-2p0', 'toolproxyid IS NOT NULL');
 
+        // Add platform ID configuration setting.
+        set_config('platformid', $CFG->wwwroot, 'mod_lti');
+
+        // Create the private key.
+        $kid = bin2hex(openssl_random_pseudo_bytes(10));
+        set_config('kid', $kid, 'mod_lti');
+        $config = array(
+            "digest_alg" => "sha256",
+            "private_key_bits" => 2048,
+            "private_key_type" => OPENSSL_KEYTYPE_RSA,
+        );
+        $res = openssl_pkey_new($config);
+        openssl_pkey_export($res, $privatekey);
+        set_config('privatekey', $privatekey, 'mod_lti');
+
+        // Lti savepoint reached.
+        upgrade_mod_savepoint(true, 2019010400, 'lti');
+    }
+
+    if ($oldversion < 2019010401) {
+
+        // Define table lti_access_tokens to be created.
+        $table = new xmldb_table('lti_access_tokens');
+
+        // Adding fields to table lti_access_tokens.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('typeid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('scope', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('token', XMLDB_TYPE_CHAR, '128', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('validuntil', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('lastaccess', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+        // Adding keys to table lti_access_tokens.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('typeid', XMLDB_KEY_FOREIGN, array('typeid'), 'lti_types', array('id'));
+
+        // Conditionally launch create table for lti_access_tokens.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Lti savepoint reached.
+        upgrade_mod_savepoint(true, 2019010401, 'lti');
+    }
+
+    if ($oldversion < 2019010402) {
+        $DB->set_field('lti_types_config', 'name', 'ltiservice_memberships', array('name' => 'memberships'));
+        $DB->set_field('lti_types_config', 'name', 'ltiservice_gradebookservices', array('name' => 'gradesynchronization'));
+
+        // Lti savepoint reached.
+        upgrade_mod_savepoint(true, 2019010402, 'lti');
+    }
+
+    if ($oldversion < 2019010403) {
+        $table = new xmldb_table('lti_access_tokens');
+        $index = new xmldb_index('token', XMLDB_INDEX_UNIQUE, array('token'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Lti savepoint reached.
+        upgrade_mod_savepoint(true, 2019010403, 'lti');
+    }
+
+    return true;
 }

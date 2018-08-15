@@ -207,19 +207,20 @@ abstract class resource_base {
     /**
      * Check to make sure the request is valid.
      *
-     * @param string $toolproxyguid Consumer key
-     * @param string $body          Body of HTTP request message
+     * @param int $typeid                   The typeid we want to use
+     * @param string $body                  Body of HTTP request message
+     * @param string[] $scopes              Array of scope(s) required for incoming request
      *
      * @return boolean
      */
-    public function check_tool_proxy($toolproxyguid, $body = null) {
+    public function check_type($typeid, $body = null, $scopes = null) {
 
-        $ok = false;
-        if ($this->get_service()->check_tool_proxy($toolproxyguid, $body)) {
-            $toolproxyjson = $this->get_service()->get_tool_proxy()->toolproxy;
-            if (empty($toolproxyjson)) {
-                $ok = true;
-            } else {
+        $ok = $this->get_service()->check_type($typeid, $body, $scopes);
+        if ($ok) {
+            if ($this->get_service()->get_tool_proxy()) {
+                $toolproxyjson = $this->get_service()->get_tool_proxy()->toolproxy;
+            }
+            if (!empty($toolproxyjson)) {
                 $toolproxy = json_decode($toolproxyjson);
                 if (!empty($toolproxy) && isset($toolproxy->security_contract->tool_service)) {
                     $contexts = lti_get_contexts($toolproxy);
@@ -234,52 +235,16 @@ abstract class resource_base {
                     }
                 }
                 if (!$ok) {
-                    debugging('Requested service not included in tool proxy: ' . $this->get_id(), DEBUG_DEVELOPER);
+                    debugging('Requested service not permitted: ' . $this->get_id(), DEBUG_DEVELOPER);
                 }
+            } else {
+                $permittedscopes = $this->get_service()->get_permitted_scopes();
+                $ok = !empty(array_intersect($permittedscopes, $scopes));
             }
         }
 
         return $ok;
 
-    }
-
-    /**
-     * Check to make sure the request is valid.
-     *
-     * @param int $typeid                   The typeid we want to use
-     * @param int $contextid                The course we are at
-     * @param string $permissionrequested   The permission to be checked
-     * @param string $body                  Body of HTTP request message
-     *
-     * @return boolean
-     */
-    public function check_type($typeid, $contextid, $permissionrequested, $body = null) {
-        $ok = false;
-        if ($this->get_service()->check_type($typeid, $contextid, $body)) {
-            $neededpermissions = $this->get_permissions($typeid);
-            foreach ($neededpermissions as $permission) {
-                if ($permission == $permissionrequested) {
-                    $ok = true;
-                    break;
-                }
-            }
-            if (!$ok) {
-                debugging('Requested service ' . $permissionrequested . ' not included in tool type: ' . $typeid,
-                    DEBUG_DEVELOPER);
-            }
-        }
-        return $ok;
-
-    }
-
-    /**
-     * get permissions from the config of the tool for that resource
-     *
-     * @param int $ltitype Type of LTI
-     * @return array with the permissions related to this resource by the $ltitype or empty if none.
-     */
-    public function get_permissions($ltitype) {
-        return array();
     }
 
     /**

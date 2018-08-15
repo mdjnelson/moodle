@@ -32,8 +32,8 @@ require_once($CFG->dirroot . '/mod/lti/locallib.php');
 
 $response = new \mod_lti\local\ltiservice\response();
 
-$isget = $response->get_request_method() == 'GET';
-$isdelete = $response->get_request_method() == 'DELETE';
+$isget = $response->get_request_method() === mod_lti\local\ltiservice\resource_base::HTTP_GET;
+$isdelete = $response->get_request_method() === mod_lti\local\ltiservice\resource_base::HTTP_DELETE;
 
 if ($isget) {
     $response->set_accept(isset($_SERVER['HTTP_ACCEPT']) ? $_SERVER['HTTP_ACCEPT'] : '');

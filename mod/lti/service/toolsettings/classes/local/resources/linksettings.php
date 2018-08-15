@@ -72,7 +72,7 @@ class linksettings extends \mod_lti\local\ltiservice\resource_base {
         $simpleformat = !empty($contenttype) && ($contenttype == $this->formats[1]);
         $ok = (empty($bubble) || ((($bubble == 'distinct') || ($bubble == 'all')))) &&
              (!$simpleformat || empty($bubble) || ($bubble != 'all')) &&
-             (empty($bubble) || ($response->get_request_method() == 'GET'));
+             (empty($bubble) || ($response->get_request_method() == self::HTTP_GET));
         if (!$ok) {
             $response->set_code(406);
         }
@@ -84,9 +84,7 @@ class linksettings extends \mod_lti\local\ltiservice\resource_base {
             $ok = !empty($linkid);
             if ($ok) {
                 $lti = $DB->get_record('lti', array('id' => $linkid), 'course,typeid', MUST_EXIST);
-                $ltitype = $DB->get_record('lti_types', array('id' => $lti->typeid));
-                $toolproxy = $DB->get_record('lti_tool_proxies', array('id' => $ltitype->toolproxyid));
-                $ok = $this->check_tool_proxy($toolproxy->guid, $response->get_request_data());
+                $ok = $this->check_type($lti->typeid, $response->get_request_data());
             }
             if (!$ok) {
                 $response->set_code(401);

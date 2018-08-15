@@ -66,10 +66,13 @@ class toolproxy extends \mod_lti\local\ltiservice\resource_base {
      */
     public function execute($response) {
 
-        $ok = $this->check_tool_proxy(null, $response->get_request_data());
+        $ok = $this->check_type(null, $response->get_request_data());
+        $ok = $ok && ($this->get_service()->get_tool_proxy());
         if ($ok) {
             $toolproxy = $this->get_service()->get_tool_proxy();
-        } else {
+            $ok = ($toolproxy->guid === $tpid);
+        }
+        if (!$ok) {
             $toolproxy = null;
             $response->set_code(401);
         }
@@ -219,6 +222,7 @@ class toolproxy extends \mod_lti\local\ltiservice\resource_base {
 
                 $type = new \stdClass();
                 $type->state = LTI_TOOL_STATE_PENDING;
+                $type->ltiversion = LTI_VERSION_2;
                 $type->toolproxyid = $toolproxy->id;
                 $type->enabledcapability = implode("\n", $launchrequest->enabled_capability);
                 $type->parameter = self::lti_extract_parameters($launchrequest->parameter);

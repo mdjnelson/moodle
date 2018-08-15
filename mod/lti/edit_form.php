@@ -96,14 +96,31 @@ class mod_lti_edit_types_form extends moodleform {
         }
 
         if (!$istool) {
+            $options = array(
+                LTI_VERSION_1 => get_string('oauth_security', 'lti'),
+                LTI_VERSION_1P3 => get_string('jwt_security', 'lti'),
+            );
+            $mform->addElement('select', 'lti_ltiversion', get_string('ltiversion', 'lti'), $options);
+            $mform->setType('lti_ltiversion', PARAM_TEXT);
+            $mform->addHelpButton('lti_ltiversion', 'ltiversion', 'lti');
+            $mform->setDefault('lti_ltiversion', LTI_VERSION_1);
+
             $mform->addElement('text', 'lti_resourcekey', get_string('resourcekey_admin', 'lti'));
             $mform->setType('lti_resourcekey', PARAM_TEXT);
             $mform->addHelpButton('lti_resourcekey', 'resourcekey_admin', 'lti');
+            $mform->hideIf('lti_resourcekey', 'lti_ltiversion', 'eq', LTI_VERSION_1P3);
             $mform->setForceLtr('lti_resourcekey');
 
             $mform->addElement('passwordunmask', 'lti_password', get_string('password_admin', 'lti'));
             $mform->setType('lti_password', PARAM_TEXT);
             $mform->addHelpButton('lti_password', 'password_admin', 'lti');
+            $mform->hideIf('lti_password', 'lti_ltiversion', 'eq', LTI_VERSION_1P3);
+
+            $mform->addElement('textarea', 'lti_publickey', get_string('publickey', 'lti'), array('rows' => 8, 'cols' => 60));
+            $mform->setType('lti_publickey', PARAM_TEXT);
+            $mform->addHelpButton('lti_publickey', 'publickey', 'lti');
+            $mform->hideIf('lti_publickey', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
+            $mform->setForceLtr('lti_publickey');
         }
 
         if ($istool) {
@@ -185,8 +202,7 @@ class mod_lti_edit_types_form extends moodleform {
         $mform->addHelpButton('lti_secureicon', 'secure_icon_url', 'lti');
 
         if (!$istool) {
-            // Display the lti advantage services.
-            $this->get_lti_advantage_services($mform);
+            $this->get_lti_services($mform);
         }
 
         if (!$istool) {
@@ -284,17 +300,36 @@ class mod_lti_edit_types_form extends moodleform {
     }
 
     /**
-     * Generates the lti advantage extra configuration adding it to the mform
+     * Generates the lti services extra configuration adding it to the mform
      *
      * @param MoodleQuickForm $mform
      */
-    public function get_lti_advantage_services(&$mform) {
-        // For each service add the label and get the array of configuration.
+    public function get_lti_services(&$mform) {
         $services = lti_get_services();
         $mform->addElement('header', 'services', get_string('services', 'lti'));
         foreach ($services as $service) {
-            /** @var \mod_lti\local\ltiservice\service_base $service */
-            $service->get_configuration_options($mform);
+            $elements = $service->get_configuration_options();
+            if (!empty($elements)) {
+                foreach ($elements as $name => $element) {
+                    $id = $service->get_component_id();
+                    if (!empty($name)) {
+                        $id = "{$id}_{$name}";
+                    }
+                    $element->setName($id);
+                    $mform->addelement($element);
+                    $type = PARAM_TEXT;
+                    if ($element instanceof \MoodleQuickForm_select) {
+                        if (is_int($element->_options[0]['attr']['value'])) {
+                            $type = PARAM_INT;
+                        }
+                    }
+                    $mform->setType($id, $type);
+                    $mform->setDefault($id, 0);
+                    if (empty($name)) {
+                        $mform->addHelpButton($id, $id, $id);
+                    }
+                }
+            }
         }
     }
 }

@@ -45,8 +45,6 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
     const CONTEXT_ROLE_LEARNER = 'http://purl.imsglobal.org/vocab/lis/v2/membership#Learner';
     /** Capability used to identify Instructors */
     const INSTRUCTOR_CAPABILITY = 'moodle/course:manageactivities';
-    /** Name of LTI service component */
-    const LTI_SERVICE_COMPONENT = 'ltiservice_memberships';
     /** Membership services enabled */
     const MEMBERSHIP_ENABLED = 1;
     /** Always include field */
@@ -57,6 +55,8 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
     const INSTRUCTOR_INCLUDED = 1;
     /** Instructor delegated and approved for include */
     const INSTRUCTOR_DELEGATE_INCLUDED = array(self::DELEGATE_TO_INSTRUCTOR && self::INSTRUCTOR_INCLUDED);
+    /** Scope for reading membership data */
+    const SCOPE_MEMBERSHIPS_READ = 'https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly';
 
     /**
      * Class constructor.
@@ -65,7 +65,7 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
 
         parent::__construct();
         $this->id = 'memberships';
-        $this->name = get_string('servicename', self::LTI_SERVICE_COMPONENT);
+        $this->name = get_string($this->get_component_id(), $this->get_component_id());
 
     }
 
@@ -87,22 +87,40 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
     }
 
     /**
+     * Get the scope(s) permitted for this service.
+     *
+     * @return array
+     */
+    public function get_permitted_scopes() {
+
+        $scopes = array();
+        $ok = !empty($this->get_type());
+        if ($ok && isset($this->get_typeconfig()[$this->get_component_id()]) &&
+            ($this->get_typeconfig()[$this->get_component_id()] == self::MEMBERSHIP_ENABLED)) {
+            $scopes[] = self::SCOPE_MEMBERSHIPS_READ;
+        }
+
+        return $scopes;
+
+    }
+
+    /**
      * Get the JSON for members.
      *
      * @param \mod_lti\local\ltiservice\resource_base $resource       Resource handling the request
      * @param \context_course   $context    Course context
      * @param string            $contextid  Course ID
-     * @param object            $tool       Tool instance object
      * @param string            $role       User role requested (empty if none)
      * @param int               $limitfrom  Position of first record to be returned
      * @param int               $limitnum   Maximum number of records to be returned
      * @param object            $lti        LTI instance record
      * @param \core_availability\info_module $info Conditional availability information
-     * for LTI instance (null if context-level request)
+     *      for LTI instance (null if context-level request)
+     * @param \mod_lti\local\ltiservice\response $response       Response object for the request
      *
      * @return string
      */
-    public static function get_users_json($resource, $context, $contextid, $tool, $role, $limitfrom, $limitnum, $lti, $info) {
+    public function get_users_json($resource, $context, $contextid, $role, $limitfrom, $limitnum, $lti, $info, $response) {
 
         $withcapability = '';
         $exclude = array();
@@ -122,7 +140,12 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
             $limitfrom = 0;
             $limitnum = 0;
         }
-        $json = self::users_to_json($resource, $users, $contextid, $tool, $exclude, $limitfrom, $limitnum, $lti, $info);
+        if (($response->get_accept() === 'application/vnd.ims.lti-nprs.v2.membershipcontainer+json') ||
+            ($this->get_type()->ltiversion === LTI_VERSION_1P3)) {
+            $json = $this->users_to_json2($resource, $users, $contextid, $exclude, $limitfrom, $limitnum, $lti, $info, $response);
+        } else {
+            $json = $this->users_to_json($resource, $users, $contextid, $exclude, $limitfrom, $limitnum, $lti, $info, $response);
+        }
 
         return $json;
     }
@@ -141,14 +164,18 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
      * @param int    $limitfrom           Position of first record to be returned
      * @param int    $limitnum            Maximum number of records to be returned
      * @param object $lti                 LTI instance record
-     * @param \core_availability\info_module  $info     Conditional availability information for LTI instance
+     * @param \core_availability\info_module $info Conditional availability information
+     *      for LTI instance (null if context-level request)
+     * @param \mod_lti\local\ltiservice\response $response       Response object for the request
      *
      * @return string
      */
-    private static function users_to_json($resource, $users, $contextid, $tool, $exclude, $limitfrom, $limitnum,
-            $lti, $info) {
+    private function users_to_json($resource, $users, $contextid, $exclude, $limitfrom, $limitnum,
+            $lti, $info, $response) {
         global $DB;
 
+        $tool = $this->get_type();
+        $toolconfig = $this->get_typeconfig();
         $arrusers = [
             '@context' => 'http://purl.imsglobal.org/ctx/lis/v2/MembershipContainer',
             '@type' => 'Page',
@@ -189,14 +216,12 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
             $membership->status = 'Active';
             $membership->role = explode(',', lti_get_ims_role($user->id, null, $contextid, true));
 
-            $toolconfig = lti_get_type_type_config($tool->id);
             $instanceconfig = null;
             if (!is_null($lti)) {
                 $instanceconfig = lti_get_type_config_from_instance($lti->id);
             }
             $isallowedlticonfig = self::is_allowed_field_set($toolconfig, $instanceconfig,
-                                    ['name' => 'lti_sendname', 'email' => 'lti_sendemailaddr']);
-
+                                    ['name' => 'sendname', 'email' => 'sendemailaddr']);
             $includedcapabilities = [
                 'User.id'              => ['type' => 'id',
                                             'member.field' => 'userId',
@@ -254,6 +279,134 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
             $arrusers['pageOf']['membershipSubject']['membership'][] = $membership;
         }
 
+        $response->set_content_type('application/vnd.ims.lis.v2.membershipcontainer+json');
+
+        return json_encode($arrusers);
+    }
+
+    /**
+     * Get the NRP service JSON representation of the users.
+     *
+     * Note that when a limit is set and the exclude array is not empty, then the number of memberships
+     * returned may be less than the limit.
+     *
+     * @param \mod_lti\local\ltiservice\resource_base $resource       Resource handling the request
+     * @param array  $users               Array of user records
+     * @param string $contextid           Course ID
+     * @param array  $exclude             Array of user records to be excluded from the response
+     * @param int    $limitfrom           Position of first record to be returned
+     * @param int    $limitnum            Maximum number of records to be returned
+     * @param object $lti                 LTI instance record
+     * @param \core_availability\info_module  $info     Conditional availability information for LTI instance
+     * @param \mod_lti\local\ltiservice\response $response       Response object for the request
+     *
+     * @return string
+     */
+    private function users_to_json2($resource, $users, $contextid, $exclude, $limitfrom, $limitnum,
+            $lti, $info, $response) {
+        global $DB;
+
+        $tool = $this->get_type();
+        $toolconfig = $this->get_typeconfig();
+        $arrusers = [
+            'id' => $resource->get_endpoint(),
+            'members' => []
+        ];
+
+        if ($limitnum > 0) {
+            $limitfrom += $limitnum;
+            $nextpage = "{$resource->get_endpoint()}?limit={$limitnum}&from={$limitfrom}";
+            if (!is_null($lti)) {
+                $nextpage .= "&rlid={$lti->id}";
+            }
+            $response->add_additional_header("Link: {$nextpage};rel=next");
+        }
+
+        $enabledcapabilities = lti_get_enabled_capabilities($tool);
+        $islti2 = $tool->toolproxyid > 0;
+        foreach ($users as $user) {
+            if (in_array($user->id, $exclude)) {
+                continue;
+            }
+            if (!empty($info) && !$info->is_user_visible($info->get_course_module(), $user->id)) {
+                continue;
+            }
+
+            $member = new \stdClass();
+            $member->status = 'Active';
+            $member->roles = explode(',', lti_get_ims_role($user->id, null, $contextid, true));
+
+            $instanceconfig = null;
+            if (!is_null($lti)) {
+                $instanceconfig = lti_get_type_config_from_instance($lti->id);
+            }
+            $isallowedlticonfig = self::is_allowed_field_set($toolconfig, $instanceconfig,
+                                    ['name' => 'sendname', 'email' => 'sendemailaddr']);
+            $includedcapabilities = [
+                'User.id'              => ['type' => 'id',
+                                            'member.field' => 'user_id',
+                                            'source.value' => $user->id],
+                'Person.name.full'     => ['type' => 'name',
+                                            'member.field' => 'name',
+                                            'source.value' => format_string("{$user->firstname} {$user->lastname}")],
+                'Person.name.given'    => ['type' => 'name',
+                                            'member.field' => 'given_name',
+                                            'source.value' => format_string($user->firstname)],
+                'Person.name.family'   => ['type' => 'name',
+                                            'member.field' => 'family_name',
+                                            'source.value' => format_string($user->lastname)],
+                'Person.email.primary' => ['type' => 'email',
+                                            'member.field' => 'email',
+                                            'source.value' => format_string($user->email)]
+            ];
+
+            if (!is_null($lti)) {
+                $message = new \stdClass();
+                $message->{'https://purl.imsglobal.org/spec/lti/claim/message_type'} = 'LtiResourceLinkRequest';
+                $conditions = array('courseid' => $contextid, 'itemtype' => 'mod',
+                        'itemmodule' => 'lti', 'iteminstance' => $lti->id);
+
+                if (!empty($lti->servicesalt) && $DB->record_exists('grade_items', $conditions)) {
+                    $basicoutcome = new \stdClass();
+                    $basicoutcome->lis_result_sourcedid = json_encode(lti_build_sourcedid($lti->id,
+                                                                                     $user->id,
+                                                                                     $lti->servicesalt,
+                                                                                     $lti->typeid));
+                    // Add outcome service URL.
+                    $serviceurl = new \moodle_url('/mod/lti/service.php');
+                    $serviceurl = $serviceurl->out();
+                    $forcessl = false;
+                    if (!empty($CFG->mod_lti_forcessl)) {
+                        $forcessl = true;
+                    }
+                    if ((isset($typeconfig['forcessl']) && ($typeconfig['forcessl'] == '1')) or $forcessl) {
+                        $serviceurl = lti_ensure_url_is_https($serviceurl);
+                    }
+                    $basicoutcome->lis_outcome_service_url = $serviceurl;
+                    $message->{'https://purl.imsglobal.org/spec/lti-bo/claim/basicoutcome'} = $basicoutcome;
+                }
+                $member->message = [$message];
+            }
+
+            foreach ($includedcapabilities as $capabilityname => $capability) {
+                if ($islti2) {
+                    if (!in_array($capabilityname, $enabledcapabilities)) {
+                        continue;
+                    }
+                } else {
+                    if (($capability['type'] === 'id')
+                     || ($capability['type'] === 'name' && $isallowedlticonfig['name'])
+                     || ($capability['type'] === 'email' && $isallowedlticonfig['email'])) {
+                        $member->{$capability['member.field']} = $capability['source.value'];
+                    }
+                }
+            }
+
+            $arrusers['members'][] = $member;
+        }
+
+        $response->set_content_type('application/vnd.ims.lti-nprs.v2.membershipcontainer+json');
+
         return json_encode($arrusers);
     }
 
@@ -267,10 +420,10 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
     private static function is_allowed_field_set($toolconfig, $instanceconfig, $fields) {
         $isallowedstate = [];
         foreach ($fields as $key => $field) {
-            $allowed = self::ALWAYS_INCLUDE_FIELD == $toolconfig->{$field};
+            $allowed = self::ALWAYS_INCLUDE_FIELD == $toolconfig[$field];
             if (!$allowed) {
-                if (self::DELEGATE_TO_INSTRUCTOR == $toolconfig->{$field} && !is_null($instanceconfig)) {
-                    $allowed = $instanceconfig->{$field} == self::INSTRUCTOR_INCLUDED;
+                if (self::DELEGATE_TO_INSTRUCTOR == $toolconfig[$field] & !is_null($instanceconfig)) {
+                    $allowed = $instanceconfig[$field] == self::INSTRUCTOR_INCLUDED;
                 }
             }
             $isallowedstate[$key] = $allowed;
@@ -279,31 +432,20 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
     }
 
     /**
-     * Adds form elements for membership add/edit page.
+     * Create form element for membership add/edit page.
      *
-     * @param \MoodleQuickForm $mform
+     * @return array of \HTML_QuickForm_element Form elements
      */
-    public function get_configuration_options(&$mform) {
-        $elementname = 'ltiservice_memberships';
+    public function get_configuration_options() {
+        $elements = array();
         $options = [
-            get_string('notallow', self::LTI_SERVICE_COMPONENT),
-            get_string('allow', self::LTI_SERVICE_COMPONENT)
+            get_string('notallow', $this->get_component_id()),
+            get_string('allow', $this->get_component_id())
         ];
+        $elements[''] = new \MoodleQuickForm_select($this->get_component_id(), get_string($this->get_component_id(),
+            $this->get_component_id()), $options);
 
-        $mform->addElement('select', $elementname, get_string($elementname, self::LTI_SERVICE_COMPONENT), $options);
-        $mform->setType($elementname, 'int');
-        $mform->setDefault($elementname, 0);
-        $mform->addHelpButton($elementname, $elementname, self::LTI_SERVICE_COMPONENT);
-    }
-
-    /**
-     * Return an array with the names of the parameters that the service will be saving in the configuration
-     *
-     * @return array with the names of the parameters that the service will be saving in the configuration
-     *
-     */
-    public function get_configuration_parameter_names() {
-        return array(self::LTI_SERVICE_COMPONENT);
+        return $elements;
     }
 
     /**
@@ -325,16 +467,10 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
 
         $launchparameters = array();
         $tool = lti_get_type_type_config($typeid);
-        if (isset($tool->ltiservice_memberships)) {
-            if ($tool->ltiservice_memberships == '1' && $this->is_used_in_context($typeid, $courseid)) {
-                $endpoint = $this->get_service_path();
-                if ($COURSE->id === SITEID) {
-                    $contexttype = 'Group';
-                } else {
-                    $contexttype = 'CourseSection';
-                }
-                $launchparameters['custom_context_memberships_url'] = $endpoint .
-                    "/{$contexttype}/{$courseid}/bindings/{$typeid}/memberships";
+        if (isset($tool->{$this->get_component_id()})) {
+            if ($tool->{$this->get_component_id()} == self::MEMBERSHIP_ENABLED && $this->is_used_in_context($typeid, $courseid)) {
+                $launchparameters['context_memberships_url'] = '$ToolProxyBinding.memberships.url';
+                $launchparameters['context_memberships_version'] = '2.0';
             }
         }
         return $launchparameters;

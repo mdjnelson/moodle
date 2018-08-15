@@ -58,6 +58,10 @@ abstract class service_base {
     protected $unsigned;
     /** @var stdClass Tool proxy object for the current service request. */
     private $toolproxy;
+    /** @var stdClass LTI type object for the current service request. */
+    private $type;
+    /** @var stdClass LTI type config object for the current service request. */
+    private $typeconfig;
     /** @var array Instances of the resources associated with this service. */
     protected $resources;
 
@@ -71,6 +75,8 @@ abstract class service_base {
         $this->name = null;
         $this->unsigned = false;
         $this->toolproxy = null;
+        $this->type = null;
+        $this->typeconfig = null;
         $this->resources = null;
 
     }
@@ -83,6 +89,17 @@ abstract class service_base {
     public function get_id() {
 
         return $this->id;
+
+    }
+
+    /**
+     * Get the service compoent ID.
+     *
+     * @return string
+     */
+    public function get_component_id() {
+
+        return 'ltiservice_' . $this->id;
 
     }
 
@@ -133,6 +150,54 @@ abstract class service_base {
     }
 
     /**
+     * Get the type object.
+     *
+     * @return stdClass
+     */
+    public function get_type() {
+
+        return $this->type;
+
+    }
+
+    /**
+     * Set the LTI type object.
+     *
+     * @param object $type The LTI type for this service request
+     *
+     * @var stdClass
+     */
+    public function set_type($type) {
+
+        $this->type = $type;
+
+    }
+
+    /**
+     * Get the type config object.
+     *
+     * @return stdClass
+     */
+    public function get_typeconfig() {
+
+        return $this->typeconfig;
+
+    }
+
+    /**
+     * Set the LTI type config object.
+     *
+     * @param object $typeconfig The LTI type config for this service request
+     *
+     * @var stdClass
+     */
+    public function set_typeconfig($typeconfig) {
+
+        $this->typeconfig = $typeconfig;
+
+    }
+
+    /**
      * Get the resources for this service.
      *
      * @return resource_base[]
@@ -140,20 +205,20 @@ abstract class service_base {
     abstract public function get_resources();
 
     /**
-     * Returns the configuration options for this service.
+     * Get the scope(s) permitted for this service.
      *
-     * @param \MoodleQuickForm $mform Moodle quickform object definition
+     * @return array|null
      */
-    public function get_configuration_options(&$mform) {
-
+    public function get_permitted_scopes() {
+        return null;
     }
 
     /**
-     * Return an array with the names of the parameters that the service will be saving in the configuration
+     * Create form element(s) for service on add/edit page.
      *
-     * @return array  Names list of the parameters that the service will be saving in the configuration
+     * @return array of \MoodleQuickForm_select Form elements
      */
-    public function get_configuration_parameter_names() {
+    public function get_configuration_options() {
         return array();
     }
 
@@ -245,64 +310,56 @@ abstract class service_base {
     }
 
     /**
-     * Check that the request has been properly signed.
+     * Check that the request has been properly signed and is permitted.
      *
-     * @param string $toolproxyguid  Tool Proxy GUID
-     * @param string $body           Request body (null if none)
+     * @param string $typeid    LTI type ID
+     * @param string $body      Request body (null if none)
+     * @param string[] $scopes  Array of required scope(s) for incoming request
      *
      * @return boolean
      */
-    public function check_tool_proxy($toolproxyguid, $body = null) {
+    public function check_type($typeid, $body = null, $scopes = null) {
 
-        $ok = false;
+        $ok = true;
         $toolproxy = null;
-        $consumerkey = lti\get_oauth_key_from_headers();
-        if (empty($toolproxyguid)) {
-            $toolproxyguid = $consumerkey;
-        }
-
-        if (!empty($toolproxyguid)) {
-            $toolproxy = lti_get_tool_proxy_from_guid($toolproxyguid);
-            if ($toolproxy !== false) {
-                if (!$this->is_unsigned() && ($toolproxy->guid == $consumerkey)) {
-                    $ok = $this->check_signature($toolproxy->guid, $toolproxy->secret, $body);
-                } else {
-                    $ok = $this->is_unsigned();
+        $consumerkey = lti\get_oauth_key_from_headers($typeid, $scopes);
+        if ($consumerkey === false) {
+            $ok = $this->is_unsigned();
+        } else {
+            if (empty($typeid) && is_int($consumerkey)) {
+                $typeid = $consumerkey;
+            }
+            if (!empty($typeid)) {
+                $this->type = lti_get_type($typeid);
+                $this->typeconfig = lti_get_type_config($typeid);
+                $ok = !empty($this->type->id);
+                if ($ok && !empty($this->type->toolproxyid)) {
+                    $this->toolproxy = lti_get_tool_proxy($this->type->toolproxyid);
+                }
+            } else {
+                $toolproxy = lti_get_tool_proxy_from_guid($consumerkey);
+                if ($toolproxy !== false) {
+                    $this->toolproxy = $toolproxy;
                 }
             }
         }
-        if ($ok) {
-            $this->toolproxy = $toolproxy;
-        }
-        return $ok;
-    }
-
-    /**
-     * Check that the request has been properly signed.
-     *
-     * @param int $typeid The tool id
-     * @param int $courseid The course we are at
-     * @param string $body Request body (null if none)
-     *
-     * @return bool
-     */
-    public function check_type($typeid, $courseid, $body = null) {
-        $ok = false;
-        $tool = null;
-        $consumerkey = lti\get_oauth_key_from_headers();
-        if (empty($typeid)) {
-            return $ok;
-        } else if ($this->is_allowed_in_context($typeid, $courseid)) {
-            $tool = lti_get_type_type_config($typeid);
-            if ($tool !== false) {
-                if (!$this->is_unsigned() && ($tool->lti_resourcekey == $consumerkey)) {
-                    $ok = $this->check_signature($tool->lti_resourcekey, $tool->lti_password, $body);
-                } else {
-                    $ok = $this->is_unsigned();
-                }
+        if ($ok && is_string($consumerkey)) {
+            if (!empty($this->toolproxy)) {
+                $key = $this->toolproxy->guid;
+                $secret = $this->toolproxy->secret;
+            } else {
+                $key = $this->typeconfig['resourcekey'];
+                $secret = $this->typeconfig['password'];
+            }
+            if (!$this->is_unsigned() && ($key == $consumerkey)) {
+                $ok = $this->check_signature($key, $secret, $body);
+            } else {
+                $ok = $this->is_unsigned();
             }
         }
+
         return $ok;
+
     }
 
     /**

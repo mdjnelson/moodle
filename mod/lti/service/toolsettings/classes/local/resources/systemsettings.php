@@ -54,8 +54,8 @@ class systemsettings extends resource_base {
         $this->variables[] = 'ToolProxy.custom.url';
         $this->formats[] = 'application/vnd.ims.lti.v2.toolsettings+json';
         $this->formats[] = 'application/vnd.ims.lti.v2.toolsettings.simple+json';
-        $this->methods[] = 'GET';
-        $this->methods[] = 'PUT';
+        $this->methods[] = self::HTTP_GET;
+        $this->methods[] = self::HTTP_PUT;
 
     }
 
@@ -69,9 +69,11 @@ class systemsettings extends resource_base {
         $params = $this->parse_template();
         $tpid = $params['tool_proxy_id'];
         $bubble = optional_param('bubble', '', PARAM_ALPHA);
-        $ok = !empty($tpid) && $this->check_tool_proxy($tpid, $response->get_request_data());
+        $ok = !empty($tpid) && $this->check_type(null, $response->get_request_data());
         if (!$ok) {
             $response->set_code(401);
+        } else if ($this->get_service()->get_tool_proxy()) {
+            $ok = ($this->get_service()->get_tool_proxy()->guid === $tpid);
         }
         $contenttype = $response->get_accept();
         $simpleformat = !empty($contenttype) && ($contenttype == $this->formats[1]);

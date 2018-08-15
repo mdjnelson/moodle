@@ -327,7 +327,7 @@ function lti_user_complete($course, $user, $mod, $basiclti) {
  * @TODO: implement this moodle function
  **/
 function lti_print_recent_activity($course, $isteacher, $timestart) {
-    return false;  //  True if anything was printed, otherwise false.
+    return false; // True if anything was printed, otherwise false.
 }
 
 /**

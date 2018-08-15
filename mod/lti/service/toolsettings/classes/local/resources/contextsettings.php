@@ -73,7 +73,11 @@ class contextsettings extends \mod_lti\local\ltiservice\resource_base {
         $bubble = optional_param('bubble', '', PARAM_ALPHA);
         $ok = !empty($contexttype) && !empty($contextid) &&
               !empty($vendorcode) && !empty($productcode) &&
-              $this->check_tool_proxy($productcode, $response->get_request_data());
+              $this->check_type(null, $response->get_request_data());
+        if ($ok) {
+            $toolproxy = $this->get_service()->get_tool_proxy();
+            $ok = ($toolproxy->guid === $productcode);
+        }
         if (!$ok) {
             $response->set_code(401);
         }
@@ -89,11 +93,11 @@ class contextsettings extends \mod_lti\local\ltiservice\resource_base {
             $response->set_code(404);
         } else {
             $systemsetting = null;
-            $contextsettings = lti_get_tool_settings($this->get_service()->get_tool_proxy()->id, $contextid);
+            $contextsettings = lti_get_tool_settings($toolproxy->id, $contextid);
             if (!empty($bubble)) {
                 $systemsetting = new systemsettings($this->get_service());
                 $systemsetting->params['tool_proxy_id'] = $productcode;
-                $systemsettings = lti_get_tool_settings($this->get_service()->get_tool_proxy()->id);
+                $systemsettings = lti_get_tool_settings($toolproxy->id);
                 if ($bubble == 'distinct') {
                     toolsettings::distinct_settings($systemsettings, $contextsettings, null);
                 }
@@ -147,7 +151,7 @@ class contextsettings extends \mod_lti\local\ltiservice\resource_base {
                     }
                 }
                 if ($ok) {
-                    lti_set_tool_settings($settings, $this->get_service()->get_tool_proxy()->id, $contextid);
+                    lti_set_tool_settings($settings, $toolproxy->id, $contextid);
                 } else {
                     $response->set_code(406);
                 }

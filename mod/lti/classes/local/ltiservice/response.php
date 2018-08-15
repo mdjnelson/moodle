@@ -114,12 +114,16 @@ class response {
      * @return string
      */
     public function get_reason() {
-        if (empty($this->reason)) {
-            $this->reason = $this->responsecodes[$this->code];
+        $code = $this->code;
+        if (($code < 200) || ($code >= 600)) {
+            $code = 500;
+        }
+        if (empty($this->reason) && array_key_exists($code, $this->responsecodes)) {
+            $this->reason = $this->responsecodes[$code];
         }
         // Use generic reason for this category (based on first digit) if a specific reason is not defined.
         if (empty($this->reason)) {
-            $this->reason = $this->responsecodes[intval($this->code / 100) * 100];
+            $this->reason = $this->responsecodes[intval($code / 100) * 100];
         }
         return $this->reason;
     }

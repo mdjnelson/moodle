@@ -28,9 +28,17 @@ require_once($CFG->dirroot . '/mod/lti/locallib.php');
 
 $id = required_param('id', PARAM_INT);
 $courseid = required_param('course', PARAM_INT);
+
+if (isset($_POST['JWT'])) {
+    $tool = lti_convert_from_jwt($id, $_POST['JWT']);
+} else {
+    $consumerkey = required_param('oauth_consumer_key', PARAM_RAW);
+    $tool = lti_verify_oauth_signature($id, $consumerkey);
+}
+$consumerkey = $_POST['oauth_consumer_key'];
+
 $messagetype = required_param('lti_message_type', PARAM_TEXT);
 $version = required_param('lti_version', PARAM_TEXT);
-$consumerkey = required_param('oauth_consumer_key', PARAM_RAW);
 $items = optional_param('content_items', '', PARAM_RAW);
 $errormsg = optional_param('lti_errormsg', '', PARAM_TEXT);
 $msg = optional_param('lti_msg', '', PARAM_TEXT);
@@ -46,7 +54,7 @@ $redirecturl = null;
 $returndata = null;
 if (empty($errormsg) && !empty($items)) {
     try {
-        $returndata = lti_tool_configuration_from_content_item($id, $messagetype, $version, $consumerkey, $items);
+        $returndata = lti_tool_configuration_from_content_item($tool, $messagetype, $version, $consumerkey, $items);
     } catch (moodle_exception $e) {
         $errormsg = $e->getMessage();
     }
