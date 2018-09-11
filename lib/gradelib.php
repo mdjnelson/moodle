@@ -543,7 +543,16 @@ function grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance, $use
                         if (is_null($grade->feedback)) {
                             $grade->str_feedback = '';
                         } else {
-                            $grade->str_feedback = format_text($grade->feedback, $grade->feedbackformat);
+                            $feedback = file_rewrite_pluginfile_urls(
+                                $grade->feedback,
+                                'pluginfile.php',
+                                context_course::instance($grade_item->courseid)->id,
+                                GRADE_FILE_COMPONENT,
+                                GRADE_FEEDBACK_FILEAREA,
+                                $grade_grades[$userid]->id
+                            );
+
+                            $grade->str_feedback = format_text($feedback, $grade->feedbackformat);
                         }
 
                         $item->grades[$userid] = $grade;
