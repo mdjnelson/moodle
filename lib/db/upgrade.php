@@ -2898,5 +2898,13 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2017111304.10);
     }
 
+    if ($oldversion < 2017111305.01) {
+        // Remove unused setting.
+        unset_config('messaginghidereadnotifications');
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2017111305.01);
+    }
+
     return true;
 }
