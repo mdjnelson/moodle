@@ -537,7 +537,20 @@ function grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance, $use
                         if (is_null($grade->feedback)) {
                             $grade->str_feedback = '';
                         } else {
-                            $grade->str_feedback = format_text($grade->feedback, $grade->feedbackformat);
+                            if ($itemtype == 'mod') {
+                                $cm = get_coursemodule_from_instance($itemmodule, $iteminstance, $courseid);
+                                $context = \context_module::instance($cm->id);
+                            } else {
+                                $context = \context_course::instance($courseid);
+                            }
+
+                            $feedback = grade_rewrite_feedback_files_urls(
+                                $grade->feedback,
+                                $context,
+                                $grade_grades[$userid]
+                            );
+
+                            $grade->str_feedback = format_text($feedback, $grade->feedbackformat);
                         }
 
                         $item->grades[$userid] = $grade;
