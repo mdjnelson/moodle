@@ -314,7 +314,25 @@ class tablelog extends \table_sql implements \renderable {
         if ($this->is_downloading()) {
             return $history->feedback;
         } else {
-            return format_text($history->feedback, $history->feedbackformat, array('context' => $this->context));
+            // Modules support files in the gradebook.
+            if ($history->itemtype == 'mod') {
+                $cm = get_coursemodule_from_instance($history->itemmodule, $history->iteminstance,
+                    0, false, MUST_EXIST);
+                $modulecontext = \context_module::instance($cm->id);
+
+                $feedback = file_rewrite_pluginfile_urls(
+                    $history->feedback,
+                    'pluginfile.php',
+                    $modulecontext->id,
+                    GRADE_FILE_COMPONENT,
+                    GRADE_HISTORY_FILEAREA,
+                    $history->id
+                );
+            } else {
+                $feedback = $history->feedback;
+            }
+
+            return format_text($feedback, $history->feedbackformat, array('context' => $this->context));
         }
     }
 

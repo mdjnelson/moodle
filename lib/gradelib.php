@@ -543,7 +543,23 @@ function grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance, $use
                         if (is_null($grade->feedback)) {
                             $grade->str_feedback = '';
                         } else {
-                            $grade->str_feedback = format_text($grade->feedback, $grade->feedbackformat);
+                            $feedback = $grade->feedback;
+                            // We allow files in the gradebook for activities.
+                            if ($itemtype == 'mod') {
+                                $cm = get_coursemodule_from_instance($itemmodule, $iteminstance, $courseid);
+                                $context = \context_module::instance($cm->id);
+
+                                $feedback = file_rewrite_pluginfile_urls(
+                                    $grade->feedback,
+                                    'pluginfile.php',
+                                    $context->id,
+                                    GRADE_FILE_COMPONENT,
+                                    GRADE_FEEDBACK_FILEAREA,
+                                    $grade_grades[$userid]->id
+                                );
+                            }
+
+                            $grade->str_feedback = format_text($feedback, $grade->feedbackformat);
                         }
 
                         $item->grades[$userid] = $grade;
