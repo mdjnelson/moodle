@@ -4213,7 +4213,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
             \core\session\manager::write_close(); // Unlock session during file serving.
             send_stored_file($file, 60*60, 0, $forcedownload, $sendfileoptions);
 
-        } else if ($filearea === 'feedback' and $context->contextlevel == CONTEXT_COURSE) {
+        } else if (($filearea === 'feedback' || $filearea == 'history') and $context->contextlevel == CONTEXT_COURSE) {
             if ($CFG->forcelogin || $course->id != SITEID) {
                 require_login($course);
             }
