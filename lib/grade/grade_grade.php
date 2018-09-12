@@ -1004,9 +1004,39 @@ class grade_grade extends grade_object {
      * @return int The new grade_grade ID if successful, false otherwise
      */
     public function insert($source=null) {
+        global $CFG, $DB, $USER;
+
         // TODO: dategraded hack - do not update times, they are used for submission and grading (MDL-31379)
         //$this->timecreated = $this->timemodified = time();
-        return parent::insert($source);
+        if (!empty($this->id)) {
+            debugging("Grade object already exists!");
+            return false;
+        }
+
+        $data = $this->get_record_data();
+
+        $this->id = $DB->insert_record($this->table, $data);
+
+        // Set all object properties from real db data.
+        $this->update_from_db();
+
+        $data = $this->get_record_data();
+
+        if (empty($CFG->disablegradehistory)) {
+            unset($data->timecreated);
+            $data->action = GRADE_HISTORY_INSERT;
+            $data->oldid = $this->id;
+            $data->source = $source;
+            $data->timemodified = time();
+            $data->loggeduser = $USER->id;
+            $historyid = $DB->insert_record($this->table . '_history', $data);
+
+            $this->copy_files_to_history_filearea($historyid);
+        }
+
+        $this->notify_changed(false);
+
+        return $this->id;
     }
 
     /**
@@ -1017,11 +1047,37 @@ class grade_grade extends grade_object {
      * @return bool success
      */
     public function update($source=null) {
-        $this->rawgrade    = grade_floatval($this->rawgrade);
-        $this->finalgrade  = grade_floatval($this->finalgrade);
+        global $CFG, $DB, $USER;
+
+        $this->rawgrade = grade_floatval($this->rawgrade);
+        $this->finalgrade = grade_floatval($this->finalgrade);
         $this->rawgrademin = grade_floatval($this->rawgrademin);
         $this->rawgrademax = grade_floatval($this->rawgrademax);
-        return parent::update($source);
+
+        if (empty($this->id)) {
+            debugging('Can not update grade object, no id!');
+            return false;
+        }
+
+        $data = $this->get_record_data();
+
+        $DB->update_record($this->table, $data);
+
+        if (empty($CFG->disablegradehistory)) {
+            unset($data->timecreated);
+            $data->action = GRADE_HISTORY_UPDATE;
+            $data->oldid = $this->id;
+            $data->source = $source;
+            $data->timemodified = time();
+            $data->loggeduser = $USER->id;
+            $historyid = $DB->insert_record($this->table . '_history', $data);
+
+            $this->copy_files_to_history_filearea($historyid);
+        }
+
+        $this->notify_changed(false);
+
+        return true;
     }
 
     /**
@@ -1120,5 +1176,24 @@ class grade_grade extends grade_object {
     function get_aggregation_hint() {
         return array('status' => $this->get_aggregationstatus(),
                      'weight' => $this->get_aggregationweight());
+    }
+
+    /**
+     * Copy files to the history file area to preserve the history.
+     *
+     * @param int historyid The id in the grade_grades_history table.
+     */
+    private function copy_files_to_history_filearea(int $historyid) {
+        $fs = new file_storage();
+        $coursecontext = context_course::instance($this->grade_item->courseid);
+        if ($files = $fs->get_area_files($coursecontext->id, GRADE_FILE_COMPONENT, GRADE_FEEDBACK_FILEAREA, $this->id)) {
+            foreach ($files as $file) {
+                $historyfile = [
+                    'filearea' => GRADE_HISTORY_FILEAREA,
+                    'itemid' => $historyid
+                ];
+                $fs->create_file_from_storedfile($historyfile, $file);
+            }
+        }
     }
 }
