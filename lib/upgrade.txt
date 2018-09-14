@@ -130,6 +130,15 @@ any group. Besides, groups_get_members_ids_sql, get_enrolled_sql and get_enrolle
 the groupid field.
 * Added $CFG->conversionattemptlimit setting to config.php allowing a maximum number of retries before giving up conversion
   of a given document by the assignfeedback_editpdf\task\convert_submissions task. Default value: 3.
+* The gradebook now supports the ability to accept files as feedback. This can be achieved by adding
+  'feedbackfiles' to the $grades parameter passed to grade_update().
+    For example -
+        $grades['feedbackfiles'] = [
+            'contextid' => 1,
+            'component' => 'mod_xyz',
+            'filearea' => 'mod_xyz_feedback',
+            'itemid' => 2
+        ];
 
 === 3.5 ===
 
