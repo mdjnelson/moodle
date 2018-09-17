@@ -686,21 +686,14 @@ class grade_report_user extends grade_report {
                     $gradeitemdata['feedbackformat'] = $grade_grade->feedbackformat;
 
                     if ($grade_grade->feedback) {
-                        $gradeitem = $grade_grade->grade_item;
-                        if ($gradeitem->is_external_item()) {
-                            $cm = get_coursemodule_from_instance($gradeitem->itemmodule, $gradeitem->iteminstance, 0, false,
-                                MUST_EXIST);
-                            $modulecontext = context_module::instance($cm->id);
-
-                            $grade_grade->feedback = file_rewrite_pluginfile_urls(
-                                $grade_grade->feedback,
-                                'pluginfile.php',
-                                $modulecontext->id,
-                                GRADE_FILE_COMPONENT,
-                                GRADE_FEEDBACK_FILEAREA,
-                                $grade_grade->id
-                            );
-                        }
+                        $grade_grade->feedback = file_rewrite_pluginfile_urls(
+                            $grade_grade->feedback,
+                            'pluginfile.php',
+                            $grade_grade->get_context()->id,
+                            GRADE_FILE_COMPONENT,
+                            GRADE_FEEDBACK_FILEAREA,
+                            $grade_grade->id
+                        );
                     }
 
                     if ($grade_grade->overridden > 0 AND ($type == 'categoryitem' OR $type == 'courseitem')) {
