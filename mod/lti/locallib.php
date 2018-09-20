@@ -114,6 +114,8 @@ define('LTI_JWT_CLAIM_MAPPING', array(
         'isArray' => false),
     'accept_presentation_document_targets' => array('suffix' => 'dl', 'group' => 'deep_linking_settings',
         'claim' => 'accept_presentation_document_targets', 'isArray' => true),
+    'accept_types' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'accept_types',
+        'isArray' => true),
     'accept_unsigned' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'accept_unsigned',
         'isArray' => false),
     'auto_create' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'auto_create', 'isArray' => false),
@@ -768,12 +770,14 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
     $key = '';
     $secret = '';
     $islti2 = false;
+    $islti13 = false;
     if (isset($tool->toolproxyid)) {
         $islti2 = true;
         $toolproxy = lti_get_tool_proxy($tool->toolproxyid);
         $key = $toolproxy->guid;
         $secret = $toolproxy->secret;
     } else {
+        $islti13 = $tool->ltiversion === LTI_VERSION_1P3;
         $toolproxy = null;
         if (!empty($typeconfig['resourcekey'])) {
             $key = $typeconfig['resourcekey'];
@@ -859,13 +863,18 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
         }
     }
 
-    // Media types. Set to ltilink by default if empty.
-    if (empty($mediatypes)) {
-        $mediatypes = [
-            'application/vnd.ims.lti.v1.ltilink',
-        ];
+    if (!$islti13) {
+        // Media types. Set to ltilink by default if empty.
+        if (empty($mediatypes)) {
+            $mediatypes = [
+                'application/vnd.ims.lti.v1.ltilink',
+            ];
+        }
+        $requestparams['accept_media_types'] = implode(',', $mediatypes);
+    } else {
+        // Only LTI links are currently supported.
+        $requestparams['accept_types'] = 'ltiLink';
     }
-    $requestparams['accept_media_types'] = implode(',', $mediatypes);
 
     // Presentation targets. Supports frame, iframe, window by default if empty.
     if (empty($presentationtargets)) {
