@@ -53,8 +53,8 @@ class mod_lti_external extends external_api {
                 'id' => new external_value(PARAM_INT, 'Tool type id'),
                 'name' => new external_value(PARAM_NOTAGS, 'Tool type name'),
                 'description' => new external_value(PARAM_NOTAGS, 'Tool type description'),
-                'connection' => new external_value(PARAM_TEXT, 'Connection description'),
-                'mailto' => new external_value(PARAM_TEXT, 'Mailto description'),
+                'modalid' => new external_value(PARAM_NOTAGS, 'Element ID for view details icon'),
+                'modaljs' => new external_value(PARAM_RAW, 'JavaScript for modal'),
                 'urls' => new external_single_structure(
                     array(
                         'icon' => new external_value(PARAM_URL, 'Tool type icon URL'),

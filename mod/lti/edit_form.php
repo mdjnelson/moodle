@@ -68,11 +68,19 @@ class mod_lti_edit_types_form extends moodleform {
      * Define this form.
      */
     public function definition() {
-        global $CFG;
+        global $CFG, $PAGE;
 
         $mform    =& $this->_form;
 
-        $istool = $this->_customdata && $this->_customdata->istool;
+        $istool = $this->_customdata && isset($this->_customdata->istool) && $this->_customdata->istool;
+        $typeid = ($this->_customdata && isset($this->_customdata->id)) ? $this->_customdata->id : '';
+        $resourcekey = ($this->_customdata && isset($this->_customdata->resourcekey)) ? $this->_customdata->resourcekey : '';
+
+        if (!empty($typeid)) {
+            $mform->addElement('button', 'viewdetails', get_string('tooldetailsmodalbutton', 'lti'));
+            $mform->hideIf('viewdetails', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
+            $PAGE->requires->js_amd_inline(lti_amd_tool_details('viewdetails', $typeid, $resourcekey));
+        }
 
         // Add basiclti elements.
         $mform->addElement('header', 'setup', get_string('tool_settings', 'lti'));

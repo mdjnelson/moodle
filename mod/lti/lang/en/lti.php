@@ -221,7 +221,7 @@ $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cogni
 $string['indicator:socialbreadth'] = 'LTI social';
 $string['indicator:socialbreadth_help'] = 'This indicator is based on the social breadth reached by the student in an LTI activity.';
 $string['invalidid'] = 'LTI ID was incorrect';
-$string['jwt_security'] = 'JWT';
+$string['jwt_security'] = 'JWT (LTI 1.3)';
 $string['launch_in_moodle'] = 'Launch tool in Moodle';
 $string['launch_in_popup'] = 'Launch tool in a pop-up';
 $string['launch_url'] = 'Tool URL';
@@ -322,7 +322,7 @@ $string['noprofileservice'] = 'Profile service not found';
 $string['noservers'] = 'No servers found';
 $string['notypes'] = 'There are currently no LTI tools set up in Moodle. Click the Install link above to add some.';
 $string['noviewusers'] = 'No users were found with permissions to use this tool';
-$string['oauth_security'] = 'OAuth 1.0A';
+$string['oauth_security'] = 'OAuth 1.0A (LTI 1.0/1.1/2.0)';
 $string['optionalsettings'] = 'Optional settings';
 $string['organization'] = 'Organization details';
 $string['organizationdescr'] = 'Organization description';
@@ -495,6 +495,9 @@ $string['tooldescription'] = 'Tool description';
 $string['tooldescription_help'] = 'The description of the tool that will be displayed to teachers in the activity list.
 
 This should describe what the tool is for and what it does and any additional information the teacher may need to know.';
+$string['tooldetailsmodalbutton'] = 'Share Configuration Details';
+$string['tooldetailsmodallink'] = 'View Configuration Details';
+$string['tooldetailsmodaltitle'] = 'Tool Configuration Details';
 $string['toolisbeingused'] = 'This tool is being used {$a} times';
 $string['toolisnotbeingused'] = 'This tool has not yet been used';
 $string['toolproxy'] = 'External tool registrations';

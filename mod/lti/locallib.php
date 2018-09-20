@@ -3502,7 +3502,8 @@ function serialise_tool_type(stdClass $type) {
         $description = get_string('editdescription', 'mod_lti');
     }
     $conn = '';
-    $mailto = '';
+    $modalid = '';
+    $modaljs = '';
     if ($type->ltiversion === LTI_VERSION_1P3) {
         $config = lti_get_type_config($type->id);
         $iss = get_config('mod_lti', 'platformid');
@@ -3517,6 +3518,8 @@ EOD;
                   "Client%20ID:%20{$config['resourcekey']}%0D%0ADeployment%20ID:%20{$type->id}%0D%0A" .
                   "Public%20Keyset%20URL:%20{$CFG->wwwroot}/mod/lti/certs.php%0D%0A" .
                   "Access%20Token%20URL:%20{$CFG->wwwroot}/mod/lti/token.php%0D%0A";
+        $modalid = "viewdetails{$type->id}";
+        $modaljs = lti_amd_tool_details($modalid, $type-id, $config['resourcekey']);
     }
     return array(
         'id' => $type->id,
@@ -3524,8 +3527,8 @@ EOD;
         'description' => $description,
         'urls' => get_tool_type_urls($type),
         'state' => get_tool_type_state_info($type),
-        'connection' => $conn,
-        'mailto' => $mailto,
+        'modalid' => "id_{$modalid}",
+        'modaljs' => $modaljs,
         'hascapabilitygroups' => !empty($capabilitygroups),
         'capabilitygroups' => $capabilitygroups,
         // Course ID of 1 means it's not linked to a course.
@@ -3828,5 +3831,43 @@ function lti_new_access_token($typeid, $scopes) {
     $DB->insert_record('lti_access_tokens', $newtoken);
 
     return $newtoken;
+
+}
+
+function lti_amd_tool_details($elementname, $typeid, $resourcekey) {
+    global $CFG;
+
+    $title = get_string('tooldetailsmodaltitle', 'lti');
+    $iss = get_config('mod_lti', 'platformid');
+    $body = '<ul>\n' .
+            "  <li><strong>Platform ID:</strong> {$iss}</li>\\n" .
+            "  <li><strong>Client ID:</strong> {$resourcekey}</li>\\n" .
+            "  <li><strong>Deployment ID:</strong> {$typeid}</li>\\n" .
+            "  <li><strong>Public Keyset URL:</strong> {$CFG->wwwroot}/mod/lti/certs.php</li>\\n" .
+            "  <li><strong>Access Token URL:</strong> {$CFG->wwwroot}/mod/lti/token.php</li>\\n" .
+            "</ul>";
+    $mailto = 'mailto:?subject=LTI%20Tool%20Configuration&body=Platform%20ID:%20' . urlencode($iss) . '%0D%0A' .
+              'Client%20ID:%20' . urlencode($resourcekey) . '%0D%0A' .
+              'Deployment%20ID:%20' . urlencode($typeid) . '%0D%0A' .
+              'Public%20Keyset%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/certs.php%0D%0A' .
+              'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A';
+    $cancel = get_string('cancel');
+    $footer = '<div>\n' .
+              "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">Email</button>\\n" .
+              "  <button type=\"button\" class=\"btn btn-secondary\" data-action=\"hide\">{$cancel}</button>\\n" .
+              '</div>';
+    $amd = <<< EOD
+require(['jquery', 'core/modal_factory'], function($, ModalFactory) {
+  var trigger = $('#id_{$elementname}');
+  ModalFactory.create({
+    large: true,
+    title: '{$title}',
+    body: '{$body}',
+    footer: '{$footer}',
+  }, trigger);
+});
+EOD;
+
+    return $amd;
 
 }
