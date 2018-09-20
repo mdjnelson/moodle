@@ -496,6 +496,7 @@ $string['tooldescription_help'] = 'The description of the tool that will be disp
 
 This should describe what the tool is for and what it does and any additional information the teacher may need to know.';
 $string['tooldetailsmodalbutton'] = 'Share Configuration Details';
+$string['tooldetailsmodalemail'] = 'Email';
 $string['tooldetailsmodallink'] = 'View Configuration Details';
 $string['tooldetailsmodaltitle'] = 'Tool Configuration Details';
 $string['toolisbeingused'] = 'This tool is being used {$a} times';

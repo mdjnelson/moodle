@@ -3851,9 +3851,10 @@ function lti_amd_tool_details($elementname, $typeid, $resourcekey) {
               'Deployment%20ID:%20' . urlencode($typeid) . '%0D%0A' .
               'Public%20Keyset%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/certs.php%0D%0A' .
               'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A';
+    $email = get_string('tooldetailsmodalemail', 'lti');
     $cancel = get_string('cancel');
     $footer = '<div>\n' .
-              "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">Email</button>\\n" .
+              "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">{$email}</button>\\n" .
               "  <button type=\"button\" class=\"btn btn-secondary\" data-action=\"hide\">{$cancel}</button>\\n" .
               '</div>';
     $amd = <<< EOD
