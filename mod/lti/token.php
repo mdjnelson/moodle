@@ -60,16 +60,14 @@ if ($ok) {
 }
 
 if ($ok) {
-    $passwords = lti_get_type_passwords_from_resourcekey($claims['sub']);
-    $ok = false;
     $error = 'invalid_client';
-    foreach ($passwords as $id => $password) {
-        if (!empty($password['publickey'])) {
+    $tool = lti_get_type_from_clientid($claims['sub']);
+    if ($tool) {
+        $typeconfig = lti_get_type_config($tool->id);
+        if (!empty($typeconfig['publickey'])) {
             try {
-                $jwt = JWT::decode($_POST['client_assertion'], $password['publickey'], array('RS256'));
+                $jwt = JWT::decode($_POST['client_assertion'], $typeconfig['publickey'], array('RS256'));
                 $ok = true;
-                $typeid = $id;
-                break;
             } catch (Exception $e) {
                 $ok = false;
             }
@@ -78,8 +76,6 @@ if ($ok) {
 }
 
 if ($ok) {
-    $tool = lti_get_type($typeid);
-    $toolconfig = lti_get_type_config($typeid);
     $scopes = array();
     $requestedscopes = explode(' ', $_POST['scope']);
     $permittedscopes = lti_get_permitted_service_scopes($tool, $toolconfig);

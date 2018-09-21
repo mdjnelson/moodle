@@ -94,6 +94,12 @@ $string['capabilities'] = 'Capabilities';
 $string['capabilitiesrequired'] = 'This tool requires access to the following data in order to activate:';
 $string['capabilities_help'] = 'Select those capabilities which you wish to offer to the tool provider.  More than one capability can be selected.';
 $string['click_to_continue'] = '<a href="{$a->link}" target="_top">Click to continue</a>';
+$string['clientid_admin'] = 'Client ID';
+$string['clientid_admin_help'] = 'The client ID can be thought of as a unique value used to identify a tool.
+It is created automatically for each tool which uses the JWT security profile introduced in LTI 1.3 and should
+be part of the details passed to the provider of the tool so that they can configure the connection at their end.';
+$string['clientid_help'] = 'This field is automatically created for each tool which uses the JWT security profile introduced in LTI 1.3.
+It must be shared with the provider of the tool as part of their configuration of the connection.';
 $string['comment'] = 'Comment';
 $string['configpassword'] = 'Default remote tool password';
 $string['configpreferheight'] = 'Default preferred height';

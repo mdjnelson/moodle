@@ -215,5 +215,50 @@ function xmldb_lti_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2019010403, 'lti');
     }
 
+    if ($oldversion < 2019010404) {
+
+        // Define field clientid to be added to lti_types.
+        $table = new xmldb_table('lti_types');
+        $field = new xmldb_field('clientid', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'ltiversion');
+
+        // Conditionally launch add field clientid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define index clientid (unique) to be added to lti_types.
+        $table = new xmldb_table('lti_types');
+        $index = new xmldb_index('clientid', XMLDB_INDEX_UNIQUE, array('clientid'));
+
+        // Conditionally launch add index clientid.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Copy resource keys as client IDs for LTI 1.3 tools
+        $sql = <<< EOD
+UPDATE {lti_types} t
+SET clientid = (SELECT value FROM {lti_types_config} tc WHERE (t.id = tc.typeid) AND (tc.name = 'resourcekey'))
+WHERE t.ltiversion = '1.3.0'
+EOD;
+        $DB->execute($sql);
+
+        // Remove resource keys for LTI 1.3 tools
+        $sql = <<< EOD
+DELETE FROM {lti_types_config}
+WHERE (name = 'resourcekey') AND (typeid IN
+  (
+    SELECT id
+    FROM {lti_types}
+    WHERE (ltiversion = '1.3.0')
+  )
+)
+EOD;
+        $DB->execute($sql);
+
+        // Lti savepoint reached.
+        upgrade_mod_savepoint(true, 2019010404, 'lti');
+    }
+
     return true;
 }

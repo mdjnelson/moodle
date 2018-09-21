@@ -74,12 +74,12 @@ class mod_lti_edit_types_form extends moodleform {
 
         $istool = $this->_customdata && isset($this->_customdata->istool) && $this->_customdata->istool;
         $typeid = ($this->_customdata && isset($this->_customdata->id)) ? $this->_customdata->id : '';
-        $resourcekey = ($this->_customdata && isset($this->_customdata->resourcekey)) ? $this->_customdata->resourcekey : '';
+        $clientid = ($this->_customdata && isset($this->_customdata->clientid)) ? $this->_customdata->clientid : '';
 
-        if (!empty($typeid)) {
+        if (!empty($typeid) && !empty($clientid)) {
             $mform->addElement('button', 'viewdetails', get_string('tooldetailsmodalbutton', 'lti'));
             $mform->hideIf('viewdetails', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
-            $PAGE->requires->js_amd_inline(lti_amd_tool_details('viewdetails', $typeid, $resourcekey));
+            $PAGE->requires->js_amd_inline(lti_amd_tool_details('viewdetails', $typeid, $clientid));
         }
 
         // Add basiclti elements.
@@ -123,6 +123,17 @@ class mod_lti_edit_types_form extends moodleform {
             $mform->setType('lti_password', PARAM_TEXT);
             $mform->addHelpButton('lti_password', 'password_admin', 'lti');
             $mform->hideIf('lti_password', 'lti_ltiversion', 'eq', LTI_VERSION_1P3);
+
+            if (!empty($typeid)) {
+                $mform->addElement('text', 'lti_clientid_disabled', get_string('clientid_admin', 'lti'));
+                $mform->setType('lti_clientid_disabled', PARAM_TEXT);
+                $mform->addHelpButton('lti_clientid_disabled', 'clientid_admin', 'lti');
+                $mform->hideIf('lti_clientid_disabled', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
+                $mform->disabledIf('lti_clientid_disabled', null);
+                $mform->setForceLtr('lti_clientid_disabled');
+                $mform->addElement('hidden', 'lti_clientid');
+                $mform->setType('lti_clientid', PARAM_TEXT);
+            }
 
             $mform->addElement('textarea', 'lti_publickey', get_string('publickey', 'lti'), array('rows' => 8, 'cols' => 60));
             $mform->setType('lti_publickey', PARAM_TEXT);

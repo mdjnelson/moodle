@@ -246,6 +246,8 @@ function lti_get_launch_data($instance) {
         $toolproxy = null;
         if (!empty($instance->resourcekey)) {
             $key = $instance->resourcekey;
+        } else if ($tool->ltiversion === LTI_VERSION_1P3) {
+            $key = $tool->clientid;
         } else if (!empty($typeconfig['resourcekey'])) {
             $key = $typeconfig['resourcekey'];
         } else {
@@ -779,7 +781,9 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
     } else {
         $islti13 = $tool->ltiversion === LTI_VERSION_1P3;
         $toolproxy = null;
-        if (!empty($typeconfig['resourcekey'])) {
+        if ($islti13 && !empty($tool->clientid)) {
+            $key = $tool->clientid;
+        } else if (!$islti13 && !empty($typeconfig['resourcekey'])) {
             $key = $typeconfig['resourcekey'];
         }
         if (!empty($typeconfig['password'])) {
@@ -1006,8 +1010,8 @@ function lti_verify_jwt_signature($typeid, $consumerkey, $jwtparam) {
     if (isset($tool->toolproxyid)) {
         throw new moodle_exception('errorjwtnotsupportedforlti2', 'mod_lti');
     } else {
-        if (!empty($typeconfig['resourcekey'])) {
-            $key = $typeconfig['resourcekey'];
+        if (!empty($tool->clientid)) {
+            $key = $tool->clientid;
         } else {
             $key = '';
         }
@@ -1972,6 +1976,7 @@ function lti_get_shared_secrets_by_key($key) {
 
     // Look up the shared secret for the specified key in both the types_config table (for configured tools)
     // And in the lti resource table for ad-hoc tools.
+    $lti13 = LTI_VERSION_1P3;
     $query = "SELECT t2.value
                 FROM {lti_types_config} t1
                 JOIN {lti_types_config} t2 ON t1.typeid = t2.typeid
@@ -1980,14 +1985,15 @@ function lti_get_shared_secrets_by_key($key) {
                 AND t1.value = :key1
                 AND t2.name = 'password'
                 AND type.state = :configured1
+                AND type.ltiversion <> '{$lti13}'
                UNION
               SELECT tp.secret AS value
                 FROM {lti_tool_proxies} tp
                 JOIN {lti_types} t ON tp.id = t.toolproxyid
               WHERE tp.guid = :key2
                 AND t.state = :configured2
-              UNION
-             SELECT password AS value
+               UNION
+              SELECT password AS value
                FROM {lti}
               WHERE resourcekey = :key3";
 
@@ -2107,6 +2113,9 @@ function lti_get_type_type_config($id) {
 
     $type->lti_ltiversion = $basicltitype->ltiversion;
 
+    $type->lti_clientid = $basicltitype->clientid;
+    $type->lti_clientid_disabled = $type->lti_clientid;
+
     $type->lti_description = $basicltitype->description;
 
     $type->lti_parameters = $basicltitype->parameter;
@@ -2217,6 +2226,12 @@ function lti_prepare_type_for_save($type, $config) {
     if (isset($config->lti_ltiversion)) {
         $type->ltiversion = $config->lti_ltiversion;
     }
+    if (isset($config->lti_clientid)) {
+        $type->clientid = $config->lti_clientid;
+    }
+    if (($type->ltiversion === LTI_VERSION_1P3) && empty($type->clientid)) {
+        $type->clientid = random_string(15);
+    }
     if (isset($config->lti_coursevisible)) {
         $type->coursevisible = $config->lti_coursevisible;
     }
@@ -2249,6 +2264,7 @@ function lti_prepare_type_for_save($type, $config) {
     unset ($config->lti_toolurl);
     unset ($config->lti_description);
     unset ($config->lti_ltiversion);
+    unset ($config->lti_clientid);
     unset ($config->lti_icon);
     unset ($config->lti_secureicon);
 }
@@ -2320,10 +2336,6 @@ function lti_add_type($type, $config) {
 
     if (!isset($type->course)) {
         $type->course = $SITE->id;
-    }
-
-    if (!isset($config->lti_resourcekey)) {
-        $config->lti_resourcekey = random_string(15);
     }
 
     // Create a salt value to be used for signing passed data to extension services
@@ -2906,30 +2918,10 @@ function lti_get_type($typeid) {
  * @param string $resourcekey   Resource key
  * @return array  Array of passwords and public keys for types with the specified resource key
  */
-function lti_get_type_passwords_from_resourcekey($resourcekey) {
+function lti_get_type_from_clientid($clientid) {
     global $DB;
 
-    $query = "SELECT id, typeid, name, value
-                FROM {lti_types_config}
-               WHERE ((name = 'password') OR (name = 'publickey')) AND (typeid IN
-                      (SELECT typeid
-                       FROM {lti_types_config}
-                       WHERE (name = 'resourcekey') AND (value = :resourcekey))
-                      )";
-    $rows = $DB->get_records_sql($query,
-        array('resourcekey' => $resourcekey));
-
-    $passwords = array();
-    foreach ($rows as $row) {
-        $id = $row->typeid;
-        if (!array_key_exists($id, $passwords)) {
-            $passwords[$id] = array('password' => '', 'publickey' => '');
-        }
-        $passwords[$id][$row->name] = $row->value;
-    }
-
-    return $passwords;
-
+    return $DB->get_record('lti_types', array('clientid' => $clientid));
 }
 
 function lti_get_launch_container($lti, $toolconfig) {
@@ -3510,25 +3502,18 @@ function serialise_tool_type(stdClass $type) {
     } else {
         $description = get_string('editdescription', 'mod_lti');
     }
-    $conn = '';
     $modalid = '';
     $modaljs = '';
-    if ($type->ltiversion === LTI_VERSION_1P3) {
+    if (($type->ltiversion === LTI_VERSION_1P3) && !empty($type->clientid)) {
         $config = lti_get_type_config($type->id);
         $iss = get_config('mod_lti', 'platformid');
-        $conn = <<< EOD
-Platform ID: {$iss}
-Client ID: {$config['resourcekey']}
-Deployment ID: {$type->id}
-Public Keyset URL: {$CFG->wwwroot}/mod/lti/certs.php
-Access Token URL: {$CFG->wwwroot}/mod/lti/token.php
-EOD;
         $mailto = "mailto:?subject=LTI%20Tool%20Configuration&body=Platform%20ID:%20{$iss}%0D%0A" .
-                  "Client%20ID:%20{$config['resourcekey']}%0D%0ADeployment%20ID:%20{$type->id}%0D%0A" .
+                  "Client%20ID:%20{$type->clientid}%0D%0ADeployment%20ID:%20{$type->id}%0D%0A" .
                   "Public%20Keyset%20URL:%20{$CFG->wwwroot}/mod/lti/certs.php%0D%0A" .
                   "Access%20Token%20URL:%20{$CFG->wwwroot}/mod/lti/token.php%0D%0A";
         $modalid = "viewdetails{$type->id}";
-        $modaljs = lti_amd_tool_details($modalid, $type-id, $config['resourcekey']);
+        $modaljs = lti_amd_tool_details($modalid, $type->id, $type->clientid);
+        $modalid = "id_{$modalid}";
     }
     return array(
         'id' => $type->id,
@@ -3536,7 +3521,7 @@ EOD;
         'description' => $description,
         'urls' => get_tool_type_urls($type),
         'state' => get_tool_type_state_info($type),
-        'modalid' => "id_{$modalid}",
+        'modalid' => $modalid,
         'modaljs' => $modaljs,
         'hascapabilitygroups' => !empty($capabilitygroups),
         'capabilitygroups' => $capabilitygroups,
@@ -3843,30 +3828,31 @@ function lti_new_access_token($typeid, $scopes) {
 
 }
 
-function lti_amd_tool_details($elementname, $typeid, $resourcekey) {
+function lti_amd_tool_details($elementname, $typeid, $clientid) {
     global $CFG;
 
-    $title = get_string('tooldetailsmodaltitle', 'lti');
-    $iss = get_config('mod_lti', 'platformid');
-    $body = '<ul>\n' .
-            "  <li><strong>Platform ID:</strong> {$iss}</li>\\n" .
-            "  <li><strong>Client ID:</strong> {$resourcekey}</li>\\n" .
-            "  <li><strong>Deployment ID:</strong> {$typeid}</li>\\n" .
-            "  <li><strong>Public Keyset URL:</strong> {$CFG->wwwroot}/mod/lti/certs.php</li>\\n" .
-            "  <li><strong>Access Token URL:</strong> {$CFG->wwwroot}/mod/lti/token.php</li>\\n" .
-            "</ul>";
-    $mailto = 'mailto:?subject=LTI%20Tool%20Configuration&body=Platform%20ID:%20' . urlencode($iss) . '%0D%0A' .
-              'Client%20ID:%20' . urlencode($resourcekey) . '%0D%0A' .
-              'Deployment%20ID:%20' . urlencode($typeid) . '%0D%0A' .
-              'Public%20Keyset%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/certs.php%0D%0A' .
-              'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A';
-    $email = get_string('tooldetailsmodalemail', 'lti');
-    $cancel = get_string('cancel');
-    $footer = '<div>\n' .
-              "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">{$email}</button>\\n" .
-              "  <button type=\"button\" class=\"btn btn-secondary\" data-action=\"hide\">{$cancel}</button>\\n" .
-              '</div>';
-    $amd = <<< EOD
+    if (!empty($clientid)) {
+        $title = get_string('tooldetailsmodaltitle', 'lti');
+        $iss = get_config('mod_lti', 'platformid');
+        $body = '<ul>\n' .
+                "  <li><strong>Platform ID:</strong> {$iss}</li>\\n" .
+                "  <li><strong>Client ID:</strong> {$clientid}</li>\\n" .
+                "  <li><strong>Deployment ID:</strong> {$typeid}</li>\\n" .
+                "  <li><strong>Public Keyset URL:</strong> {$CFG->wwwroot}/mod/lti/certs.php</li>\\n" .
+                "  <li><strong>Access Token URL:</strong> {$CFG->wwwroot}/mod/lti/token.php</li>\\n" .
+                "</ul>";
+        $mailto = 'mailto:?subject=LTI%20Tool%20Configuration&body=Platform%20ID:%20' . urlencode($iss) . '%0D%0A' .
+                  'Client%20ID:%20' . urlencode($clientid) . '%0D%0A' .
+                  'Deployment%20ID:%20' . urlencode($typeid) . '%0D%0A' .
+                  'Public%20Keyset%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/certs.php%0D%0A' .
+                  'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A';
+        $email = get_string('tooldetailsmodalemail', 'lti');
+        $cancel = get_string('cancel');
+        $footer = '<div>\n' .
+                  "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">{$email}</button>\\n" .
+                  "  <button type=\"button\" class=\"btn btn-secondary\" data-action=\"hide\">{$cancel}</button>\\n" .
+                  '</div>';
+        $amd = <<< EOD
 require(['jquery', 'core/modal_factory'], function($, ModalFactory) {
   var trigger = $('#id_{$elementname}');
   ModalFactory.create({
@@ -3877,6 +3863,9 @@ require(['jquery', 'core/modal_factory'], function($, ModalFactory) {
   }, trigger);
 });
 EOD;
+    } else {
+        $amd = '';
+    }
 
     return $amd;
 

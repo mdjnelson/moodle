@@ -348,7 +348,11 @@ abstract class service_base {
                 $key = $this->toolproxy->guid;
                 $secret = $this->toolproxy->secret;
             } else {
-                $key = $this->typeconfig['resourcekey'];
+                if ($this->type->ltiversion === LTI_VERSION_1P3) {
+                    $key = $this->clientid;
+                } else {
+                    $key = $this->typeconfig['resourcekey'];
+                }
                 $secret = $this->typeconfig['password'];
             }
             if (!$this->is_unsigned() && ($key == $consumerkey)) {

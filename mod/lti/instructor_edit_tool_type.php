@@ -68,10 +68,10 @@ if ($action == 'edit') {
     $type = lti_get_type_type_config($typeid);
 } else {
     $type = new stdClass();
-    $type->lti_resourcekey = '';
+    $type->lti_clientid = null;
 }
 
-$form = new mod_lti_edit_types_form($url, (object)array('id' => $typeid, 'resourcekey' => $type->lti_resourcekey));
+$form = new mod_lti_edit_types_form($url, (object)array('id' => $typeid, 'clientid' => $type->lti_clientid));
 
 // If the user just opened an add or edit form.
 if ($action == 'add' || $action == 'edit') {
