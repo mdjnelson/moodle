@@ -78,14 +78,14 @@ if ($ok) {
 if ($ok) {
     $scopes = array();
     $requestedscopes = explode(' ', $_POST['scope']);
-    $permittedscopes = lti_get_permitted_service_scopes($tool, $toolconfig);
+    $permittedscopes = lti_get_permitted_service_scopes($tool, $typeconfig);
     $scopes = array_intersect($requestedscopes, $permittedscopes);
     $ok = !empty($scopes);
     $error = 'invalid_scope';
 }
 
 if ($ok) {
-    $token = lti_new_access_token($typeid, $scopes);
+    $token = lti_new_access_token($tool->id, $scopes);
     $expiry = LTI_ACCESS_TOKEN_LIFE;
     $scopes = implode(' ', $scopes);
     $body = <<< EOD
