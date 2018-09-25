@@ -4,8 +4,10 @@ information provided here is intended especially for developers.
 === 3.5.4 ===
 
 * New optional parameter $context for the groups_get_members_join() function and ability to filter users that are not members of
-any group. Besides, groups_get_members_ids_sql, get_enrolled_sql and get_enrolled_users now accepts -1 (USERSWITHOUTGROUP) for
-the groupid field.
+  any group. Besides, groups_get_members_ids_sql, get_enrolled_sql and get_enrolled_users now accepts -1 (USERSWITHOUTGROUP) for
+  the groupid field.
+* Added $CFG->conversionattemptlimit setting to config.php allowing a maximum number of retries before giving up conversion
+  of a given document by the assignfeedback_editpdf\task\convert_submissions task. Default value: 3.
 
 === 3.5.2 ===
 
