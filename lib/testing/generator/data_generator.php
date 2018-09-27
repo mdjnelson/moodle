@@ -1027,6 +1027,8 @@ EOD;
             $record['gradetype'] = GRADE_TYPE_VALUE;
         }
 
+        $record['iteminstance'] = $this->gradeitemcounter;
+
         // Create new grade item in this course.
         $gradeitem = new grade_item($record, false);
         $gradeitem->insert();

@@ -203,6 +203,7 @@ function grade_update($source, $courseid, $itemtype, $itemmodule, $iteminstance,
         return GRADE_UPDATE_FAILED;
     }
 
+
     $count = count($grades);
     if ($count > 0 and $count < 200) {
         list($uids, $params) = $DB->get_in_or_equal(array_keys($grades), SQL_PARAMS_NAMED, $start='uid');
