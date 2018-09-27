@@ -128,6 +128,8 @@ class provider implements
             'importonlyfeedback' => 'privacy:metadata:grade_import_values:importonlyfeedback'
         ], 'privacy:metadata:grade_import_values');
 
+        $collection->link_subsystem('core_files', 'privacy:metadata:filepurpose');
+
         return $collection;
     }
 
@@ -383,14 +385,23 @@ class provider implements
         $params = array_merge($incourseparams, ['userid' => $userid]);
 
         $recordset = $DB->get_recordset_sql($sql, $params);
-        static::recordset_loop_and_export($recordset, 'gi_courseid', [], function($carry, $record) {
+        static::recordset_loop_and_export($recordset, 'gi_courseid', [], function($carry, $record) use ($rootpath) {
             $context = context_course::instance($record->gi_courseid);
             $gg = static::extract_grade_grade_from_record($record);
-            $carry[] = static::transform_grade($gg, $context);
+            $carry[] = static::transform_grade($gg, $context, GRADE_FEEDBACK_FILEAREA);
+
             return $carry;
 
         }, function($courseid, $data) use ($rootpath) {
             $context = context_course::instance($courseid);
+
+            foreach ($data as $key => $grades) {
+                $gg = $grades['grade_grade'];
+                writer::with_context($gg->get_context())->export_area_files($rootpath, GRADE_FILE_COMPONENT, GRADE_FEEDBACK_FILEAREA,
+                    $gg->id);
+                unset($data[$key]['grade_grade']); // Do not want to export this later.
+            }
+
             writer::with_context($context)->export_data($rootpath, (object) ['grades' => $data]);
         });
 
@@ -412,13 +423,21 @@ class provider implements
         static::recordset_loop_and_export($recordset, 'gi_courseid', [], function($carry, $record) {
             $context = context_course::instance($record->gi_courseid);
             $gg = static::extract_grade_grade_from_record($record, true);
-            $carry[] = array_merge(static::transform_grade($gg, $context), [
+            $carry[] = array_merge(static::transform_grade($gg, $context, GRADE_HISTORY_FILEAREA), [
                 'action' => static::transform_history_action($record->ggh_action)
             ]);
             return $carry;
 
         }, function($courseid, $data) use ($rootpath) {
             $context = context_course::instance($courseid);
+
+            foreach ($data as $key => $grades) {
+                $gg = $grades['grade_grade'];
+                writer::with_context($gg->get_context())->export_area_files($rootpath, GRADE_FILE_COMPONENT, GRADE_HISTORY_FILEAREA,
+                    $gg->id);
+                unset($data[$key]['grade_grade']); // Do not want to export this later.
+            }
+
             writer::with_context($context)->export_related_data($rootpath, 'history', (object) ['grades' => $data]);
         });
 
@@ -489,7 +508,7 @@ class provider implements
         static::recordset_loop_and_export($recordset, 'gi_courseid', [], function($carry, $record) {
             $context = context_course::instance($record->gi_courseid);
             $gg = static::extract_grade_grade_from_record($record);
-            $carry[] = array_merge(static::transform_grade($gg, $context), [
+            $carry[] = array_merge(static::transform_grade($gg, $context, GRADE_FEEDBACK_FILEAREA), [
                 'userid' => transform::user($gg->userid),
                 'created_or_modified_by_you' => transform::yesno(true),
             ]);
@@ -497,6 +516,14 @@ class provider implements
 
         }, function($courseid, $data) use ($relatedtomepath) {
             $context = context_course::instance($courseid);
+
+            foreach ($data as $key => $grades) {
+                $gg = $grades['grade_grade'];
+                writer::with_context($gg->get_context())->export_area_files($relatedtomepath, GRADE_FILE_COMPONENT, GRADE_FEEDBACK_FILEAREA,
+                    $gg->id);
+                unset($data[$key]['grade_grade']); // Do not want to export this later.
+            }
+
             writer::with_context($context)->export_related_data($relatedtomepath, 'grades', (object) ['grades' => $data]);
         });
 
@@ -518,7 +545,7 @@ class provider implements
         static::recordset_loop_and_export($recordset, 'gi_courseid', [], function($carry, $record) use ($userid) {
             $context = context_course::instance($record->gi_courseid);
             $gg = static::extract_grade_grade_from_record($record, true);
-            $carry[] = array_merge(static::transform_grade($gg, $context), [
+            $carry[] = array_merge(static::transform_grade($gg, $context, GRADE_HISTORY_FILEAREA), [
                 'userid' => transform::user($gg->userid),
                 'logged_in_user_was_you' => transform::yesno($userid == $record->loggeduser),
                 'author_of_change_was_you' => transform::yesno($userid == $gg->usermodified),
@@ -528,6 +555,14 @@ class provider implements
 
         }, function($courseid, $data) use ($relatedtomepath) {
             $context = context_course::instance($courseid);
+
+            foreach ($data as $key => $grades) {
+                $gg = $grades['grade_grade'];
+                writer::with_context($gg->get_context())->export_area_files($relatedtomepath, GRADE_FILE_COMPONENT, GRADE_HISTORY_FILEAREA,
+                    $gg->id);
+                unset($data[$key]['grade_grade']); // Do not want to export this later.
+            }
+
             writer::with_context($context)->export_related_data($relatedtomepath, 'grades_history',
                 (object) ['modified_records' => $data]);
         });
@@ -964,13 +999,24 @@ class provider implements
      *
      * @param grade_grade $gg The grade object.
      * @param context $context The context.
+     * @param string $filearea The filearea for any files we are exporting.
      * @return array
      */
-    protected static function transform_grade(grade_grade $gg, context $context) {
+    protected static function transform_grade(grade_grade $gg, context $context, $filearea) {
         $gi = $gg->load_grade_item();
         $timemodified = $gg->timemodified ? transform::datetime($gg->timemodified) : null;
         $timecreated = $gg->timecreated ? transform::datetime($gg->timecreated) : $timemodified; // When null we use timemodified.
+
+        $gg->feedback = writer::with_context($context)->rewrite_pluginfile_urls(
+            [],
+            GRADE_FILE_COMPONENT,
+            $filearea,
+            $gg->id,
+            $gg->feedback
+        );
+
         return [
+            'grade_grade' => $gg,
             'item' => $gi->get_name(),
             'grade' => $gg->finalgrade,
             'grade_formatted' => grade_format_gradevalue($gg->finalgrade, $gi),

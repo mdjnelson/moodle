@@ -615,6 +615,7 @@ $string['prefrows'] = 'Special rows';
 $string['prefshow'] = 'Show/hide toggles';
 $string['previewrows'] = 'Preview rows';
 $string['privacy:metadata:categorieshistory'] = 'A record of previous versions of grade categories';
+$string['privacy:metadata:filepurpose'] = 'Feedback files stored in the gradebook for a user.';
 $string['privacy:metadata:grade_import_newitem'] = 'Temporary table for storing new grade_item names from grade import';
 $string['privacy:metadata:grade_import_newitem:importcode'] = 'A unique batch code for identifying one batch of imports';
 $string['privacy:metadata:grade_import_newitem:importer'] = 'User importing the data';
