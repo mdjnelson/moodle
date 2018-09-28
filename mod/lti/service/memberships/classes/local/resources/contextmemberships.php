@@ -54,7 +54,7 @@ class contextmemberships extends resource_base {
         $this->template = '/{context_type}/{context_id}/bindings/{tool_code}/memberships';
         $this->variables[] = 'ToolProxyBinding.memberships.url';
         $this->formats[] = 'application/vnd.ims.lis.v2.membershipcontainer+json';
-        $this->formats[] = 'application/vnd.ims.lti-nprs.v2.membershipcontainer+json';
+        $this->formats[] = 'application/vnd.ims.lti-nrps.v2.membershipcontainer+json';
         $this->methods[] = self::HTTP_GET;
 
     }
@@ -84,7 +84,7 @@ class contextmemberships extends resource_base {
                 array(memberships::SCOPE_MEMBERSHIPS_READ))) {
                 throw new \Exception(null, 401);
             }
-            if (!($course = $DB->get_record('course', array('id' => $params['context_id']), 'id', IGNORE_MISSING))) {
+            if (!($course = $DB->get_record('course', array('id' => $params['context_id']), 'id,shortname,fullname', IGNORE_MISSING))) {
                 throw new \Exception("Not Found: Course {$contextid} doesn't exist", 404);
             }
             if (!$this->get_service()->is_allowed_in_context($params['tool_code'], $course->id)) {
@@ -106,7 +106,7 @@ class contextmemberships extends resource_base {
                 }
             }
 
-            $json = $this->get_service()->get_users_json($this, $context, $course->id, $role, $limitfrom, $limitnum, $lti,
+            $json = $this->get_service()->get_users_json($this, $context, $course, $role, $limitfrom, $limitnum, $lti,
                 $modinfo, $response);
 
             $response->set_body($json);

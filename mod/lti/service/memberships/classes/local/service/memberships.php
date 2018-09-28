@@ -109,7 +109,7 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
      *
      * @param \mod_lti\local\ltiservice\resource_base $resource       Resource handling the request
      * @param \context_course   $context    Course context
-     * @param string            $contextid  Course ID
+     * @param \course           $course     Course
      * @param string            $role       User role requested (empty if none)
      * @param int               $limitfrom  Position of first record to be returned
      * @param int               $limitnum   Maximum number of records to be returned
@@ -120,7 +120,7 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
      *
      * @return string
      */
-    public function get_users_json($resource, $context, $contextid, $role, $limitfrom, $limitnum, $lti, $info, $response) {
+    public function get_users_json($resource, $context, $course, $role, $limitfrom, $limitnum, $lti, $info, $response) {
 
         $withcapability = '';
         $exclude = array();
@@ -142,9 +142,9 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
         }
         if (($response->get_accept() === 'application/vnd.ims.lti-nprs.v2.membershipcontainer+json') ||
             ($this->get_type()->ltiversion === LTI_VERSION_1P3)) {
-            $json = $this->users_to_json2($resource, $users, $contextid, $exclude, $limitfrom, $limitnum, $lti, $info, $response);
+            $json = $this->users_to_json2($resource, $users, $course, $exclude, $limitfrom, $limitnum, $lti, $info, $response);
         } else {
-            $json = $this->users_to_json($resource, $users, $contextid, $exclude, $limitfrom, $limitnum, $lti, $info, $response);
+            $json = $this->users_to_json($resource, $users, $course->id, $exclude, $limitfrom, $limitnum, $lti, $info, $response);
         }
 
         return $json;
@@ -291,25 +291,32 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
      * returned may be less than the limit.
      *
      * @param \mod_lti\local\ltiservice\resource_base $resource       Resource handling the request
-     * @param array  $users               Array of user records
-     * @param string $contextid           Course ID
-     * @param array  $exclude             Array of user records to be excluded from the response
-     * @param int    $limitfrom           Position of first record to be returned
-     * @param int    $limitnum            Maximum number of records to be returned
-     * @param object $lti                 LTI instance record
+     * @param array   $users               Array of user records
+     * @param \course $course              Course
+     * @param array   $exclude             Array of user records to be excluded from the response
+     * @param int     $limitfrom           Position of first record to be returned
+     * @param int     $limitnum            Maximum number of records to be returned
+     * @param object  $lti                 LTI instance record
      * @param \core_availability\info_module  $info     Conditional availability information for LTI instance
      * @param \mod_lti\local\ltiservice\response $response       Response object for the request
      *
      * @return string
      */
-    private function users_to_json2($resource, $users, $contextid, $exclude, $limitfrom, $limitnum,
+    private function users_to_json2($resource, $users, $course, $exclude, $limitfrom, $limitnum,
             $lti, $info, $response) {
         global $DB;
 
         $tool = $this->get_type();
         $toolconfig = $this->get_typeconfig();
+
+        $context = new \stdClass();
+        $context->id = $course->id;
+        $context->label = trim(html_to_text($course->shortname, 0));
+        $context->title = trim(html_to_text($course->fullname, 0));
+
         $arrusers = [
             'id' => $resource->get_endpoint(),
+            'context' => $context,
             'members' => []
         ];
 
@@ -334,7 +341,7 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
 
             $member = new \stdClass();
             $member->status = 'Active';
-            $member->roles = explode(',', lti_get_ims_role($user->id, null, $contextid, true));
+            $member->roles = explode(',', lti_get_ims_role($user->id, null, $course->id, true));
 
             $instanceconfig = null;
             if (!is_null($lti)) {
@@ -346,6 +353,9 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
                 'User.id'              => ['type' => 'id',
                                             'member.field' => 'user_id',
                                             'source.value' => $user->id],
+                'Person.sourcedId'     => ['type' => 'id',
+                                            'member.field' => 'lis_person_sourcedid',
+                                            'source.value' => format_string($user->idnumber)],
                 'Person.name.full'     => ['type' => 'name',
                                             'member.field' => 'name',
                                             'source.value' => format_string("{$user->firstname} {$user->lastname}")],
@@ -363,7 +373,7 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
             if (!is_null($lti)) {
                 $message = new \stdClass();
                 $message->{'https://purl.imsglobal.org/spec/lti/claim/message_type'} = 'LtiResourceLinkRequest';
-                $conditions = array('courseid' => $contextid, 'itemtype' => 'mod',
+                $conditions = array('courseid' => $course->id, 'itemtype' => 'mod',
                         'itemmodule' => 'lti', 'iteminstance' => $lti->id);
 
                 if (!empty($lti->servicesalt) && $DB->record_exists('grade_items', $conditions)) {
