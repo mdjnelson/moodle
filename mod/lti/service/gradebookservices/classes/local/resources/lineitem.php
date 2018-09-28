@@ -329,7 +329,7 @@ class lineitem extends resource_base {
                     $this->params['item_id'] = $item->items[0]->id;
                     $resolved = parent::get_endpoint();
                     if (($tool = $this->get_service()->get_type())) {
-                        $resolved .= "?tool_code={$tool->id}";
+                        $resolved .= "?type_id={$tool->id}";
                     }
                 }
             }

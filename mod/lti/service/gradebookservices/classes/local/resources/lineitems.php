@@ -314,7 +314,7 @@ class lineitems extends resource_base {
             $this->params['context_id'] = $COURSE->id;
             $query = '';
             if (($tool = $this->get_service()->get_type())) {
-                $query = "?tool_code={$tool->id}";
+                $query = "?type_id={$tool->id}";
             }
             $value = str_replace('$LineItems.url', parent::get_endpoint() . $query, $value);
         }
