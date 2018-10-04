@@ -1243,4 +1243,13 @@ class grade_grade extends grade_object {
             }
         }
     }
+
+    /**
+     * Returns the correct context for this grade_grade.
+     *
+     * @return context
+     */
+    public function get_context() {
+        return $this->grade_item->get_context();
+    }
 }

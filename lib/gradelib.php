@@ -552,7 +552,8 @@ function grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance, $use
                                 $grade_grades[$userid]->id
                             );
 
-                            $grade->str_feedback = format_text($feedback, $grade->feedbackformat);
+                            $grade->str_feedback = format_text($feedback, $grade->feedbackformat,
+                                ['context' => $grade_grades[$userid]->get_context()]);
                         }
 
                         $item->grades[$userid] = $grade;

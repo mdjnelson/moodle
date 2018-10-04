@@ -323,7 +323,13 @@ class tablelog extends \table_sql implements \renderable {
                 $history->id
             );
 
-            return format_text($feedback, $history->feedbackformat, array('context' => $this->context));
+            // We need the activity context, not the course context.
+            $gradegrade = new \grade_grade();
+            $gradegrade->itemid = $history->itemid;
+            $gradeitem = $gradegrade->load_grade_item();
+            $gradeitemcontext = $gradeitem->get_context();
+
+            return format_text($feedback, $history->feedbackformat, array('context' => $gradeitemcontext));
         }
     }
 

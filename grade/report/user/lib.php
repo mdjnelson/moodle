@@ -698,14 +698,17 @@ class grade_report_user extends grade_report {
 
                     if ($grade_grade->overridden > 0 AND ($type == 'categoryitem' OR $type == 'courseitem')) {
                     $data['feedback']['class'] = $classfeedback.' feedbacktext';
-                        $data['feedback']['content'] = get_string('overridden', 'grades').': ' . format_text($grade_grade->feedback, $grade_grade->feedbackformat);
+                        $data['feedback']['content'] = get_string('overridden', 'grades').': ' .
+                            format_text($grade_grade->feedback, $grade_grade->feedbackformat,
+                                ['context' => $grade_grade->get_context()]);
                         $gradeitemdata['feedback'] = $grade_grade->feedback;
                     } else if (empty($grade_grade->feedback) or (!$this->canviewhidden and $grade_grade->is_hidden())) {
                         $data['feedback']['class'] = $classfeedback.' feedbacktext';
                         $data['feedback']['content'] = '&nbsp;';
                     } else {
                         $data['feedback']['class'] = $classfeedback.' feedbacktext';
-                        $data['feedback']['content'] = format_text($grade_grade->feedback, $grade_grade->feedbackformat);
+                        $data['feedback']['content'] = format_text($grade_grade->feedback, $grade_grade->feedbackformat,
+                            ['context' => $grade_grade->get_context()]);
                         $gradeitemdata['feedback'] = $grade_grade->feedback;
                     }
                     $data['feedback']['headers'] = "$header_cat $header_row feedback";
