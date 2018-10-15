@@ -481,7 +481,7 @@ function lti_get_launch_data($instance) {
     global $PAGE, $CFG, $USER;
 
     if (empty($instance->typeid)) {
-        $ltiversion = $instance->ltiversion;
+        $ltiversion = LTI_VERSION_1;
         $tool = lti_get_tool_by_url_match($instance->toolurl, $instance->course);
         if ($tool) {
             $typeid = $tool->id;
@@ -528,7 +528,7 @@ function lti_get_launch_data($instance) {
         $toolproxy = null;
         if (!empty($instance->resourcekey)) {
             $key = $instance->resourcekey;
-        } else if ($tool->ltiversion === LTI_VERSION_1P3) {
+        } else if ($ltiversion === LTI_VERSION_1P3) {
             $key = $tool->clientid;
         } else if (!empty($typeconfig['resourcekey'])) {
             $key = $typeconfig['resourcekey'];
@@ -575,7 +575,7 @@ function lti_get_launch_data($instance) {
     } else {
         $requestparams = $allparams;
     }
-    $requestparams = array_merge($requestparams, lti_build_standard_message($instance, $orgid, $tool->ltiversion));
+    $requestparams = array_merge($requestparams, lti_build_standard_message($instance, $orgid, $ltiversion));
     $customstr = '';
     if (isset($typeconfig['customparameters'])) {
         $customstr = $typeconfig['customparameters'];
