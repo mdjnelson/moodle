@@ -73,7 +73,7 @@ class contextsettings extends \mod_lti\local\ltiservice\resource_base {
         $bubble = optional_param('bubble', '', PARAM_ALPHA);
         $ok = !empty($contexttype) && !empty($contextid) &&
               !empty($vendorcode) && !empty($productcode) &&
-              $this->check_type(null, $response->get_request_data());
+              $this->check_tool(null, $response->get_request_data());
         if ($ok) {
             $toolproxy = $this->get_service()->get_tool_proxy();
             $ok = ($toolproxy->guid === $productcode);

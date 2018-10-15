@@ -502,9 +502,9 @@
 
             Y.io(self.settings.ajax_url, {
                 data: {action: 'find_tool_config',
-                        course: self.settings.courseId,
-                        toolurl: url,
-                        toolid: toolId || 0
+                    course: self.settings.courseId,
+                    toolurl: url,
+                    toolid: toolId || 0
                 },
 
                 on: {

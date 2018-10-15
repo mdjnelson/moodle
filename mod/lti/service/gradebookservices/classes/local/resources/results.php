@@ -78,7 +78,7 @@ class results extends resource_base {
         $scope = gradebookservices::SCOPE_GRADEBOOKSERVICES_RESULT_READ;
 
         try {
-            if (!$this->check_type($typeid, $response->get_request_data(), array($scope))) {
+            if (!$this->check_tool($typeid, $response->get_request_data(), array($scope))) {
                 throw new \Exception(null, 401);
             }
             $typeid = $this->get_service()->get_type()->id;

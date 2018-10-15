@@ -17,13 +17,8 @@
 /**
  * Post installation and migration code.
  *
- * This file replaces:
- *   - STATEMENTS section in db/install.xml
- *   - lib.php/modulename_install() post installation hook
- *   - partially defaults.php
- *
  * @package mod_lti
- * @copyright  2018 Stephen Vickers
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

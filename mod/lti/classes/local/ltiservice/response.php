@@ -116,7 +116,7 @@ class response {
     public function get_reason() {
         $code = $this->code;
         if (($code < 200) || ($code >= 600)) {
-            $code = 500;
+            $code = 500;  // Status code must be between 200 and 599.
         }
         if (empty($this->reason) && array_key_exists($code, $this->responsecodes)) {
             $this->reason = $this->responsecodes[$code];

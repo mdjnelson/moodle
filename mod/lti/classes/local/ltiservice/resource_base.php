@@ -213,9 +213,9 @@ abstract class resource_base {
      *
      * @return boolean
      */
-    public function check_type($typeid, $body = null, $scopes = null) {
+    public function check_tool($typeid, $body = null, $scopes = null) {
 
-        $ok = $this->get_service()->check_type($typeid, $body, $scopes);
+        $ok = $this->get_service()->check_tool($typeid, $body, $scopes);
         if ($ok) {
             if ($this->get_service()->get_tool_proxy()) {
                 $toolproxyjson = $this->get_service()->get_tool_proxy()->toolproxy;
@@ -245,6 +245,95 @@ abstract class resource_base {
 
         return $ok;
 
+    }
+
+    /**
+     * Check to make sure the request is valid.
+     *
+     * @param string $toolproxyguid Consumer key
+     * @param string $body          Body of HTTP request message
+     *
+     * @return boolean
+     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @see resource_base::check_tool()
+     */
+    public function check_tool_proxy($toolproxyguid, $body = null) {
+
+        debugging('check_tool_proxy() is deprecated to allow LTI 1 connections to support services. ' .
+                  'Please use resource_base::check_tool() instead.', DEBUG_DEVELOPER);
+        $ok = false;
+        if ($this->get_service()->check_tool_proxy($toolproxyguid, $body)) {
+            $toolproxyjson = $this->get_service()->get_tool_proxy()->toolproxy;
+            if (empty($toolproxyjson)) {
+                $ok = true;
+            } else {
+                $toolproxy = json_decode($toolproxyjson);
+                if (!empty($toolproxy) && isset($toolproxy->security_contract->tool_service)) {
+                    $contexts = lti_get_contexts($toolproxy);
+                    $tpservices = $toolproxy->security_contract->tool_service;
+                    foreach ($tpservices as $service) {
+                        $fqid = lti_get_fqid($contexts, $service->service);
+                        $id = explode('#', $fqid, 2);
+                        if ($this->get_id() === $id[1]) {
+                            $ok = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$ok) {
+                    debugging('Requested service not included in tool proxy: ' . $this->get_id());
+                }
+            }
+        }
+
+        return $ok;
+
+    }
+
+    /**
+     * Check to make sure the request is valid.
+     *
+     * @param int $typeid                   The typeid we want to use
+     * @param int $contextid                The course we are at
+     * @param string $permissionrequested   The permission to be checked
+     * @param string $body                  Body of HTTP request message
+     *
+     * @return boolean
+     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @see resource_base::check_tool()
+     */
+    public function check_type($typeid, $contextid, $permissionrequested, $body = null) {
+        debugging('check_type() is deprecated to allow LTI 1 connections to support services. ' .
+                  'Please use resource_base::check_tool() instead.', DEBUG_DEVELOPER);
+        $ok = false;
+        if ($this->get_service()->check_type($typeid, $contextid, $body)) {
+            $neededpermissions = $this->get_permissions($typeid);
+            foreach ($neededpermissions as $permission) {
+                if ($permission == $permissionrequested) {
+                    $ok = true;
+                    break;
+                }
+            }
+            if (!$ok) {
+                debugging('Requested service ' . $permissionrequested . ' not included in tool type: ' . $typeid,
+                    DEBUG_DEVELOPER);
+            }
+        }
+        return $ok;
+    }
+
+    /**
+     * get permissions from the config of the tool for that resource
+     *
+     * @param int $ltitype Type of LTI
+     * @return array with the permissions related to this resource by the $ltitype or empty if none.
+     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @see resource_base::check_tool()
+     */
+    public function get_permissions($ltitype) {
+        debugging('get_permissions() is deprecated to allow LTI 1 connections to support services. ' .
+                  'Please use resource_base::check_tool() instead.', DEBUG_DEVELOPER);
+        return array();
     }
 
     /**

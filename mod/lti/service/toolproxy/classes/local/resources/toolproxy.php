@@ -66,7 +66,7 @@ class toolproxy extends \mod_lti\local\ltiservice\resource_base {
      */
     public function execute($response) {
 
-        $ok = $this->check_type(null, $response->get_request_data());
+        $ok = $this->check_tool(null, $response->get_request_data());
         $ok = $ok && ($this->get_service()->get_tool_proxy());
         if ($ok) {
             $toolproxy = $this->get_service()->get_tool_proxy();

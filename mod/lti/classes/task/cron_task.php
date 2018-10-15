@@ -15,11 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A scheduled task for gradebookservices.
+ * A scheduled task for lti module.
  *
  * @package    mod_lti
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @author     Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace mod_lti\task;
@@ -33,10 +32,9 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @package    mod_lti
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @author     Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cron_task extends scheduled_task {
+class clean_access_tokens extends scheduled_task {
 
     /**
      * Get a descriptive name for this task (shown to admins).
@@ -44,11 +42,11 @@ class cron_task extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('crontask', 'mod_lti');
+        return get_string('cleanaccesstokens', 'mod_lti');
     }
 
     /**
-     * Run forum cron.
+     * Run lti cron.
      */
     public function execute() {
         global $DB;

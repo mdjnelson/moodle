@@ -105,8 +105,8 @@ class mod_lti_edit_types_form extends moodleform {
 
         if (!$istool) {
             $options = array(
-                LTI_VERSION_1 => get_string('oauth_security', 'lti'),
-                LTI_VERSION_1P3 => get_string('jwt_security', 'lti'),
+                LTI_VERSION_1 => get_string('oauthsecurity', 'lti'),
+                LTI_VERSION_1P3 => get_string('jwtsecurity', 'lti'),
             );
             $mform->addElement('select', 'lti_ltiversion', get_string('ltiversion', 'lti'), $options);
             $mform->setType('lti_ltiversion', PARAM_TEXT);
@@ -125,9 +125,9 @@ class mod_lti_edit_types_form extends moodleform {
             $mform->hideIf('lti_password', 'lti_ltiversion', 'eq', LTI_VERSION_1P3);
 
             if (!empty($typeid)) {
-                $mform->addElement('text', 'lti_clientid_disabled', get_string('clientid_admin', 'lti'));
+                $mform->addElement('text', 'lti_clientid_disabled', get_string('clientidadmin', 'lti'));
                 $mform->setType('lti_clientid_disabled', PARAM_TEXT);
-                $mform->addHelpButton('lti_clientid_disabled', 'clientid_admin', 'lti');
+                $mform->addHelpButton('lti_clientid_disabled', 'clientidadmin', 'lti');
                 $mform->hideIf('lti_clientid_disabled', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
                 $mform->disabledIf('lti_clientid_disabled', null);
                 $mform->setForceLtr('lti_clientid_disabled');

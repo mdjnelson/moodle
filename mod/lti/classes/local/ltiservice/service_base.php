@@ -318,7 +318,7 @@ abstract class service_base {
      *
      * @return boolean
      */
-    public function check_type($typeid, $body = null, $scopes = null) {
+    public function check_tool($typeid, $body = null, $scopes = null) {
 
         $ok = true;
         $toolproxy = null;
@@ -364,6 +364,77 @@ abstract class service_base {
 
         return $ok;
 
+    }
+
+    /**
+     * Check that the request has been properly signed.
+     *
+     * @param string $toolproxyguid  Tool Proxy GUID
+     * @param string $body           Request body (null if none)
+     *
+     * @return boolean
+     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @see service_base::check_tool()
+     */
+    public function check_tool_proxy($toolproxyguid, $body = null) {
+
+        debugging('check_tool_proxy() is deprecated to allow LTI 1 connections to support services. ' .
+                  'Please use service_base::check_tool() instead.', DEBUG_DEVELOPER);
+        $ok = false;
+        $toolproxy = null;
+        $consumerkey = lti\get_oauth_key_from_headers();
+        if (empty($toolproxyguid)) {
+            $toolproxyguid = $consumerkey;
+        }
+
+        if (!empty($toolproxyguid)) {
+            $toolproxy = lti_get_tool_proxy_from_guid($toolproxyguid);
+            if ($toolproxy !== false) {
+                if (!$this->is_unsigned() && ($toolproxy->guid == $consumerkey)) {
+                    $ok = $this->check_signature($toolproxy->guid, $toolproxy->secret, $body);
+                } else {
+                    $ok = $this->is_unsigned();
+                }
+            }
+        }
+        if ($ok) {
+            $this->toolproxy = $toolproxy;
+        }
+
+        return $ok;
+
+    }
+
+    /**
+     * Check that the request has been properly signed.
+     *
+     * @param int $typeid The tool id
+     * @param int $courseid The course we are at
+     * @param string $body Request body (null if none)
+     *
+     * @return bool
+     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @see service_base::check_tool()
+     */
+    public function check_type($typeid, $courseid, $body = null) {
+        debugging('check_type() is deprecated to allow LTI 1 connections to support services. ' .
+                  'Please use service_base::check_tool() instead.', DEBUG_DEVELOPER);
+        $ok = false;
+        $tool = null;
+        $consumerkey = lti\get_oauth_key_from_headers();
+        if (empty($typeid)) {
+            return $ok;
+        } else if ($this->is_allowed_in_context($typeid, $courseid)) {
+            $tool = lti_get_type_type_config($typeid);
+            if ($tool !== false) {
+                if (!$this->is_unsigned() && ($tool->lti_resourcekey == $consumerkey)) {
+                    $ok = $this->check_signature($tool->lti_resourcekey, $tool->lti_password, $body);
+                } else {
+                    $ok = $this->is_unsigned();
+                }
+            }
+        }
+        return $ok;
     }
 
     /**

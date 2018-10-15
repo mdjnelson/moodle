@@ -121,7 +121,8 @@ if (lti_request_is_using_ssl() && !empty($type->lti_secureicon)) {
     $type->oldicon = $type->lti_icon;
 }
 
-$form = new mod_lti_edit_types_form($pageurl, (object)array('isadmin' => true, 'istool' => false, 'id' => $id, 'clientid' => $type->lti_clientid));
+$form = new mod_lti_edit_types_form($pageurl,
+    (object)array('isadmin' => true, 'istool' => false, 'id' => $id, 'clientid' => $type->lti_clientid));
 
 if ($data = $form->get_data()) {
     $type = new stdClass();

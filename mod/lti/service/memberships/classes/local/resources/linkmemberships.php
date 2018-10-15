@@ -79,7 +79,7 @@ class linkmemberships extends resource_base {
             $limitfrom = 0;
         }
 
-        if (!$this->check_type(null, $response->get_request_data(), memberships::SCOPE_MEMBERSHIPS_READ)) {
+        if (!$this->check_tool(null, $response->get_request_data(), memberships::SCOPE_MEMBERSHIPS_READ)) {
             $response->set_code(403);
             return;
         }

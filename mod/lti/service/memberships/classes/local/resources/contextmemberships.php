@@ -80,11 +80,12 @@ class contextmemberships extends resource_base {
         }
 
         try {
-            if (!$this->check_type($params['tool_code'], $response->get_request_data(),
+            if (!$this->check_tool($params['tool_code'], $response->get_request_data(),
                 array(memberships::SCOPE_MEMBERSHIPS_READ))) {
                 throw new \Exception(null, 401);
             }
-            if (!($course = $DB->get_record('course', array('id' => $params['context_id']), 'id,shortname,fullname', IGNORE_MISSING))) {
+            if (!($course = $DB->get_record('course', array('id' => $params['context_id']), 'id,shortname,fullname',
+                IGNORE_MISSING))) {
                 throw new \Exception("Not Found: Course {$contextid} doesn't exist", 404);
             }
             if (!$this->get_service()->is_allowed_in_context($params['tool_code'], $course->id)) {

@@ -83,7 +83,7 @@ class lineitems extends resource_base {
         }
 
         try {
-            if (!$this->check_type($typeid, $response->get_request_data(), $scopes)) {
+            if (!$this->check_tool($typeid, $response->get_request_data(), $scopes)) {
                 throw new \Exception(null, 401);
             }
             $typeid = $this->get_service()->get_type()->id;

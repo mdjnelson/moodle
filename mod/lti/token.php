@@ -19,7 +19,6 @@
  *
  * @package    mod_lti
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @author     Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -37,19 +36,24 @@ $response = new \mod_lti\local\ltiservice\response();
 $ok = ($_SERVER['REQUEST_METHOD'] === 'POST') && ($_SERVER['CONTENT_TYPE'] === 'application/x-www-form-urlencoded');
 $error = 'invalid_request';
 
+$clientassertion = optional_param('client_assertion', '', PARAM_TEXT);
+$clientassertiontype = optional_param('client_assertion_type', '', PARAM_TEXT);
+$granttype = optional_param('grant_type', '', PARAM_TEXT);
+$scope = optional_param('scope', '', PARAM_TEXT);
+
 if ($ok) {
-    $ok = !empty($_POST['client_assertion']) && !empty($_POST['client_assertion_type']) &&
-          !empty($_POST['grant_type']) && !empty($_POST['scope']);
+    $ok = !empty($clientassertion) && !empty($clientassertiontype) &&
+          !empty($granttype) && !empty($scope);
 }
 
 if ($ok) {
-    $ok = ($_POST['client_assertion_type'] === 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer') &&
-          ($_POST['grant_type'] === 'client_credentials');
+    $ok = ($clientassertiontype === 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer') &&
+          ($granttype === 'client_credentials');
     $error = 'unsupported_grant_type';
 }
 
 if ($ok) {
-    $parts = explode('.', $_POST['client_assertion']);
+    $parts = explode('.', $clientassertion);
     $ok = (count($parts) === 3);
     if ($ok) {
         $payload = JWT::urlsafeB64Decode($parts[1]);
@@ -66,7 +70,7 @@ if ($ok) {
         $typeconfig = lti_get_type_config($tool->id);
         if (!empty($typeconfig['publickey'])) {
             try {
-                $jwt = JWT::decode($_POST['client_assertion'], $typeconfig['publickey'], array('RS256'));
+                $jwt = JWT::decode($clientassertion, $typeconfig['publickey'], array('RS256'));
                 $ok = true;
             } catch (Exception $e) {
                 $ok = false;
@@ -77,7 +81,7 @@ if ($ok) {
 
 if ($ok) {
     $scopes = array();
-    $requestedscopes = explode(' ', $_POST['scope']);
+    $requestedscopes = explode(' ', $scope);
     $permittedscopes = lti_get_permitted_service_scopes($tool, $typeconfig);
     $scopes = array_intersect($requestedscopes, $permittedscopes);
     $ok = !empty($scopes);
@@ -87,13 +91,13 @@ if ($ok) {
 if ($ok) {
     $token = lti_new_access_token($tool->id, $scopes);
     $expiry = LTI_ACCESS_TOKEN_LIFE;
-    $scopes = implode(' ', $scopes);
+    $permittedscopes = implode(' ', $scopes);
     $body = <<< EOD
 {
   "access_token" : "{$token->token}",
   "token_type" : "Bearer",
   "expires_in" : {$expiry},
-  "scope" : "{$scopes}"
+  "scope" : "{$permittedscopes}"
 }
 EOD;
 } else {

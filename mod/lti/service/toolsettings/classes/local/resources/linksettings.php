@@ -84,7 +84,7 @@ class linksettings extends \mod_lti\local\ltiservice\resource_base {
             $ok = !empty($linkid);
             if ($ok) {
                 $lti = $DB->get_record('lti', array('id' => $linkid), 'course,typeid', MUST_EXIST);
-                $ok = $this->check_type($lti->typeid, $response->get_request_data());
+                $ok = $this->check_tool($lti->typeid, $response->get_request_data());
             }
             if (!$ok) {
                 $response->set_code(401);

@@ -94,99 +94,381 @@ define('LTI_VERSION_1P3', '1.3.0');
 
 define('LTI_ACCESS_TOKEN_LIFE', 3600);
 
-
-// Mapping for standard message types to JWT message_type claim.
-define('LTI_JWT_MESSAGE_TYPE_MAPPING', array(
-    'basic-lti-launch-request' => 'LtiResourceLinkRequest',
-    'ContentItemSelectionRequest' => 'LtiDeepLinkingRequest',
-    'LtiDeepLinkingResponse' => 'ContentItemSelection',
-));
-
 // Standard prefix for JWT claims.
 define('LTI_JWT_CLAIM_PREFIX', 'https://purl.imsglobal.org/spec/lti');
-// Mapping for standard message parameters to JWT claim.
-define('LTI_JWT_CLAIM_MAPPING', array(
-    'accept_copy_advice' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'accept_copy_advice',
-        'isArray' => false),
-    'accept_media_types' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'accept_media_types',
-        'isArray' => true),
-    'accept_multiple' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'accept_multiple',
-        'isArray' => false),
-    'accept_presentation_document_targets' => array('suffix' => 'dl', 'group' => 'deep_linking_settings',
-        'claim' => 'accept_presentation_document_targets', 'isArray' => true),
-    'accept_types' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'accept_types',
-        'isArray' => true),
-    'accept_unsigned' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'accept_unsigned',
-        'isArray' => false),
-    'auto_create' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'auto_create', 'isArray' => false),
-    'can_confirm' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'can_confirm', 'isArray' => false),
-    'content_item_return_url' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'deep_link_return_url',
-        'isArray' => false),
-    'content_items' => array('suffix' => 'dl', 'group' => '', 'claim' => 'content_items', 'isArray' => true),
-    'data' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'data', 'isArray' => false),
-    'text' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'text', 'isArray' => false),
-    'title' => array('suffix' => 'dl', 'group' => 'deep_linking_settings', 'claim' => 'title', 'isArray' => false),
-    'context_id' => array('suffix' => '', 'group' => 'context', 'claim' => 'id', 'isArray' => false),
-    'context_label' => array('suffix' => '', 'group' => 'context', 'claim' => 'label', 'isArray' => false),
-    'context_title' => array('suffix' => '', 'group' => 'context', 'claim' => 'title', 'isArray' => false),
-    'context_type' => array('suffix' => '', 'group' => 'context', 'claim' => 'type', 'isArray' => true),
-    'lis_course_offering_sourcedid' => array('suffix' => '', 'group' => 'lis', 'claim' => 'course_offering_sourcedid',
-        'isArray' => false),
-    'lis_course_section_sourcedid' => array('suffix' => '', 'group' => 'lis', 'claim' => 'course_section_sourcedid',
-        'isArray' => false),
-    'launch_presentation_css_url' => array('suffix' => '', 'group' => 'launch_presentation', 'claim' => 'css_url',
-        'isArray' => false),
-    'launch_presentation_document_target' => array('suffix' => '', 'group' => 'launch_presentation', 'claim' => 'document_target',
-        'isArray' => false),
-    'launch_presentation_height' => array('suffix' => '', 'group' => 'launch_presentation', 'claim' => 'height',
-        'isArray' => false),
-    'launch_presentation_locale' => array('suffix' => '', 'group' => 'launch_presentation', 'claim' => 'locale',
-        'isArray' => false),
-    'launch_presentation_return_url' => array('suffix' => '', 'group' => 'launch_presentation', 'claim' => 'return_url',
-        'isArray' => false),
-    'launch_presentation_width' => array('suffix' => '', 'group' => 'launch_presentation', 'claim' => 'width', 'isArray' => false),
-    'lis_person_contact_email_primary' => array('suffix' => '', 'group' => null, 'claim' => 'email', 'isArray' => false),
-    'lis_person_name_family' => array('suffix' => '', 'group' => null, 'claim' => 'family_name', 'isArray' => false),
-    'lis_person_name_full' => array('suffix' => '', 'group' => null, 'claim' => 'name', 'isArray' => false),
-    'lis_person_name_given' => array('suffix' => '', 'group' => null, 'claim' => 'given_name', 'isArray' => false),
-    'lis_person_sourcedid' => array('suffix' => '', 'group' => 'lis', 'claim' => 'person_sourcedid', 'isArray' => false),
-    'user_id' => array('suffix' => '', 'group' => null, 'claim' => 'sub', 'isArray' => false),
-    'user_image' => array('suffix' => '', 'group' => null, 'claim' => 'picture', 'isArray' => false),
-    'roles' => array('suffix' => '', 'group' => '', 'claim' => 'roles', 'isArray' => true),
-    'role_scope_mentor' => array('suffix' => '', 'group' => '', 'claim' => 'role_scope_mentor', 'isArray' => false),
-    'deployment_id' => array('suffix' => '', 'group' => '', 'claim' => 'deployment_id', 'isArray' => false),
-    'lti_message_type' => array('suffix' => '', 'group' => '', 'claim' => 'message_type', 'isArray' => false),
-    'lti_version' => array('suffix' => '', 'group' => '', 'claim' => 'version', 'isArray' => false),
-    'resource_link_description' => array('suffix' => '', 'group' => 'resource_link', 'claim' => 'description', 'isArray' => false),
-    'resource_link_id' => array('suffix' => '', 'group' => 'resource_link', 'claim' => 'id', 'isArray' => false),
-    'resource_link_title' => array('suffix' => '', 'group' => 'resource_link', 'claim' => 'title', 'isArray' => false),
-    'tool_consumer_info_product_family_code' => array('suffix' => '', 'group' => 'tool_platform', 'claim' => 'family_code',
-        'isArray' => false),
-    'tool_consumer_info_version' => array('suffix' => '', 'group' => 'tool_platform', 'claim' => 'version', 'isArray' => false),
-    'tool_consumer_instance_contact_email' => array('suffix' => '', 'group' => 'tool_platform', 'claim' => 'contact_email',
-        'isArray' => false),
-    'tool_consumer_instance_description' => array('suffix' => '', 'group' => 'tool_platform', 'claim' => 'description',
-        'isArray' => false),
-    'tool_consumer_instance_guid' => array('suffix' => '', 'group' => 'tool_platform', 'claim' => 'guid', 'isArray' => false),
-    'tool_consumer_instance_name' => array('suffix' => '', 'group' => 'tool_platform', 'claim' => 'name', 'isArray' => false),
-    'tool_consumer_instance_url' => array('suffix' => '', 'group' => 'tool_platform', 'claim' => 'url', 'isArray' => false),
-    'custom_context_memberships_url' => array('suffix' => 'nrps', 'group' => 'namesroleservice',
-        'claim' => 'context_memberships_url', 'isArray' => false),
-    'custom_context_memberships_version' => array('suffix' => 'nrps', 'group' => 'namesroleservice',
-        'claim' => 'service_version', 'isArray' => false),
-    'custom_gradebookservices_scope' => array('suffix' => 'ags', 'group' => 'endpoint', 'claim' => 'scope', 'isArray' => true),
-    'custom_lineitems_url' => array('suffix' => 'ags', 'group' => 'endpoint', 'claim' => 'lineitems', 'isArray' => false),
-    'custom_lineitem_url' => array('suffix' => 'ags', 'group' => 'endpoint', 'claim' => 'lineitem', 'isArray' => false),
-    'custom_results_url' => array('suffix' => 'ags', 'group' => 'endpoint', 'claim' => 'results', 'isArray' => false),
-    'custom_result_url' => array('suffix' => 'ags', 'group' => 'endpoint', 'claim' => 'result', 'isArray' => false),
-    'custom_scores_url' => array('suffix' => 'ags', 'group' => 'endpoint', 'claim' => 'scores', 'isArray' => false),
-    'custom_score_url' => array('suffix' => 'ags', 'group' => 'endpoint', 'claim' => 'score', 'isArray' => false),
-    'lis_outcome_service_url' => array('suffix' => 'bos', 'group' => 'basicoutcomesservice', 'claim' => 'lis_outcome_service_url',
-        'isArray' => false),
-    'lis_result_sourcedid' => array('suffix' => 'bos', 'group' => 'basicoutcomesservice', 'claim' => 'lis_result_sourcedid',
-        'isArray' => false),
-));
 
+/**
+ * Return the mapping for standard message types to JWT message_type claim.
+ *
+ * @return array
+ * @since  Moodle 3.6
+ */
+function lti_get_jwt_message_type_mapping() {
+    return array(
+        'basic-lti-launch-request' => 'LtiResourceLinkRequest',
+        'ContentItemSelectionRequest' => 'LtiDeepLinkingRequest',
+        'LtiDeepLinkingResponse' => 'ContentItemSelection',
+    );
+}
+
+/**
+ * Return the mapping for standard message parameters to JWT claim.
+ *
+ * @return array
+ * @since  Moodle 3.6
+ */
+function lti_get_jwt_claim_mapping() {
+    return array(
+        'accept_copy_advice' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'accept_copy_advice',
+            'isarray' => false
+        ],
+        'accept_media_types' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'accept_media_types',
+            'isarray' => true
+        ],
+        'accept_multiple' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'accept_multiple',
+            'isarray' => false
+        ],
+        'accept_presentation_document_targets' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'accept_presentation_document_targets',
+            'isarray' => true
+        ],
+        'accept_types' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'accept_types',
+            'isarray' => true
+        ],
+        'accept_unsigned' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'accept_unsigned',
+            'isarray' => false
+        ],
+        'auto_create' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'auto_create',
+            'isarray' => false
+        ],
+        'can_confirm' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'can_confirm',
+            'isarray' => false
+        ],
+        'content_item_return_url' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'deep_link_return_url',
+            'isarray' => false
+        ],
+        'content_items' => [
+            'suffix' => 'dl',
+            'group' => '',
+            'claim' => 'content_items',
+            'isarray' => true
+        ],
+        'data' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'data',
+            'isarray' => false
+        ],
+        'text' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'text',
+            'isarray' => false
+        ],
+        'title' => [
+            'suffix' => 'dl',
+            'group' => 'deep_linking_settings',
+            'claim' => 'title',
+            'isarray' => false
+        ],
+        'context_id' => [
+            'suffix' => '',
+            'group' => 'context',
+            'claim' => 'id',
+            'isarray' => false
+        ],
+        'context_label' => [
+            'suffix' => '',
+            'group' => 'context',
+            'claim' => 'label',
+            'isarray' => false
+        ],
+        'context_title' => [
+            'suffix' => '',
+            'group' => 'context',
+            'claim' => 'title',
+            'isarray' => false
+        ],
+        'context_type' => [
+            'suffix' => '',
+            'group' => 'context',
+            'claim' => 'type',
+            'isarray' => true
+        ],
+        'lis_course_offering_sourcedid' => [
+            'suffix' => '',
+            'group' => 'lis',
+            'claim' => 'course_offering_sourcedid',
+            'isarray' => false
+        ],
+        'lis_course_section_sourcedid' => [
+            'suffix' => '',
+            'group' => 'lis',
+            'claim' => 'course_section_sourcedid',
+            'isarray' => false
+        ],
+        'launch_presentation_css_url' => [
+            'suffix' => '',
+            'group' => 'launch_presentation',
+            'claim' => 'css_url',
+            'isarray' => false
+        ],
+        'launch_presentation_document_target' => [
+            'suffix' => '',
+            'group' => 'launch_presentation',
+            'claim' => 'document_target',
+            'isarray' => false
+        ],
+        'launch_presentation_height' => [
+            'suffix' => '',
+            'group' => 'launch_presentation',
+            'claim' => 'height',
+            'isarray' => false
+        ],
+        'launch_presentation_locale' => [
+            'suffix' => '',
+            'group' => 'launch_presentation',
+            'claim' => 'locale',
+            'isarray' => false
+        ],
+        'launch_presentation_return_url' => [
+            'suffix' => '',
+            'group' => 'launch_presentation',
+            'claim' => 'return_url',
+            'isarray' => false
+        ],
+        'launch_presentation_width' => [
+            'suffix' => '',
+            'group' => 'launch_presentation',
+            'claim' => 'width',
+            'isarray' => false
+        ],
+        'lis_person_contact_email_primary' => [
+            'suffix' => '',
+            'group' => null,
+            'claim' => 'email',
+            'isarray' => false
+        ],
+        'lis_person_name_family' => [
+            'suffix' => '',
+            'group' => null,
+            'claim' => 'family_name',
+            'isarray' => false
+        ],
+        'lis_person_name_full' => [
+            'suffix' => '',
+            'group' => null,
+            'claim' => 'name',
+            'isarray' => false
+        ],
+        'lis_person_name_given' => [
+            'suffix' => '',
+            'group' => null,
+            'claim' => 'given_name',
+            'isarray' => false
+        ],
+        'lis_person_sourcedid' => [
+            'suffix' => '',
+            'group' => 'lis',
+            'claim' => 'person_sourcedid',
+            'isarray' => false
+        ],
+        'user_id' => [
+            'suffix' => '',
+            'group' => null,
+            'claim' => 'sub',
+            'isarray' => false
+        ],
+        'user_image' => [
+            'suffix' => '',
+            'group' => null,
+            'claim' => 'picture',
+            'isarray' => false
+        ],
+        'roles' => [
+            'suffix' => '',
+            'group' => '',
+            'claim' => 'roles',
+            'isarray' => true
+        ],
+        'role_scope_mentor' => [
+            'suffix' => '',
+            'group' => '',
+            'claim' => 'role_scope_mentor',
+            'isarray' => false
+        ],
+        'deployment_id' => [
+            'suffix' => '',
+            'group' => '',
+            'claim' => 'deployment_id',
+            'isarray' => false
+        ],
+        'lti_message_type' => [
+            'suffix' => '',
+            'group' => '',
+            'claim' => 'message_type',
+            'isarray' => false
+        ],
+        'lti_version' => [
+            'suffix' => '',
+            'group' => '',
+            'claim' => 'version',
+            'isarray' => false
+        ],
+        'resource_link_description' => [
+            'suffix' => '',
+            'group' => 'resource_link',
+            'claim' => 'description',
+            'isarray' => false
+        ],
+        'resource_link_id' => [
+            'suffix' => '',
+            'group' => 'resource_link',
+            'claim' => 'id',
+            'isarray' => false
+        ],
+        'resource_link_title' => [
+            'suffix' => '',
+            'group' => 'resource_link',
+            'claim' => 'title',
+            'isarray' => false
+        ],
+        'tool_consumer_info_product_family_code' => [
+            'suffix' => '',
+            'group' => 'tool_platform',
+            'claim' => 'family_code',
+            'isarray' => false
+        ],
+        'tool_consumer_info_version' => [
+            'suffix' => '',
+            'group' => 'tool_platform',
+            'claim' => 'version',
+            'isarray' => false
+        ],
+        'tool_consumer_instance_contact_email' => [
+            'suffix' => '',
+            'group' => 'tool_platform',
+            'claim' => 'contact_email',
+            'isarray' => false
+        ],
+        'tool_consumer_instance_description' => [
+            'suffix' => '',
+            'group' => 'tool_platform',
+            'claim' => 'description',
+            'isarray' => false
+        ],
+        'tool_consumer_instance_guid' => [
+            'suffix' => '',
+            'group' => 'tool_platform',
+            'claim' => 'guid',
+            'isarray' => false
+        ],
+        'tool_consumer_instance_name' => [
+            'suffix' => '',
+            'group' => 'tool_platform',
+            'claim' => 'name',
+            'isarray' => false
+        ],
+        'tool_consumer_instance_url' => [
+            'suffix' => '',
+            'group' => 'tool_platform',
+            'claim' => 'url',
+            'isarray' => false
+        ],
+        'custom_context_memberships_url' => [
+            'suffix' => 'nrps',
+            'group' => 'namesroleservice',
+            'claim' => 'context_memberships_url',
+            'isarray' => false
+        ],
+        'custom_context_memberships_version' => [
+            'suffix' => 'nrps',
+            'group' => 'namesroleservice',
+            'claim' => 'service_version',
+            'isarray' => false
+        ],
+        'custom_gradebookservices_scope' => [
+            'suffix' => 'ags',
+            'group' => 'endpoint',
+            'claim' => 'scope',
+            'isarray' => true
+        ],
+        'custom_lineitems_url' => [
+            'suffix' => 'ags',
+            'group' => 'endpoint',
+            'claim' => 'lineitems',
+            'isarray' => false
+        ],
+        'custom_lineitem_url' => [
+            'suffix' => 'ags',
+            'group' => 'endpoint',
+            'claim' => 'lineitem',
+            'isarray' => false
+        ],
+        'custom_results_url' => [
+            'suffix' => 'ags',
+            'group' => 'endpoint',
+            'claim' => 'results',
+            'isarray' => false
+        ],
+        'custom_result_url' => [
+            'suffix' => 'ags',
+            'group' => 'endpoint',
+            'claim' => 'result',
+            'isarray' => false
+        ],
+        'custom_scores_url' => [
+            'suffix' => 'ags',
+            'group' => 'endpoint',
+            'claim' => 'scores',
+            'isarray' => false
+        ],
+        'custom_score_url' => [
+            'suffix' => 'ags',
+            'group' => 'endpoint',
+            'claim' => 'score',
+            'isarray' => false
+        ],
+        'lis_outcome_service_url' => [
+            'suffix' => 'bos',
+            'group' => 'basicoutcomesservice',
+            'claim' => 'lis_outcome_service_url',
+            'isarray' => false
+        ],
+        'lis_result_sourcedid' => [
+            'suffix' => 'bos',
+            'group' => 'basicoutcomesservice',
+            'claim' => 'lis_result_sourcedid',
+            'isarray' => false
+        ],
+    );
+}
 
 /**
  * Return the launch data required for opening the external tool.
@@ -1008,7 +1290,7 @@ function lti_verify_jwt_signature($typeid, $consumerkey, $jwtparam) {
     $typeconfig = lti_get_type_config($typeid);
 
     if (isset($tool->toolproxyid)) {
-        throw new moodle_exception('errorjwtnotsupportedforlti2', 'mod_lti');
+        throw new moodle_exception('JWT security not supported with LTI 2');
     } else {
         if (!empty($tool->clientid)) {
             $key = $tool->clientid;
@@ -1025,7 +1307,7 @@ function lti_verify_jwt_signature($typeid, $consumerkey, $jwtparam) {
         throw new moodle_exception('errorincorrectconsumerkey', 'mod_lti');
     }
     if (empty($publickey)) {
-        throw new moodle_exception('errornopublickey', 'mod_lti');
+        throw new moodle_exception('No public key configured');
     }
 
     try {
@@ -1163,9 +1445,9 @@ function lti_tool_configuration_from_content_item($tool, $messagetype, $ltiversi
 /**
  * Converts the new Deep-Linking format for Content-Items to the old format.
  */
-function lti_convert_content_items() {
+function lti_convert_content_items($param) {
     $items = array();
-    $json = json_decode($_POST['content_items']);
+    $json = json_decode($param);
     if (!empty($json) && is_array($json)) {
         foreach ($json as $item) {
             if (isset($item->type)) {
@@ -1245,7 +1527,7 @@ function lti_convert_content_items() {
     $newitems->{'@context'} = 'http://purl.imsglobal.org/ctx/lti/v1/ContentItem';
     $newitems->{'@graph'} = $items;
 
-    $_POST['content_items'] = json_encode($newitems);
+    return json_encode($newitems);
 }
 
 function lti_get_tool_table($tools, $id) {
@@ -2690,12 +2972,14 @@ function lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid) {
     if (empty($typeid)) {
         $typeid = 0;
     }
-    if (isset($parms['lti_message_type']) && array_key_exists($parms['lti_message_type'], LTI_JWT_MESSAGE_TYPE_MAPPING)) {
-        $parms['lti_message_type'] = LTI_JWT_MESSAGE_TYPE_MAPPING[$parms['lti_message_type']];
+    $messagetypemapping = lti_get_jwt_message_type_mapping();
+    if (isset($parms['lti_message_type']) && array_key_exists($parms['lti_message_type'], $messagetypemapping)) {
+        $parms['lti_message_type'] = $messagetypemapping[$parms['lti_message_type']];
     }
 
     $now = time();
     $nonce = bin2hex(openssl_random_pseudo_bytes(10));
+    $claimmapping = lti_get_jwt_claim_mapping();
     $payload = array(
         'nonce' => $nonce,
         'iat' => $now,
@@ -2706,9 +2990,9 @@ function lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid) {
     $payload['https://purl.imsglobal.org/spec/lti/claim/deployment_id'] = strval($typeid);
     foreach ($parms as $key => $value) {
         $claim = LTI_JWT_CLAIM_PREFIX;
-        if (array_key_exists($key, LTI_JWT_CLAIM_MAPPING)) {
-            $mapping = LTI_JWT_CLAIM_MAPPING[$key];
-            if ($mapping['isArray']) {
+        if (array_key_exists($key, $claimmapping)) {
+            $mapping = $claimmapping[$key];
+            if ($mapping['isarray']) {
                 $value = explode(',', $value);
                 sort($value);
             }
@@ -2759,9 +3043,9 @@ function lti_convert_from_jwt($typeid, $jwtparam) {
     if ($ok) {
         $tool = lti_verify_jwt_signature($typeid, $claims['iss'], $jwtparam);
     }
-    $_POST = array();
-    $_POST['oauth_consumer_key'] = $claims['iss'];
-    foreach (LTI_JWT_CLAIM_MAPPING as $key => $mapping) {
+    $params = array();
+    $params['oauth_consumer_key'] = $claims['iss'];
+    foreach (lti_get_jwt_claim_mapping() as $key => $mapping) {
         $claim = LTI_JWT_CLAIM_PREFIX;
         if (!empty($mapping['suffix'])) {
             $claim .= "-{$mapping['suffix']}";
@@ -2788,7 +3072,7 @@ function lti_convert_from_jwt($typeid, $jwtparam) {
                     $value = $group[$mapping['claim']];
                 }
             }
-            if (!empty($value) && $mapping['isArray']) {
+            if (!empty($value) && $mapping['isarray']) {
                 if (!is_array($value)) {
                     $ok = false;
                     $error = "'{$value}' should be an array";
@@ -2799,7 +3083,7 @@ function lti_convert_from_jwt($typeid, $jwtparam) {
                 }
             }
             if (!is_null($value) && is_string($value) && (strlen($value) > 0)) {
-                $_POST[$key] = $value;
+                $params[$key] = $value;
             }
         }
     }
@@ -2812,7 +3096,7 @@ function lti_convert_from_jwt($typeid, $jwtparam) {
                 $error = "'{$custom}' should be an array";
             } else {
                 foreach ($custom as $key => $value) {
-                    $_POST["custom_{$key}"] = $value;
+                    $params["custom_{$key}"] = $value;
                 }
             }
         }
@@ -2826,18 +3110,19 @@ function lti_convert_from_jwt($typeid, $jwtparam) {
                 $error = "'{$ext}' should be an array";
             } else {
                 foreach ($ext as $key => $value) {
-                    $_POST["ext_{$key}"] = $value;
+                    $params["ext_{$key}"] = $value;
                 }
             }
         }
     }
-    if (isset($_POST['content_items'])) {
-        lti_convert_content_items();
+    if (isset($params['content_items'])) {
+        $params['content_items'] = lti_convert_content_items($params['content_items']);
     }
-    if (isset($_POST['lti_message_type']) && array_key_exists($_POST['lti_message_type'], LTI_JWT_MESSAGE_TYPE_MAPPING)) {
-        $_POST['lti_message_type'] = LTI_JWT_MESSAGE_TYPE_MAPPING[$_POST['lti_message_type']];
+    $messagetypemapping = lti_get_jwt_message_type_mapping();
+    if (isset($params['lti_message_type']) && array_key_exists($params['lti_message_type'], $messagetypemapping)) {
+        $params['lti_message_type'] = $messagetypemapping[$params['lti_message_type']];
     }
-    return $tool;
+    return array($tool, $params);
 }
 
 /**
@@ -3810,12 +4095,12 @@ function lti_new_access_token($typeid, $scopes) {
         $numtries ++;
         $generatedtoken = md5(uniqid(rand(), 1));
         if ($numtries > 5) {
-            throw new moodle_exception('ltiaccesstokengenerationfailed');
+            throw new moodle_exception('Failed to generate LTI access token');
         }
     } while ($DB->record_exists('lti_access_tokens', array('token' => $generatedtoken)));
     $newtoken = new stdClass();
     $newtoken->typeid = $typeid;
-    $newtoken->scope = json_encode($scopes);
+    $newtoken->scope = json_encode(array_values($scopes));
     $newtoken->token = $generatedtoken;
 
     $newtoken->timecreated = time();
@@ -3849,7 +4134,8 @@ function lti_amd_tool_details($elementname, $typeid, $clientid) {
         $email = get_string('tooldetailsmodalemail', 'lti');
         $cancel = get_string('cancel');
         $footer = '<div>\n' .
-                  "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">{$email}</button>\\n" .
+                  "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">" .
+                  "{$email}</button>\\n" .
                   "  <button type=\"button\" class=\"btn btn-secondary\" data-action=\"hide\">{$cancel}</button>\\n" .
                   '</div>';
         $amd = <<< EOD

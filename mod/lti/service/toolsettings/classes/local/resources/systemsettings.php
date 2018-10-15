@@ -69,7 +69,7 @@ class systemsettings extends resource_base {
         $params = $this->parse_template();
         $tpid = $params['tool_proxy_id'];
         $bubble = optional_param('bubble', '', PARAM_ALPHA);
-        $ok = !empty($tpid) && $this->check_type(null, $response->get_request_data());
+        $ok = !empty($tpid) && $this->check_tool(null, $response->get_request_data());
         if (!$ok) {
             $response->set_code(401);
         } else if ($this->get_service()->get_tool_proxy()) {
