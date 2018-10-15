@@ -2451,6 +2451,7 @@ class core_message_external extends external_api {
     /**
      * Mark all messages as read parameters description.
      *
+     * @deprecated since 3.6
      * @return external_function_parameters
      * @since 3.2
      */
@@ -2466,14 +2467,15 @@ class core_message_external extends external_api {
     }
 
     /**
-     * Mark all notifications as read function.
+     * Mark all messages as read function.
      *
-     * @since  3.2
+     * @deprecated since 3.6
      * @throws invalid_parameter_exception
      * @throws moodle_exception
      * @param  int      $useridto       the user id who received the message
      * @param  int      $useridfrom     the user id who send the message. -10 or -20 for no-reply or support user
      * @return external_description
+     * @since  3.2
      */
     public static function mark_all_messages_as_read($useridto, $useridfrom) {
         global $USER, $CFG;
@@ -2529,13 +2531,23 @@ class core_message_external extends external_api {
     }
 
     /**
-     * Mark all notifications as read return description.
+     * Mark all messages as read return description.
      *
+     * @deprecated since 3.6
      * @return external_single_structure
      * @since 3.2
      */
     public static function mark_all_messages_as_read_returns() {
         return new external_value(PARAM_BOOL, 'True if the messages were marked read, false otherwise');
+    }
+
+    /**
+     * Marking the method as deprecated.
+     *
+     * @return bool
+     */
+    public static function mark_all_messages_as_read_is_deprecated() {
+        return true;
     }
 
     /**
