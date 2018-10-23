@@ -116,7 +116,16 @@ if ($lti->showdescriptionlaunch && $lti->intro) {
     echo $OUTPUT->box(format_module_intro('lti', $lti, $cm->id), 'generalbox description', 'intro');
 }
 
-if ( $launchcontainer == LTI_LAUNCH_CONTAINER_WINDOW ) {
+$typeid = $lti->typeid;
+if ($typeid) {
+    $config = lti_get_type_type_config($typeid);
+} else {
+    $config = new stdClass();
+    $config->ltiversion = LTI_VERSION_1;
+}
+
+if (($launchcontainer == LTI_LAUNCH_CONTAINER_WINDOW) && (($config->lti_ltiversion !== LTI_VERSION_1P3) || isset($SESSION->lti_initiatelogin_status))) {
+    unset($SESSION->lti_initiatelogin_status);
     if (!$forceview) {
         echo "<script language=\"javascript\">//<![CDATA[\n";
         echo "window.open('launch.php?id=" . $cm->id . "&triggerview=0','lti-" . $cm->id . "');";
@@ -129,9 +138,14 @@ if ( $launchcontainer == LTI_LAUNCH_CONTAINER_WINDOW ) {
     echo html_writer::link($url, get_string("basiclti_in_new_window_open", "lti"), array('target' => '_blank'));
     echo html_writer::end_tag('p');
 } else {
+    $content = '';
+    if ($config->lti_ltiversion === LTI_VERSION_1P3) {
+        $content = lti_initiatelogin($id, $config);
+    }
+
     // Request the launch content with an iframe tag.
     echo '<iframe id="contentframe" height="600px" width="100%" src="launch.php?id=' . $cm->id .
-         '&triggerview=0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>';
+         "&triggerview=0\" webkitallowfullscreen mozallowfullscreen allowfullscreen>{$content}</iframe>";
 
     // Output script to make the iframe tag be as large as possible.
     $resize = '

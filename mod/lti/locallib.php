@@ -2415,6 +2415,12 @@ function lti_get_type_type_config($id) {
     if (isset($config['publickey'])) {
         $type->lti_publickey = $config['publickey'];
     }
+    if (isset($config['initiatelogin'])) {
+        $type->lti_initiatelogin = $config['initiatelogin'];
+    }
+    if (isset($config['redirectionuris'])) {
+        $type->lti_redirectionuris = $config['redirectionuris'];
+    }
 
     if (isset($config['sendname'])) {
         $type->lti_sendname = $config['sendname'];
@@ -3188,6 +3194,42 @@ function lti_post_launch_html($newparms, $endpoint, $debug=false) {
             "  //]]> \n" .
             " </script> \n";
     }
+    return $r;
+}
+
+/**
+ * Generate the form for initiating a login request for an LTI 1.3 message
+ *
+ * @param int      $id      LTi instance ID
+ * @param stdClass $config  Tool type configuration
+ * @return string
+ */
+function lti_initiatelogin($id, $config) {
+    global $SESSION, $USER;
+
+    $params = array();
+    $params['iss'] = get_config('mod_lti', 'platformid');
+    $params['target_link_uri'] = $config->lti_toolurl;
+    $params['login_hint'] = $USER->id;
+    $params['lti_message_hint'] = 'NA';
+    $SESSION->lti_message_hint = "{$config->typeid},{$id}";
+
+    $r = "<form action=\"" . $config->lti_initiatelogin .
+        "\" name=\"ltiInitiateLoginForm\" id=\"ltiInitiateLoginForm\" method=\"post\" encType=\"application/x-www-form-urlencoded\">\n";
+
+    foreach ($params as $key => $value) {
+        $key = htmlspecialchars($key);
+        $value = htmlspecialchars($value);
+        $r .= "  <input type=\"hidden\" name=\"{$key}\" value=\"{$value}\"/>\n";
+    }
+    $r .= "</form>\n";
+
+    $r .= "<script type=\"text/javascript\">\n" .
+        "//<![CDATA[\n" .
+        "document.ltiInitiateLoginForm.submit();\n" .
+        "//]]>\n" .
+        "</script>\n";
+
     return $r;
 }
 
@@ -4125,12 +4167,14 @@ function lti_amd_tool_details($elementname, $typeid, $clientid) {
                 "  <li><strong>Deployment ID:</strong> {$typeid}</li>\\n" .
                 "  <li><strong>Public Keyset URL:</strong> {$CFG->wwwroot}/mod/lti/certs.php</li>\\n" .
                 "  <li><strong>Access Token URL:</strong> {$CFG->wwwroot}/mod/lti/token.php</li>\\n" .
+                "  <li><strong>Authentication request URL:</strong> {$CFG->wwwroot}/mod/lti/auth.php</li>\\n" .
                 "</ul>";
         $mailto = 'mailto:?subject=LTI%20Tool%20Configuration&body=Platform%20ID:%20' . urlencode($iss) . '%0D%0A' .
                   'Client%20ID:%20' . urlencode($clientid) . '%0D%0A' .
                   'Deployment%20ID:%20' . urlencode($typeid) . '%0D%0A' .
                   'Public%20Keyset%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/certs.php%0D%0A' .
-                  'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A';
+                  'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A' .
+                  'Authentication%20Request%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/auth.php%0D%0A';
         $email = get_string('tooldetailsmodalemail', 'lti');
         $cancel = get_string('cancel');
         $footer = '<div>\n' .

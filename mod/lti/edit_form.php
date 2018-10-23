@@ -140,6 +140,17 @@ class mod_lti_edit_types_form extends moodleform {
             $mform->addHelpButton('lti_publickey', 'publickey', 'lti');
             $mform->hideIf('lti_publickey', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
             $mform->setForceLtr('lti_publickey');
+
+            $mform->addElement('text', 'lti_initiatelogin', get_string('initiatelogin', 'lti'), array('size' => '64'));
+            $mform->setType('lti_initiatelogin', PARAM_URL);
+            $mform->addHelpButton('lti_initiatelogin', 'initiatelogin', 'lti');
+            $mform->hideIf('lti_initiatelogin', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
+
+            $mform->addElement('textarea', 'lti_redirectionuris', get_string('redirectionuris', 'lti'), array('rows' => 3, 'cols' => 60));
+            $mform->setType('lti_redirectionuris', PARAM_TEXT);
+            $mform->addHelpButton('lti_redirectionuris', 'redirectionuris', 'lti');
+            $mform->hideIf('lti_redirectionuris', 'lti_ltiversion', 'neq', LTI_VERSION_1P3);
+            $mform->setForceLtr('lti_redirectionuris');
         }
 
         if ($istool) {
