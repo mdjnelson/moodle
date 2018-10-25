@@ -34,7 +34,8 @@ $ltimessagehint = optional_param('lti_message_hint', '', PARAM_TEXT);
 $state = optional_param('state', '', PARAM_TEXT);
 $responsemode = optional_param('response_mode', '', PARAM_TEXT);
 
-$ok = !empty($scope) && !empty($responsetype) && !empty($clientid) && !empty($redirecturi) && !empty($loginhint) && !empty($scope) && !empty($ltimessagehint);
+$ok = !empty($scope) && !empty($responsetype) && !empty($clientid) && !empty($redirecturi) && !empty($loginhint) && !empty($scope) &&
+      !empty($ltimessagehint) && !empty($SESSION->lti_message_hint);
 
 if (!$ok) {
     $error = 'invalid_request';
@@ -50,17 +51,19 @@ if ($ok && ($responsetype !== 'code')) {
     $ok = false;
     $error = 'unsupported_response_type';
 }
-if ($ok && ($clientid !== get_config('mod_lti', 'platformid'))) {
-    $ok = false;
-    $error = 'unauthorized_client';
+if ($ok) {
+    list($typeid, $id) = explode(',', $SESSION->lti_message_hint, 2);
+    $config = lti_get_type_type_config($typeid);
+    $ok = ($clientid === $config->lti_clientid);
+    if (!$ok) {
+        $error = 'unauthorized_client';
+    }
 }
 if ($ok && ($loginhint !== $USER->id)) {
     $ok = false;
     $error = 'access_denied';
 }
 if ($ok) {
-    list($typeid, $id) = explode(',', $SESSION->lti_message_hint, 2);
-    $config = lti_get_type_type_config($typeid);
     $uris = explode("\n", $config->lti_redirectionuris);
     $ok = in_array($redirecturi, $uris);
     if (!$ok) {
