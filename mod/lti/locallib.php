@@ -3204,15 +3204,27 @@ function lti_post_launch_html($newparms, $endpoint, $debug=false) {
  * @param stdClass $config  Tool type configuration
  * @return string
  */
-function lti_initiatelogin($id, $config) {
-    global $SESSION, $USER;
+function lti_initiatelogin($id, $config, $messagetype = 'basic-lti-launch-request', $title = '', $text = '') {
+    global $SESSION, $USER, $COURSE;
+
+    $endpoint = trim($config->lti_toolurl);
+    if (($messagetype === 'ContentItemSelectionRequest') && !empty($config->toolurl_ContentItemSelectionRequest)) {
+        $endpoint = $config->toolurl_ContentItemSelectionRequest;
+    }
+
+    // If SSL is forced make sure https is on the normal launch URL.
+    if (isset($typeconfig['forcessl']) && ($typeconfig['forcessl'] == '1')) {
+        $endpoint = lti_ensure_url_is_https($endpoint);
+    } else if (!strstr($endpoint, '://')) {
+        $endpoint = 'http://' . $endpoint;
+    }
 
     $params = array();
     $params['iss'] = get_config('mod_lti', 'platformid');
-    $params['target_link_uri'] = $config->lti_toolurl;
+    $params['target_link_uri'] = $endpoint;
     $params['login_hint'] = $USER->id;
     $params['lti_message_hint'] = 'NA';
-    $SESSION->lti_message_hint = "{$config->typeid},{$id}";
+    $SESSION->lti_message_hint = "{$COURSE->id},{$config->typeid},{$id}," . base64_encode($title) . ',' . base64_encode($text);
 
     $r = "<form action=\"" . $config->lti_initiatelogin .
         "\" name=\"ltiInitiateLoginForm\" id=\"ltiInitiateLoginForm\" method=\"post\" encType=\"application/x-www-form-urlencoded\">\n";

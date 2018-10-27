@@ -52,7 +52,7 @@ if ($ok && ($responsetype !== 'code')) {
     $error = 'unsupported_response_type';
 }
 if ($ok) {
-    list($typeid, $id) = explode(',', $SESSION->lti_message_hint, 2);
+    list($courseid, $typeid, $id, $titleb64, $textb64) = explode(',', $SESSION->lti_message_hint, 5);
     $config = lti_get_type_type_config($typeid);
     $ok = ($clientid === $config->lti_clientid);
     if (!$ok) {
@@ -84,15 +84,33 @@ if ($ok) {
 }
 
 if ($ok) {
-    $cm = get_coursemodule_from_id('lti', $id, 0, false, MUST_EXIST);
-    $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-    $context = context_module::instance($cm->id);
-
-    require_login($course, true, $cm);
-    require_capability('mod/lti:view', $context);
-
-    $lti = $DB->get_record('lti', array('id' => $cm->instance), '*', MUST_EXIST);
-    list($endpoint, $params) = lti_get_launch_data($lti);
+    $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+    if ($id) {
+        $cm = get_coursemodule_from_id('lti', $id, 0, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        require_login($course, true, $cm);
+        require_capability('mod/lti:view', $context);
+        $lti = $DB->get_record('lti', array('id' => $cm->instance), '*', MUST_EXIST);
+        list($endpoint, $params) = lti_get_launch_data($lti);
+    } else {
+        require_login($course);
+        $context = context_course::instance($courseid);
+        require_capability('moodle/course:manageactivities', $context);
+        require_capability('mod/lti:addcoursetool', $context);
+        // Set the return URL. We send the launch container along to help us avoid frames-within-frames when the user returns.
+        $returnurlparams = [
+            'course' => $courseid,
+            'id' => $typeid,
+            'sesskey' => sesskey()
+        ];
+        $returnurl = new \moodle_url('/mod/lti/contentitem_return.php', $returnurlparams);
+        // Prepare the request.
+        $title = base64_decode($titleb64);
+        $text = base64_decode($textb64);
+        $request = lti_build_content_item_selection_request($typeid, $course, $returnurl, $title, $text, [], []);
+        $endpoint = $request->url;
+        $params = $request->params;
+    }
 } else {
     $params['error'] = $error;
     if (!empty($desc)) {
