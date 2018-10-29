@@ -481,16 +481,18 @@ function lti_get_launch_data($instance) {
     global $PAGE, $CFG, $USER;
 
     if (empty($instance->typeid)) {
-        $ltiversion = LTI_VERSION_1;
         $tool = lti_get_tool_by_url_match($instance->toolurl, $instance->course);
         if ($tool) {
             $typeid = $tool->id;
+            $ltiversion = $tool->ltiversion;
         } else {
             $tool = lti_get_tool_by_url_match($instance->securetoolurl,  $instance->course);
             if ($tool) {
                 $typeid = $tool->id;
+                $ltiversion = $tool->ltiversion;
             } else {
                 $typeid = null;
+                $ltiversion = LTI_VERSION_1;
             }
         }
     } else {
@@ -3200,17 +3202,24 @@ function lti_post_launch_html($newparms, $endpoint, $debug=false) {
 /**
  * Generate the form for initiating a login request for an LTI 1.3 message
  *
- * @param int      $id      LTi instance ID
- * @param stdClass $config  Tool type configuration
+ * @param int            $courseid  Course ID
+ * @param int            $id        LTI instance ID
+ * @param stdClass|null  $instance  LTI instance
+ * @param stdClass       $config    Tool type configuration
  * @return string
  */
-function lti_initiatelogin($id, $config, $messagetype = 'basic-lti-launch-request', $title = '', $text = '') {
+function lti_initiatelogin($courseid, $id, $instance, $config, $messagetype = 'basic-lti-launch-request', $title = '', $text = '') {
     global $SESSION, $USER, $COURSE;
 
-    $endpoint = trim($config->lti_toolurl);
-    if (($messagetype === 'ContentItemSelectionRequest') && !empty($config->toolurl_ContentItemSelectionRequest)) {
-        $endpoint = $config->toolurl_ContentItemSelectionRequest;
+    if (!empty($instance)) {
+        $endpoint = !empty($instance->toolurl) ? $instance->toolurl : $config->lti_toolurl;
+    } else {
+        $endpoint = $config->lti_toolurl;
+        if (($messagetype === 'ContentItemSelectionRequest') && !empty($config->toolurl_ContentItemSelectionRequest)) {
+            $endpoint = $config->toolurl_ContentItemSelectionRequest;
+        }
     }
+    $endpoint = trim($endpoint);
 
     // If SSL is forced make sure https is on the normal launch URL.
     if (isset($typeconfig['forcessl']) && ($typeconfig['forcessl'] == '1')) {
@@ -3224,7 +3233,7 @@ function lti_initiatelogin($id, $config, $messagetype = 'basic-lti-launch-reques
     $params['target_link_uri'] = $endpoint;
     $params['login_hint'] = $USER->id;
     $params['lti_message_hint'] = 'NA';
-    $SESSION->lti_message_hint = "{$COURSE->id},{$config->typeid},{$id}," . base64_encode($title) . ',' . base64_encode($text);
+    $SESSION->lti_message_hint = "{$courseid},{$config->typeid},{$id}," . base64_encode($title) . ',' . base64_encode($text);
 
     $r = "<form action=\"" . $config->lti_initiatelogin .
         "\" name=\"ltiInitiateLoginForm\" id=\"ltiInitiateLoginForm\" method=\"post\" encType=\"application/x-www-form-urlencoded\">\n";

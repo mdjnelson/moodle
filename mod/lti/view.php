@@ -140,7 +140,7 @@ if (($launchcontainer == LTI_LAUNCH_CONTAINER_WINDOW) && (($config->lti_ltiversi
 } else {
     $content = '';
     if ($config->lti_ltiversion === LTI_VERSION_1P3) {
-        $content = lti_initiatelogin($id, $config);
+        $content = lti_initiatelogin($cm->course, $id, $lti, $config);
     }
 
     // Request the launch content with an iframe tag.
