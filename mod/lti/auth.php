@@ -47,7 +47,7 @@ if ($ok) {
         $error = 'invalid_scope';
     }
 }
-if ($ok && ($responsetype !== 'code')) {
+if ($ok && ($responsetype !== 'id_token')) {
     $ok = false;
     $error = 'unsupported_response_type';
 }
