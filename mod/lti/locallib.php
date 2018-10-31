@@ -474,10 +474,11 @@ function lti_get_jwt_claim_mapping() {
  * Return the launch data required for opening the external tool.
  *
  * @param  stdClass $instance the external tool activity settings
+ * @param  string $nonce
  * @return array the endpoint URL and parameters (including the signature)
  * @since  Moodle 3.0
  */
-function lti_get_launch_data($instance) {
+function lti_get_launch_data($instance, $nonce = '') {
     global $PAGE, $CFG, $USER;
 
     if (empty($instance->typeid)) {
@@ -643,7 +644,7 @@ function lti_get_launch_data($instance) {
     }
 
     if ((!empty($key) && !empty($secret)) || ($ltiversion === LTI_VERSION_1P3)) {
-        $parms = lti_sign_parameters($requestparams, $endpoint, "POST", $key, $secret, $typeid);
+        $parms = lti_sign_parameters($requestparams, $endpoint, "POST", $key, $secret, $typeid, $nonce);
 
         $endpointurl = new \moodle_url($endpoint);
         $endpointparams = $endpointurl->params();
@@ -1026,13 +1027,14 @@ function lti_build_custom_parameters($toolproxy, $tool, $instance, $params, $cus
  *                       TC without further interaction from the user. False by default.
  * @param bool $canconfirm Flag for can_confirm parameter. False by default.
  * @param bool $copyadvice Indicates whether the TC is able and willing to make a local copy of a content item. False by default.
+ * @param string $nonce
  * @return stdClass The object containing the signed request parameters and the URL to the TP's Content-Item selection interface.
  * @throws moodle_exception When the LTI tool type does not exist.`
  * @throws coding_exception For invalid media type and presentation target parameters.
  */
 function lti_build_content_item_selection_request($id, $course, moodle_url $returnurl, $title = '', $text = '', $mediatypes = [],
                                                   $presentationtargets = [], $autocreate = false, $multiple = false,
-                                                  $unsigned = false, $canconfirm = false, $copyadvice = false) {
+                                                  $unsigned = false, $canconfirm = false, $copyadvice = false, $nonce = '') {
     global $PAGE, $USER;
 
     $tool = lti_get_type($id);
@@ -1183,7 +1185,7 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
     $requestparams['content_item_return_url'] = $returnurl->out(false);
     $requestparams['title'] = $title;
     $requestparams['text'] = $text;
-    $signedparams = lti_sign_parameters($requestparams, $toolurlout, 'POST', $key, $secret, $id);
+    $signedparams = lti_sign_parameters($requestparams, $toolurlout, 'POST', $key, $secret, $id, $nonce);
     $toolurlparams = $toolurl->params();
 
     // Strip querystring params in endpoint url from $signedparams to avoid duplication.
@@ -2945,7 +2947,7 @@ function lti_set_tool_settings($settings, $toolproxyid, $courseid = null, $insta
  * @param string $oauthconsumersecret
  * @return array|null
  */
-function lti_sign_parameters($oldparms, $endpoint, $method, $oauthconsumerkey, $oauthconsumersecret, $typeid = 0) {
+function lti_sign_parameters($oldparms, $endpoint, $method, $oauthconsumerkey, $oauthconsumersecret, $typeid = 0, $nonce = '') {
 
     $parms = $oldparms;
 
@@ -2961,7 +2963,7 @@ function lti_sign_parameters($oldparms, $endpoint, $method, $oauthconsumerkey, $
         $newparms = $accreq->get_parameters();
     } else {
         $newparms = array();
-        $newparms['id_token'] = lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid);
+        $newparms['id_token'] = lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid, $nonce);
     }
 
     return $newparms;
@@ -2973,9 +2975,10 @@ function lti_sign_parameters($oldparms, $endpoint, $method, $oauthconsumerkey, $
  * @param array  $parms     Parameters to be passed for signing
  * @param string $oauthconsumerkey
  * @param int    $typeid
+ * @param string $nonce
  * @return string
  */
-function lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid) {
+function lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid, $nonce) {
 
     if (empty($typeid)) {
         $typeid = 0;
@@ -2986,7 +2989,9 @@ function lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid) {
     }
 
     $now = time();
-    $nonce = bin2hex(openssl_random_pseudo_bytes(10));
+    if (empty($nonce)) {
+        $nonce = bin2hex(openssl_random_pseudo_bytes(10));
+    }
     $claimmapping = lti_get_jwt_claim_mapping();
     $payload = array(
         'nonce' => $nonce,

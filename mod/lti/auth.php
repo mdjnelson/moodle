@@ -33,19 +33,18 @@ $loginhint = optional_param('login_hint', '', PARAM_TEXT);
 $ltimessagehint = optional_param('lti_message_hint', '', PARAM_TEXT);
 $state = optional_param('state', '', PARAM_TEXT);
 $responsemode = optional_param('response_mode', '', PARAM_TEXT);
+$nonce = optional_param('nonce', '', PARAM_TEXT);
+$prompt = optional_param('prompt', '', PARAM_TEXT);
 
 $ok = !empty($scope) && !empty($responsetype) && !empty($clientid) && !empty($redirecturi) && !empty($loginhint) && !empty($scope) &&
-      !empty($ltimessagehint) && !empty($SESSION->lti_message_hint);
+      !empty($ltimessagehint) && !empty($nonce) && !empty($prompt) && !empty($SESSION->lti_message_hint);
 
 if (!$ok) {
     $error = 'invalid_request';
 }
-if ($ok) {
-    $scopes = explode(' ', $scope);
-    $ok = in_array('openid', $scopes);
-    if (!$ok) {
-        $error = 'invalid_scope';
-    }
+if ($ok && ($scope !== 'openid')) {
+    $ok = false;
+    $error = 'invalid_scope';
 }
 if ($ok && ($responsetype !== 'id_token')) {
     $ok = false;
@@ -73,7 +72,7 @@ if ($ok) {
 }
 if ($ok) {
     if (isset($responsemode)) {
-        $ok = ($responsemode === 'form_post') || ($responsemode === 'query');
+        $ok = ($responsemode === 'form_post');
         if (!$ok) {
             $error = 'invalid_request';
             $desc = 'Invalid response_mode';
@@ -81,6 +80,11 @@ if ($ok) {
     } else {
         $responsemode = 'query';
     }
+}
+if ($ok && ($prompt !== 'none')) {
+    $ok = false;
+    $error = 'invalid_request';
+    $desc = 'Invalid prompt';
 }
 
 if ($ok) {
@@ -91,7 +95,7 @@ if ($ok) {
         require_login($course, true, $cm);
         require_capability('mod/lti:view', $context);
         $lti = $DB->get_record('lti', array('id' => $cm->instance), '*', MUST_EXIST);
-        list($endpoint, $params) = lti_get_launch_data($lti);
+        list($endpoint, $params) = lti_get_launch_data($lti, $nonce);
     } else {
         require_login($course);
         $context = context_course::instance($courseid);
@@ -107,7 +111,7 @@ if ($ok) {
         // Prepare the request.
         $title = base64_decode($titleb64);
         $text = base64_decode($textb64);
-        $request = lti_build_content_item_selection_request($typeid, $course, $returnurl, $title, $text, [], []);
+        $request = lti_build_content_item_selection_request($typeid, $course, $returnurl, $title, $text, [], [], false, false, false, false, false, $nonce);
         $endpoint = $request->url;
         $params = $request->params;
     }
