@@ -30,14 +30,13 @@ $responsetype = optional_param('response_type', '', PARAM_TEXT);
 $clientid = optional_param('client_id', '', PARAM_TEXT);
 $redirecturi = optional_param('redirect_uri', '', PARAM_TEXT);
 $loginhint = optional_param('login_hint', '', PARAM_TEXT);
-$ltimessagehint = optional_param('lti_message_hint', '', PARAM_TEXT);
 $state = optional_param('state', '', PARAM_TEXT);
 $responsemode = optional_param('response_mode', '', PARAM_TEXT);
 $nonce = optional_param('nonce', '', PARAM_TEXT);
 $prompt = optional_param('prompt', '', PARAM_TEXT);
 
 $ok = !empty($scope) && !empty($responsetype) && !empty($clientid) && !empty($redirecturi) && !empty($loginhint) && !empty($scope) &&
-      !empty($ltimessagehint) && !empty($nonce) && !empty($SESSION->lti_message_hint);
+      !empty($nonce) && !empty($SESSION->lti_message_hint);
 
 if (!$ok) {
     $error = 'invalid_request';

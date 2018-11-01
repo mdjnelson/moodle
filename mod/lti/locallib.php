@@ -3237,7 +3237,6 @@ function lti_initiatelogin($courseid, $id, $instance, $config, $messagetype = 'b
     $params['iss'] = get_config('mod_lti', 'platformid');
     $params['target_link_uri'] = $endpoint;
     $params['login_hint'] = $USER->id;
-    $params['lti_message_hint'] = 'NA';
     $SESSION->lti_message_hint = "{$courseid},{$config->typeid},{$id}," . base64_encode($title) . ',' . base64_encode($text);
 
     $r = "<form action=\"" . $config->lti_initiatelogin .
