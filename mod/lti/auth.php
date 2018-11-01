@@ -37,7 +37,7 @@ $nonce = optional_param('nonce', '', PARAM_TEXT);
 $prompt = optional_param('prompt', '', PARAM_TEXT);
 
 $ok = !empty($scope) && !empty($responsetype) && !empty($clientid) && !empty($redirecturi) && !empty($loginhint) && !empty($scope) &&
-      !empty($ltimessagehint) && !empty($nonce) && !empty($prompt) && !empty($SESSION->lti_message_hint);
+      !empty($ltimessagehint) && !empty($nonce) && !empty($SESSION->lti_message_hint);
 
 if (!$ok) {
     $error = 'invalid_request';
@@ -81,7 +81,7 @@ if ($ok) {
         $responsemode = 'query';
     }
 }
-if ($ok && ($prompt !== 'none')) {
+if ($ok && !empty($prompt) && ($prompt !== 'none')) {
     $ok = false;
     $error = 'invalid_request';
     $desc = 'Invalid prompt';
