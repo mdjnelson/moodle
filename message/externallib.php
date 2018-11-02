@@ -679,6 +679,8 @@ class core_message_external extends external_api {
                 'conversationid' => new external_value(PARAM_INT, 'The id of the conversation'),
                 'includecontactrequests' => new external_value(PARAM_BOOL, 'Do we want to include contact requests?',
                     VALUE_DEFAULT, false),
+                'includeprivacyinfo' => new external_value(PARAM_BOOL, 'Do we want to include contact requests?',
+                    VALUE_DEFAULT, true),
                 'limitfrom' => new external_value(PARAM_INT, 'Limit from', VALUE_DEFAULT, 0),
                 'limitnum' => new external_value(PARAM_INT, 'Limit number', VALUE_DEFAULT, 0)
             ]
@@ -691,12 +693,14 @@ class core_message_external extends external_api {
      * @param int $userid The user we are returning the conversation members for, used by helper::get_member_info.
      * @param int $conversationid The id of the conversation
      * @param bool $includecontactrequests Do we want to include contact requests with this data?
+     * @param bool $includeprivacyinfo Do we want to include whether the user can message another, and if the user
+     *             requires a contact.
      * @param int $limitfrom
      * @param int $limitnum
      * @return array
      */
     public static function get_conversation_members(int $userid, int $conversationid, bool $includecontactrequests = false,
-                                                    int $limitfrom = 0, int $limitnum = 0) {
+                                                    bool $includeprivacyinfo = true, int $limitfrom = 0, int $limitnum = 0) {
         global $CFG, $USER;
 
         // Check if messaging is enabled.
@@ -722,13 +726,14 @@ class core_message_external extends external_api {
             'userid' => $userid,
             'conversationid' => $conversationid,
             'includecontactrequests' => $includecontactrequests,
+            'includeprivacyinfo' => $includeprivacyinfo,
             'limitfrom' => $limitfrom,
             'limitnum' => $limitnum
         ];
         self::validate_parameters(self::get_conversation_members_parameters(), $params);
 
         return \core_message\api::get_conversation_members($userid, $conversationid, $includecontactrequests,
-            $limitfrom, $limitnum);
+            $includeprivacyinfo, $limitfrom, $limitnum);
     }
 
     /**
@@ -988,6 +993,8 @@ class core_message_external extends external_api {
             'showonlinestatus' => new external_value(PARAM_BOOL, 'Show the user\'s online status?'),
             'isblocked' => new external_value(PARAM_BOOL, 'If the user has been blocked'),
             'iscontact' => new external_value(PARAM_BOOL, 'Is the user a contact?'),
+            'canmessage' => new external_value(PARAM_BOOL, 'If the user can be messaged'),
+            'requirescontact' => new external_value(PARAM_BOOL, 'If the user requires to be contacts'),
         ];
 
         if ($includecontactrequests) {

@@ -4236,6 +4236,18 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
     }
 
     /**
+     * Test returning members in a conversation with privacy information.
+     */
+    public function test_get_conversation_members_with_privacy_info() {
+        $user1 = self::getDataGenerator()->create_user();
+        $user2 = self::getDataGenerator()->create_user();
+        $user3 = self::getDataGenerator()->create_user();
+
+        // Set user 1's privacy settings to only contacts.
+        set_user_preference('message_blocknoncontacts', true, $user1);
+    }
+
+    /**
      * Comparison function for sorting contacts.
      *
      * @param stdClass $a

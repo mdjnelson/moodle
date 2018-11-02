@@ -4916,4 +4916,16 @@ class core_message_externallib_testcase extends externallib_advanced_testcase {
         $this->expectException('moodle_exception');
         core_message_external::get_conversation_members($user3->id, $conversationid);
     }
+
+    /**
+     * Test returning members in a conversation with privacy information.
+     */
+    public function test_get_conversation_members_with_privacy_info() {
+        $this->resetAfterTest();
+
+        $user1 = self::getDataGenerator()->create_user();
+        $user2 = self::getDataGenerator()->create_user();
+
+
+    }
 }

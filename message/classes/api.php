@@ -2298,18 +2298,20 @@ class api {
      * @param int $userid The user we are returning the conversation members for, used by helper::get_member_info.
      * @param int $conversationid The id of the conversation
      * @param bool $includecontactrequests Do we want to include contact requests with this data?
+     * @param bool $includeprivacyinfo Do we want to include whether the user can message another, and if the user
+     *             requires a contact.
      * @param int $limitfrom
      * @param int $limitnum
      * @return array
      */
     public static function get_conversation_members(int $userid, int $conversationid, bool $includecontactrequests = false,
-                                                    int $limitfrom = 0, int $limitnum = 0) : array {
+                                                    bool $includeprivacyinfo = true, int $limitfrom = 0, int $limitnum = 0) : array {
         global $DB;
 
         if ($members = $DB->get_records('message_conversation_members', ['conversationid' => $conversationid],
                 'timecreated ASC, id ASC', 'userid', $limitfrom, $limitnum)) {
             $userids = array_keys($members);
-            $members = helper::get_member_info($userid, $userids, $includecontactrequests);
+            $members = helper::get_member_info($userid, $userids, $includecontactrequests, $includeprivacyinfo);
 
             return $members;
         }
