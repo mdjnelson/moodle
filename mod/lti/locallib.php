@@ -3216,11 +3216,9 @@ function lti_post_launch_html($newparms, $endpoint, $debug=false) {
 function lti_initiatelogin($courseid, $id, $instance, $config, $messagetype = 'basic-lti-launch-request', $title = '', $text = '') {
     global $SESSION, $USER, $COURSE;
 
-    $endpoint = '';
     if (!empty($instance)) {
-        $endpoint = $instance->toolurl;
-    }
-    if (empty($endpoint)) {
+        $endpoint = !empty($instance->toolurl) ? $instance->toolurl : $config->lti_toolurl;
+    } else {
         $endpoint = $config->lti_toolurl;
         if (($messagetype === 'ContentItemSelectionRequest') && !empty($config->lti_toolurl_ContentItemSelectionRequest)) {
             $endpoint = $config->lti_toolurl_ContentItemSelectionRequest;
