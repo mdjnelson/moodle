@@ -649,6 +649,9 @@
         <KEY NAME="conversationid" TYPE="foreign" FIELDS="conversationid" REFTABLE="message_conversations" REFFIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="conversationid-userid" UNIQUE="true" FIELDS="conversationid, userid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="message_user_actions" COMMENT="Stores all per-user actions on individual messages">
       <FIELDS>

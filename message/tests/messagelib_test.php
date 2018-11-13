@@ -154,6 +154,10 @@ class core_message_messagelib_testcase extends advanced_testcase {
         $user2 = $this->getDataGenerator()->create_user();
         $user3 = $this->getDataGenerator()->create_user(); // Stranger.
 
+        // Create support user.
+        $supportuser = $this->getDataGenerator()->create_user();
+        $CFG->supportuserid = $supportuser->id;
+
         // Add users to the admin's contact list.
         \core_message\api::add_contact($USER->id, $user1->id);
         \core_message\api::add_contact($USER->id, $user2->id);

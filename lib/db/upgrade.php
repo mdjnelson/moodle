@@ -2771,5 +2771,17 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2018110700.01);
     }
 
+    if ($oldversion < 2018111000.01) {
+        // A user should not be in a conversation more than once.
+        $table = new xmldb_table('message_conversation_members');
+        $index = new xmldb_index('conversationid-userid', XMLDB_INDEX_UNIQUE, array('conversationid', 'userid'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2018111000.01);
+    }
+
     return true;
 }
