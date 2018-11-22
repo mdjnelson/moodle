@@ -1040,7 +1040,7 @@ class core_message_external extends external_api {
                 'profileimageurlsmall' => new external_value(PARAM_URL, 'Small user picture URL'),
                 'ismessaging' => new external_value(PARAM_BOOL, 'If we are messaging the user'),
                 'sentfromcurrentuser' => new external_value(PARAM_BOOL, 'Was the last message sent from the current user?'),
-                'lastmessage' => new external_value(PARAM_NOTAGS, 'The user\'s last message'),
+                'lastmessage' => new external_value(PARAM_RAW, 'The user\'s last message'),
                 'lastmessagedate' => new external_value(PARAM_INT, 'Timestamp for last message', VALUE_DEFAULT, null),
                 'messageid' => new external_value(PARAM_INT, 'The unique search message id', VALUE_DEFAULT, null),
                 'showonlinestatus' => new external_value(PARAM_BOOL, 'Show the user\'s online status?'),
