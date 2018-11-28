@@ -32,6 +32,7 @@ defined('MOODLE_INTERNAL') || die();
  *      Extra information about event.
  *
  *      - string enrol: name of enrolment instance.
+ *      - int status: status of the enrolment (ENROL_USER_ACTIVE | ENROL_USER_SUSPENDED).
  * }
  *
  * @package    core
@@ -109,6 +110,9 @@ class user_enrolment_updated extends base {
         parent::validate_data();
         if (!isset($this->other['enrol'])) {
             throw new \coding_exception('The \'enrol\' value must be set in other.');
+        }
+        if (!isset($this->other['status'])) {
+            throw new \coding_exception('The \'status\' value must be set in other.');
         }
         if (!isset($this->relateduserid)) {
             throw new \coding_exception('The \'relateduserid\' must be set.');

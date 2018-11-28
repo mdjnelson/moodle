@@ -2039,7 +2039,7 @@ abstract class enrol_plugin {
                     'courseid' => $instance->courseid,
                     'context' => context_course::instance($instance->courseid),
                     'relateduserid' => $ue->userid,
-                    'other' => array('enrol' => $name)
+                    'other' => array('enrol' => $name, 'status' => $status)
                     )
                 );
         $event->trigger();

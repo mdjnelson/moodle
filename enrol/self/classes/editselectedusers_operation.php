@@ -133,7 +133,7 @@ class enrol_self_editselectedusers_operation extends enrol_bulk_enrolment_operat
                             'courseid' => $enrolment->courseid,
                             'context' => context_course::instance($enrolment->courseid),
                             'relateduserid' => $user->id,
-                            'other' => array('enrol' => 'self')
+                            'other' => array('enrol' => 'self', 'status' => $status)
                         )
                     );
                     $event->trigger();

@@ -264,7 +264,7 @@ class enrol_manual_editselectedusers_operation extends enrol_bulk_enrolment_oper
                                 'courseid' => $enrolment->courseid,
                                 'context' => context_course::instance($enrolment->courseid),
                                 'relateduserid' => $user->id,
-                                'other' => array('enrol' => 'manual')
+                                'other' => array('enrol' => 'manual', 'status' => $status)
                                 )
                             );
                     $event->trigger();
