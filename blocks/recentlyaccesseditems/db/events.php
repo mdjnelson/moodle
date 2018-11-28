@@ -34,4 +34,12 @@ $observers = array (
             'eventname'   => '\core\event\course_module_deleted',
             'callback'    => 'block_recentlyaccesseditems\observer::remove'
     ),
+    array(
+            'eventname'   => '\core\event\user_enrolment_deleted',
+            'callback'    => 'block_recentlyaccesseditems\observer::remove'
+    ),
+    array(
+            'eventname'   => '\core\event\user_enrolment_updated',
+            'callback'    => 'block_recentlyaccesseditems\observer::remove'
+    ),
 );

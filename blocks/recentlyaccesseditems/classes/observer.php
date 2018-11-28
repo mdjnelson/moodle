@@ -93,13 +93,25 @@ class observer {
     }
 
     /**
-     * Remove record when course module is deleted.
+     * Remove record when course module is deleted or user enrolment in a course is suspended/deleted.
      *
      * @param \core\event\base $event
      */
     public static function remove(\core\event\base $event) {
         global $DB;
 
-        $DB->delete_records(self::$table, array('cmid' => $event->contextinstanceid));
+        if ($event instanceof \core\event\user_enrolment_updated) {
+            if ($event->other['status'] == ENROL_USER_SUSPENDED) {
+                $params = array ('userid' => $event->relateduserid, 'courseid' => $event->courseid);
+            } else {
+                return;
+            }
+        } else if ($event instanceof \core\event\user_enrolment_deleted) {
+            $params = array ('userid' => $event->relateduserid, 'courseid' => $event->courseid);
+        } else if ($event instanceof \core\event\course_module_deleted) {
+            $params = array('cmid' => $event->contextinstanceid);
+        }
+
+        $DB->delete_records(self::$table, $params);
     }
 }
