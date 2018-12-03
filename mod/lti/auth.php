@@ -62,11 +62,11 @@ if ($ok && ($loginhint !== $USER->id)) {
     $error = 'access_denied';
 }
 if ($ok) {
-    $uris = explode("\n", $config->lti_redirectionuris);
+    $uris = array_map("trim", explode("\n", $config->lti_redirectionuris));
     $ok = in_array($redirecturi, $uris);
     if (!$ok) {
         $error = 'invalid_request';
-        $desc = 'Unregistered redirect_uri';
+        $desc = 'Unregistered redirect_uri '.$redirecturi;
     }
 }
 if ($ok) {
