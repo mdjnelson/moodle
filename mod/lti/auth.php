@@ -66,7 +66,7 @@ if ($ok) {
     $ok = in_array($redirecturi, $uris);
     if (!$ok) {
         $error = 'invalid_request';
-        $desc = 'Unregistered redirect_uri '.$redirecturi;
+        $desc = 'Unregistered redirect_uri ' . $redirecturi;
     }
 }
 if ($ok) {
