@@ -1163,7 +1163,7 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
         $requestparams['accept_media_types'] = implode(',', $mediatypes);
     } else {
         // Only LTI links are currently supported.
-        $requestparams['accept_types'] = 'ltiLink';
+        $requestparams['accept_types'] = 'ltiResourceLink';
     }
 
     // Presentation targets. Supports frame, iframe, window by default if empty.
@@ -1457,7 +1457,7 @@ function lti_convert_content_items($param) {
             if (isset($item->type)) {
                 $newitem = clone $item;
                 switch ($item->type) {
-                    case 'ltiLink':
+                    case 'ltiResourceLink':
                         $newitem->{'@type'} = 'LtiLinkItem';
                         $newitem->mediaType = 'application\/vnd.ims.lti.v1.ltilink';
                         break;
