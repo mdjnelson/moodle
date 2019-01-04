@@ -185,7 +185,9 @@ function xmldb_lti_upgrade($oldversion) {
         // Adding keys to table lti_access_tokens.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->add_key('typeid', XMLDB_KEY_FOREIGN, array('typeid'), 'lti_types', array('id'));
-        $table->add_key('token', XMLDB_INDEX_UNIQUE, array('token'));
+
+        // Add an index.
+        $table->add_index('token', XMLDB_INDEX_UNIQUE, array('token'));
 
         // Conditionally launch create table for lti_access_tokens.
         if (!$dbman->table_exists($table)) {
