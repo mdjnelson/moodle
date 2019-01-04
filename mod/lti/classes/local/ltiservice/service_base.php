@@ -373,7 +373,7 @@ abstract class service_base {
      * @param string $body           Request body (null if none)
      *
      * @return boolean
-     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @deprecated since Moodle 3.7 MDL-62599 - please do not use this function any more.
      * @see service_base::check_tool()
      */
     public function check_tool_proxy($toolproxyguid, $body = null) {
@@ -413,7 +413,7 @@ abstract class service_base {
      * @param string $body Request body (null if none)
      *
      * @return bool
-     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @deprecated since Moodle 3.7 MDL-62599 - please do not use this function any more.
      * @see service_base::check_tool()
      */
     public function check_type($typeid, $courseid, $body = null) {

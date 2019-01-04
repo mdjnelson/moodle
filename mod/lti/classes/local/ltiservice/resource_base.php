@@ -254,7 +254,7 @@ abstract class resource_base {
      * @param string $body          Body of HTTP request message
      *
      * @return boolean
-     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @deprecated since Moodle 3.7 MDL-62599 - please do not use this function any more.
      * @see resource_base::check_tool()
      */
     public function check_tool_proxy($toolproxyguid, $body = null) {
@@ -299,7 +299,7 @@ abstract class resource_base {
      * @param string $body                  Body of HTTP request message
      *
      * @return boolean
-     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @deprecated since Moodle 3.7 MDL-62599 - please do not use this function any more.
      * @see resource_base::check_tool()
      */
     public function check_type($typeid, $contextid, $permissionrequested, $body = null) {
@@ -327,7 +327,7 @@ abstract class resource_base {
      *
      * @param int $ltitype Type of LTI
      * @return array with the permissions related to this resource by the $ltitype or empty if none.
-     * @deprecated since Moodle 3.6 MDL-62599 - please do not use this function any more.
+     * @deprecated since Moodle 3.7 MDL-62599 - please do not use this function any more.
      * @see resource_base::check_tool()
      */
     public function get_permissions($ltitype) {

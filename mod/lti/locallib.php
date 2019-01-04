@@ -101,7 +101,6 @@ define('LTI_JWT_CLAIM_PREFIX', 'https://purl.imsglobal.org/spec/lti');
  * Return the mapping for standard message types to JWT message_type claim.
  *
  * @return array
- * @since  Moodle 3.6
  */
 function lti_get_jwt_message_type_mapping() {
     return array(
@@ -115,7 +114,6 @@ function lti_get_jwt_message_type_mapping() {
  * Return the mapping for standard message parameters to JWT claim.
  *
  * @return array
- * @since  Moodle 3.6
  */
 function lti_get_jwt_claim_mapping() {
     return array(
