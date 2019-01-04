@@ -50,7 +50,7 @@ if ($ok && ($responsetype !== 'id_token')) {
     $error = 'unsupported_response_type';
 }
 if ($ok) {
-    list($courseid, $typeid, $id, $titleb64, $textb64) = explode(',', $SESSION->lti_message_hint, 5);
+    list($courseid, $typeid, $id, $titleb64, $textb64, $targeturib64) = explode(',', $SESSION->lti_message_hint, 6);
     $config = lti_get_type_type_config($typeid);
     $ok = ($clientid === $config->lti_clientid);
     if (!$ok) {
@@ -110,7 +110,8 @@ if ($ok) {
         // Prepare the request.
         $title = base64_decode($titleb64);
         $text = base64_decode($textb64);
-        $request = lti_build_content_item_selection_request($typeid, $course, $returnurl, $title, $text, [], [], false, false, false, false, false, $nonce);
+        $targeturi = base64_decode($targeturib64);
+        $request = lti_build_content_item_selection_request($typeid, $course, $returnurl, $title, $text, $targeturi, [], [], false, false, false, false, false, $nonce);
         $endpoint = $request->url;
         $params = $request->params;
     }

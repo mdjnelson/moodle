@@ -321,6 +321,12 @@ function lti_get_jwt_claim_mapping() {
             'claim' => 'role_scope_mentor',
             'isarray' => false
         ],
+        'target_link_uri' => [
+            'suffix' => '',
+            'group' => '',
+            'claim' => 'target_link_uri',
+            'isarray' => false
+        ],
         'deployment_id' => [
             'suffix' => '',
             'group' => '',
@@ -577,6 +583,12 @@ function lti_get_launch_data($instance, $nonce = '') {
         $requestparams = $allparams;
     }
     $requestparams = array_merge($requestparams, lti_build_standard_message($instance, $orgid, $ltiversion));
+
+    if ($ltiversion === LTI_VERSION_1P3) {
+        // LTI 1.3 requests are sent to redirect_uri, so we must pass the actual endpoint as a parameter
+       $requestparams['target_link_uri'] = $endpoint;
+    }
+
     $customstr = '';
     if (isset($typeconfig['customparameters'])) {
         $customstr = $typeconfig['customparameters'];
@@ -1013,6 +1025,7 @@ function lti_build_custom_parameters($toolproxy, $tool, $instance, $params, $cus
  *                              will use to return the Content-Item message.
  * @param string $title The tool's title, if available.
  * @param string $text The text to display to represent the content item. This value may be a long description of the content item.
+ * @param string $targeturi In LTI 1.3 the actual endpoint URL the tool must redirect to, empty for LTI 1.1 and 2.0.
  * @param array $mediatypes Array of MIME types types supported by the TC. If empty, the TC will support ltilink by default.
  * @param array $presentationtargets Array of ways in which the selected content item(s) can be requested to be opened
  *                                   (via the presentationDocumentTarget element for a returned content item).
@@ -1030,7 +1043,7 @@ function lti_build_custom_parameters($toolproxy, $tool, $instance, $params, $cus
  * @throws moodle_exception When the LTI tool type does not exist.`
  * @throws coding_exception For invalid media type and presentation target parameters.
  */
-function lti_build_content_item_selection_request($id, $course, moodle_url $returnurl, $title = '', $text = '', $mediatypes = [],
+function lti_build_content_item_selection_request($id, $course, moodle_url $returnurl, $title = '', $text = '', $targeturi = '', $mediatypes = [],
                                                   $presentationtargets = [], $autocreate = false, $multiple = false,
                                                   $unsigned = false, $canconfirm = false, $copyadvice = false, $nonce = '') {
     global $PAGE, $USER;
@@ -1162,6 +1175,8 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
     } else {
         // Only LTI links are currently supported.
         $requestparams['accept_types'] = 'ltiResourceLink';
+        // Launches are sent to redirect_uri, so including the final endpoint as param
+        $requestparams['target_link_uri'] = $targeturi;
     }
 
     // Presentation targets. Supports frame, iframe, window by default if empty.
@@ -2999,6 +3014,8 @@ function lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid, $nonce) {
     $payload['iss'] = get_config('mod_lti', 'platformid');
     $payload['aud'] = $oauthconsumerkey;
     $payload['https://purl.imsglobal.org/spec/lti/claim/deployment_id'] = strval($typeid);
+    $payload['https://purl.imsglobal.org/spec/lti/claim/lti11_legacy_user_id'] = $parms['user_id'];
+
     foreach ($parms as $key => $value) {
         $claim = LTI_JWT_CLAIM_PREFIX;
         if (array_key_exists($key, $claimmapping)) {
@@ -3235,7 +3252,7 @@ function lti_initiatelogin($courseid, $id, $instance, $config, $messagetype = 'b
     $params['iss'] = get_config('mod_lti', 'platformid');
     $params['target_link_uri'] = $endpoint;
     $params['login_hint'] = $USER->id;
-    $SESSION->lti_message_hint = "{$courseid},{$config->typeid},{$id}," . base64_encode($title) . ',' . base64_encode($text);
+    $SESSION->lti_message_hint = "{$courseid},{$config->typeid},{$id}," . base64_encode($title) . ',' . base64_encode($text) . ',' . base64_encode($endpoint);
 
     $r = "<form action=\"" . $config->lti_initiatelogin .
         "\" name=\"ltiInitiateLoginForm\" id=\"ltiInitiateLoginForm\" method=\"post\" encType=\"application/x-www-form-urlencoded\">\n";
