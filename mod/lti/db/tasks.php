@@ -18,7 +18,7 @@
  * This file defines tasks performed by the plugin.
  *
  * @package    mod_lti
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright  2018 Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

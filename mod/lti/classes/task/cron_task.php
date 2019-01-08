@@ -18,7 +18,7 @@
  * A scheduled task for lti module.
  *
  * @package    mod_lti
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright  2018 Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace mod_lti\task;
@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * Class containing the scheduled task for lti module.
  *
  * @package    mod_lti
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright  2018 Stephen Vickers
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class clean_access_tokens extends scheduled_task {
