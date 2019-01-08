@@ -147,7 +147,11 @@ function xmldb_lti_upgrade($oldversion) {
         // Add LTI Version field to lti_types table.
         $table = new xmldb_table('lti_types');
         $field = new xmldb_field('ltiversion', XMLDB_TYPE_CHAR, 10, null, XMLDB_NOTNULL, null, 'LTI-1p0', 'coursevisible');
-        $dbman->add_field($table, $field);
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
         $DB->set_field_select('lti_types', 'ltiversion', 'LTI-2p0', 'toolproxyid IS NOT NULL');
 
         // Add platform ID configuration setting.
