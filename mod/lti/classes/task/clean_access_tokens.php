@@ -51,7 +51,6 @@ class clean_access_tokens extends scheduled_task {
     public function execute() {
         global $DB;
 
-        $DB->delete_records_select('lti_access_tokens', 'validuntil < ' . time());
+        $DB->delete_records_select('lti_access_tokens', 'validuntil < ?', [time()]);
     }
-
 }
