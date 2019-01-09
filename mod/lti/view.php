@@ -124,7 +124,8 @@ if ($typeid) {
     $config->ltiversion = LTI_VERSION_1;
 }
 
-if (($launchcontainer == LTI_LAUNCH_CONTAINER_WINDOW) && (($config->lti_ltiversion !== LTI_VERSION_1P3) || isset($SESSION->lti_initiatelogin_status))) {
+if (($launchcontainer == LTI_LAUNCH_CONTAINER_WINDOW) &&
+    (($config->lti_ltiversion !== LTI_VERSION_1P3) || isset($SESSION->lti_initiatelogin_status))) {
     unset($SESSION->lti_initiatelogin_status);
     if (!$forceview) {
         echo "<script language=\"javascript\">//<![CDATA[\n";

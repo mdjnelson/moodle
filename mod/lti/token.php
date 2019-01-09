@@ -65,7 +65,7 @@ if ($ok) {
 
 if ($ok) {
     $error = 'invalid_client';
-    $tool = lti_get_type_from_clientid($claims['sub']);
+    $tool = $DB->get_record('lti_types', array('clientid' => $claims['sub']));
     if ($tool) {
         $typeconfig = lti_get_type_config($tool->id);
         if (!empty($typeconfig['publickey'])) {

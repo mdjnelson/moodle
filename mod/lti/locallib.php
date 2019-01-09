@@ -585,8 +585,8 @@ function lti_get_launch_data($instance, $nonce = '') {
     $requestparams = array_merge($requestparams, lti_build_standard_message($instance, $orgid, $ltiversion));
 
     if ($ltiversion === LTI_VERSION_1P3) {
-        // LTI 1.3 requests are sent to redirect_uri, so we must pass the actual endpoint as a parameter
-       $requestparams['target_link_uri'] = $endpoint;
+        // LTI 1.3 requests are sent to redirect_uri, so we must pass the actual endpoint as a parameter.
+        $requestparams['target_link_uri'] = $endpoint;
     }
 
     $customstr = '';
@@ -1043,9 +1043,10 @@ function lti_build_custom_parameters($toolproxy, $tool, $instance, $params, $cus
  * @throws moodle_exception When the LTI tool type does not exist.`
  * @throws coding_exception For invalid media type and presentation target parameters.
  */
-function lti_build_content_item_selection_request($id, $course, moodle_url $returnurl, $title = '', $text = '', $targeturi = '', $mediatypes = [],
-                                                  $presentationtargets = [], $autocreate = false, $multiple = false,
-                                                  $unsigned = false, $canconfirm = false, $copyadvice = false, $nonce = '') {
+function lti_build_content_item_selection_request($id, $course, moodle_url $returnurl, $title = '', $text = '', $targeturi = '',
+                                                  $mediatypes = [], $presentationtargets = [], $autocreate = false,
+                                                  $multiple = false, $unsigned = false, $canconfirm = false,
+                                                  $copyadvice = false, $nonce = '') {
     global $PAGE, $USER;
 
     $tool = lti_get_type($id);
@@ -1175,7 +1176,7 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
     } else {
         // Only LTI links are currently supported.
         $requestparams['accept_types'] = 'ltiResourceLink';
-        // Launches are sent to redirect_uri, so including the final endpoint as param
+        // Launches are sent to redirect_uri, so including the final endpoint as param.
         $requestparams['target_link_uri'] = $targeturi;
     }
 
@@ -1461,6 +1462,8 @@ function lti_tool_configuration_from_content_item($tool, $messagetype, $ltiversi
 
 /**
  * Converts the new Deep-Linking format for Content-Items to the old format.
+ *
+ * @param string $param JSON string representing new Deep-Linking format
  */
 function lti_convert_content_items($param) {
     $items = array();
@@ -3252,10 +3255,12 @@ function lti_initiatelogin($courseid, $id, $instance, $config, $messagetype = 'b
     $params['iss'] = get_config('mod_lti', 'platformid');
     $params['target_link_uri'] = $endpoint;
     $params['login_hint'] = $USER->id;
-    $SESSION->lti_message_hint = "{$courseid},{$config->typeid},{$id}," . base64_encode($title) . ',' . base64_encode($text) . ',' . base64_encode($endpoint);
+    $SESSION->lti_message_hint = "{$courseid}, {$config->typeid},{$id}," . base64_encode($title) . ',' .
+        base64_encode($text) . ',' . base64_encode($endpoint);
 
     $r = "<form action=\"" . $config->lti_initiatelogin .
-        "\" name=\"ltiInitiateLoginForm\" id=\"ltiInitiateLoginForm\" method=\"post\" encType=\"application/x-www-form-urlencoded\">\n";
+        "\" name=\"ltiInitiateLoginForm\" id=\"ltiInitiateLoginForm\" method=\"post\" " .
+        "encType=\"application/x-www-form-urlencoded\">\n";
 
     foreach ($params as $key => $value) {
         $key = htmlspecialchars($key);
@@ -3277,18 +3282,6 @@ function lti_get_type($typeid) {
     global $DB;
 
     return $DB->get_record('lti_types', array('id' => $typeid));
-}
-
-/**
- * Find tool types with the specified resource key.
- *
- * @param string $resourcekey   Resource key
- * @return array  Array of passwords and public keys for types with the specified resource key
- */
-function lti_get_type_from_clientid($clientid) {
-    global $DB;
-
-    return $DB->get_record('lti_types', array('clientid' => $clientid));
 }
 
 function lti_get_launch_container($lti, $toolconfig) {
@@ -4163,8 +4156,8 @@ function get_tag($tagname, $xpath, $attribute = null) {
 /**
  * Create a new access token.
  *
- * @param int Tool type ID
- * @param string[] Scopes permitted for new token
+ * @param int $typeid Tool type ID
+ * @param string[] $scopes Scopes permitted for new token
  *
  * @return stdClass Access token
  */
