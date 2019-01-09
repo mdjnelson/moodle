@@ -4195,34 +4195,47 @@ function lti_new_access_token($typeid, $scopes) {
 
 }
 
-function lti_amd_tool_details($elementname, $typeid, $clientid) {
+/**
+ * Prepares the modal with information regarding the tool.
+ *
+ * @param string $elementname
+ * @param int $typeid
+ * @param string $clientid
+ * @return string
+ */
+function lti_amd_tool_details(string $elementname, int $typeid, string $clientid) {
     global $CFG;
 
-    if (!empty($clientid)) {
-        $title = get_string('tooldetailsmodaltitle', 'lti');
-        $iss = get_config('mod_lti', 'platformid');
-        $body = '<ul>\n' .
-                "  <li><strong>Platform ID:</strong> {$iss}</li>\\n" .
-                "  <li><strong>Client ID:</strong> {$clientid}</li>\\n" .
-                "  <li><strong>Deployment ID:</strong> {$typeid}</li>\\n" .
-                "  <li><strong>Public Keyset URL:</strong> {$CFG->wwwroot}/mod/lti/certs.php</li>\\n" .
-                "  <li><strong>Access Token URL:</strong> {$CFG->wwwroot}/mod/lti/token.php</li>\\n" .
-                "  <li><strong>Authentication request URL:</strong> {$CFG->wwwroot}/mod/lti/auth.php</li>\\n" .
-                "</ul>";
-        $mailto = 'mailto:?subject=LTI%20Tool%20Configuration&body=Platform%20ID:%20' . urlencode($iss) . '%0D%0A' .
-                  'Client%20ID:%20' . urlencode($clientid) . '%0D%0A' .
-                  'Deployment%20ID:%20' . urlencode($typeid) . '%0D%0A' .
-                  'Public%20Keyset%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/certs.php%0D%0A' .
-                  'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A' .
-                  'Authentication%20Request%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/auth.php%0D%0A';
-        $email = get_string('tooldetailsmodalemail', 'lti');
-        $cancel = get_string('cancel');
-        $footer = '<div>\n' .
-                  "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">" .
-                  "{$email}</button>\\n" .
-                  "  <button type=\"button\" class=\"btn btn-secondary\" data-action=\"hide\">{$cancel}</button>\\n" .
-                  '</div>';
-        $amd = <<< EOD
+    $title = get_string('tooldetailsmodaltitle', 'lti');
+    $iss = get_config('mod_lti', 'platformid');
+    $strplatformid = get_string('tooldetailsplatformid', 'mod_lti');
+    $strcliendid = get_string('tooldetailsclientid', 'mod_lti');
+    $strdeploymentid = get_string('tooldetailsdeploymentid', 'mod_lti');
+    $strpublickeyseturl = get_string('tooldetailspublickeyseturl', 'mod_lti');
+    $straccesstokenurl = get_string('tooldetailsaccesstokenurl', 'mod_lti');
+    $strauthrequesturl = get_string('tooldetailsauthrequesturl', 'mod_lti');
+    $body = '<ul>\n' .
+            "  <li><strong>{$strplatformid}:</strong> {$iss}</li>\\n" .
+            "  <li><strong>{$strcliendid}:</strong> {$clientid}</li>\\n" .
+            "  <li><strong>{$strdeploymentid}:</strong> {$typeid}</li>\\n" .
+            "  <li><strong>{$strpublickeyseturl}:</strong> {$CFG->wwwroot}/mod/lti/certs.php</li>\\n" .
+            "  <li><strong>{$straccesstokenurl}:</strong> {$CFG->wwwroot}/mod/lti/token.php</li>\\n" .
+            "  <li><strong>{$strauthrequesturl}:</strong> {$CFG->wwwroot}/mod/lti/auth.php</li>\\n" .
+            "</ul>";
+    $mailto = 'mailto:?subject=LTI%20Tool%20Configuration&body=Platform%20ID:%20' . urlencode($iss) . '%0D%0A' .
+              'Client%20ID:%20' . urlencode($clientid) . '%0D%0A' .
+              'Deployment%20ID:%20' . urlencode($typeid) . '%0D%0A' .
+              'Public%20Keyset%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/certs.php%0D%0A' .
+              'Access%20Token%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/token.php%0D%0A' .
+              'Authentication%20Request%20URL:%20' . urlencode($CFG->wwwroot) . '/mod/lti/auth.php%0D%0A';
+    $email = get_string('tooldetailsmodalemail', 'lti');
+    $cancel = get_string('cancel');
+    $footer = '<div>\n' .
+              "  <button type=\"button\" class=\"btn btn-primary\" onclick=\"location.href=\\'{$mailto}\\';\">" .
+              "{$email}</button>\\n" .
+              "  <button type=\"button\" class=\"btn btn-secondary\" data-action=\"hide\">{$cancel}</button>\\n" .
+              '</div>';
+    $amd = <<< EOD
 require(['jquery', 'core/modal_factory'], function($, ModalFactory) {
   var trigger = $('#id_{$elementname}');
   ModalFactory.create({
@@ -4233,9 +4246,6 @@ require(['jquery', 'core/modal_factory'], function($, ModalFactory) {
   }, trigger);
 });
 EOD;
-    } else {
-        $amd = '';
-    }
 
     return $amd;
 

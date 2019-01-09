@@ -503,10 +503,16 @@ $string['tooldescription'] = 'Tool description';
 $string['tooldescription_help'] = 'The description of the tool that will be displayed to teachers in the activity list.
 
 This should describe what the tool is for and what it does and any additional information the teacher may need to know.';
+$string['tooldetailsaccesstokenurl'] = 'Access Token URL';
+$string['tooldetailsauthrequesturl'] = 'Authentication request URL';
+$string['tooldetailsclientid'] = 'Client ID';
+$string['tooldetailsdeploymentid'] = 'Deployment ID';
 $string['tooldetailsmodalbutton'] = 'Share Configuration Details';
 $string['tooldetailsmodalemail'] = 'Email';
 $string['tooldetailsmodallink'] = 'View Configuration Details';
 $string['tooldetailsmodaltitle'] = 'Tool Configuration Details';
+$string['tooldetailsplatformid'] = 'Platform ID';
+$string['tooldetailspublickeyseturl'] = 'Public Keyset URL';
 $string['toolisbeingused'] = 'This tool is being used {$a} times';
 $string['toolisnotbeingused'] = 'This tool has not yet been used';
 $string['toolproxy'] = 'External tool registrations';
