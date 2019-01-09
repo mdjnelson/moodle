@@ -1025,7 +1025,6 @@ function lti_build_custom_parameters($toolproxy, $tool, $instance, $params, $cus
  *                              will use to return the Content-Item message.
  * @param string $title The tool's title, if available.
  * @param string $text The text to display to represent the content item. This value may be a long description of the content item.
- * @param string $targeturi In LTI 1.3 the actual endpoint URL the tool must redirect to, empty for LTI 1.1 and 2.0.
  * @param array $mediatypes Array of MIME types types supported by the TC. If empty, the TC will support ltilink by default.
  * @param array $presentationtargets Array of ways in which the selected content item(s) can be requested to be opened
  *                                   (via the presentationDocumentTarget element for a returned content item).
@@ -1038,15 +1037,16 @@ function lti_build_custom_parameters($toolproxy, $tool, $instance, $params, $cus
  *                       TC without further interaction from the user. False by default.
  * @param bool $canconfirm Flag for can_confirm parameter. False by default.
  * @param bool $copyadvice Indicates whether the TC is able and willing to make a local copy of a content item. False by default.
+ * @param string $targeturi In LTI 1.3 the actual endpoint URL the tool must redirect to, empty for LTI 1.1 and 2.0.
  * @param string $nonce
  * @return stdClass The object containing the signed request parameters and the URL to the TP's Content-Item selection interface.
  * @throws moodle_exception When the LTI tool type does not exist.`
  * @throws coding_exception For invalid media type and presentation target parameters.
  */
-function lti_build_content_item_selection_request($id, $course, moodle_url $returnurl, $title = '', $text = '', $targeturi = '',
+function lti_build_content_item_selection_request($id, $course, moodle_url $returnurl, $title = '', $text = '',
                                                   $mediatypes = [], $presentationtargets = [], $autocreate = false,
                                                   $multiple = false, $unsigned = false, $canconfirm = false,
-                                                  $copyadvice = false, $nonce = '') {
+                                                  $copyadvice = false, $targeturi = '', $nonce = '') {
     global $PAGE, $USER;
 
     $tool = lti_get_type($id);

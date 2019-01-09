@@ -107,7 +107,7 @@ if ($id) {
     $text = base64_decode($textb64);
     $targeturi = base64_decode($targeturib64);
     $request = lti_build_content_item_selection_request($typeid, $course, $returnurl, $title, $text,
-        $targeturi, [], [], false, false, false, false, false, $nonce);
+        [], [], false, false, false, false, false, $targeturi, $nonce);
     $endpoint = $request->url;
     $params = $request->params;
 }

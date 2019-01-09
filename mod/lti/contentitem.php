@@ -58,7 +58,7 @@ $returnurlparams = [
 $returnurl = new \moodle_url('/mod/lti/contentitem_return.php', $returnurlparams);
 
 // Prepare the request.
-$request = lti_build_content_item_selection_request($id, $course, $returnurl, $title, $text, '', [], []);
+$request = lti_build_content_item_selection_request($id, $course, $returnurl, $title, $text, [], []);
 
 // Get the launch HTML.
 $content = lti_post_launch_html($request->params, $request->url, false);
