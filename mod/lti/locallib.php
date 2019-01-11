@@ -3016,7 +3016,7 @@ function lti_convert_to_jwt($parms, $oauthconsumerkey, $typeid, $nonce) {
     );
     $payload['iss'] = get_config('mod_lti', 'platformid');
     $payload['aud'] = $oauthconsumerkey;
-    $payload['https://purl.imsglobal.org/spec/lti/claim/deployment_id'] = strval($typeid);
+    $payload['https://purl.imsglobal.org/spec/lti/claim/deployment_id'] = trim(strval($typeid));
     $payload['https://purl.imsglobal.org/spec/lti/claim/lti11_legacy_user_id'] = $parms['user_id'];
 
     foreach ($parms as $key => $value) {

@@ -29,7 +29,6 @@ define('NO_MOODLE_COOKIES', true);
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/lti/locallib.php');
 
-
 $response = new \mod_lti\local\ltiservice\response();
 
 $isget = $response->get_request_method() === mod_lti\local\ltiservice\resource_base::HTTP_GET;
@@ -38,7 +37,7 @@ $isdelete = $response->get_request_method() === mod_lti\local\ltiservice\resourc
 if ($isget) {
     $response->set_accept(isset($_SERVER['HTTP_ACCEPT']) ? $_SERVER['HTTP_ACCEPT'] : '');
 } else {
-    $response->set_content_type(isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '');
+    $response->set_content_type(isset($_SERVER['CONTENT_TYPE']) ? explode(";",$_SERVER['CONTENT_TYPE'])[0] : '');
 }
 
 $ok = false;
@@ -66,6 +65,7 @@ foreach ($services as $service) {
     }
 }
 if (!$ok) {
+    $response->set_reason("No handler found for ".$path);
     $response->set_code(400);
 } else {
     $body = file_get_contents('php://input');

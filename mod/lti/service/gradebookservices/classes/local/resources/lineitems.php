@@ -89,7 +89,7 @@ class lineitems extends resource_base {
             $typeid = $this->get_service()->get_type()->id;
             if (empty($contextid) || !($container ^ ($response->get_request_method() === self::HTTP_POST)) ||
                     (!empty($contenttype) && !in_array($contenttype, $this->formats))) {
-                throw new \Exception(null, 400);
+                throw new \Exception("Malformed request, no context or wrong content type", 400);
             }
             if (!($course = $DB->get_record('course', array('id' => $contextid), 'id', IGNORE_MISSING))) {
                 throw new \Exception("Not Found: Course {$contextid} doesn't exist", 404);
