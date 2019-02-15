@@ -195,8 +195,10 @@ class manager {
 
             // Fill in the array of processors to be used based on default and user preferences.
             // This applies only to individual conversations. Messages to group conversations ignore processors.
+            // Do not process muted conversations.
             $processorlist = [];
-            if ($conv->type == \core_message\api::MESSAGE_CONVERSATION_TYPE_INDIVIDUAL) {
+            if ($conv->type == \core_message\api::MESSAGE_CONVERSATION_TYPE_INDIVIDUAL
+                    && !\core_message\api::is_conversation_muted($recipient->id, $conv->id)) {
                 foreach ($processors as $processor) {
                     // Skip adding processors for internal user, if processor doesn't support sending message to internal user.
                     if (!$usertoisrealuser && !$processor->object->can_send_to_any_users()) {
