@@ -636,6 +636,39 @@ class helper {
     }
 
     /**
+     * Returns true if we can view the user's details, false otherwise.
+     *
+     * @param \stdClass $user The user.
+     * @return bool Whether the user can view the user details or not.
+     */
+    public static function can_view_user_details(\stdClass $user) : bool {
+        global $CFG, $USER;
+
+        require_once($CFG->dirroot . '/user/lib.php');
+
+        if ($user->id == $USER->id) {
+            return true;
+        }
+
+        // Check if the user can view this user's profile.
+        if (can_view_user_details_cap($user)) {
+            return true;
+        }
+
+        // Get the courses that the user is enrolled in (only active).
+        $courses = enrol_get_users_courses($user->id, true);
+
+        // Try through course profile.
+        foreach ($courses as $course) {
+            if (can_view_user_details_cap($user, $course)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Backwards compatibility formatter, transforming the new output of get_conversations() into the old format.
      *
      * TODO: This function should be removed once the related web services go through final deprecation.
