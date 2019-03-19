@@ -67,4 +67,49 @@ class core_message_helper_testcase extends advanced_testcase {
         $this->assertEquals($user4->id, array_shift($memberinfo)->id);
         $this->assertEquals($user2->id, array_shift($memberinfo)->id);
     }
+
+    public function test_can_view_user_details_has_cap() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $user1 = self::getDataGenerator()->create_user();
+        $user2 = self::getDataGenerator()->create_user();
+
+        $this->setUser($user1);
+
+        $userrole = $DB->get_record('role', ['shortname' => 'user']);
+
+        assign_capability('moodle/user:viewdetails', CAP_ALLOW, $userrole->id, \context_user::instance($user2->id),
+            true);
+
+        $this->assertTrue(\core_message\helper::can_view_user_details($user2));
+    }
+
+    public function test_can_view_user_details_same_course() {
+        $this->resetAfterTest();
+
+        $user1 = self::getDataGenerator()->create_user();
+        $user2 = self::getDataGenerator()->create_user();
+
+        $course1 = $this->getDataGenerator()->create_course();
+
+        $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
+        $this->getDataGenerator()->enrol_user($user2->id, $course1->id);
+
+        $this->setUser($user1);
+
+        $this->assertTrue(\core_message\helper::can_view_user_details($user2));
+    }
+
+    public function test_can_view_user_details_not_allowed() {
+        $this->resetAfterTest();
+
+        $user1 = self::getDataGenerator()->create_user();
+        $user2 = self::getDataGenerator()->create_user();
+
+        $this->setUser($user1);
+
+        $this->assertFalse(\core_message\helper::can_view_user_details($user2));
+    }
 }

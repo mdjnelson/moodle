@@ -387,11 +387,7 @@ class api {
             $returnedusers = [];
             foreach ($getnoncontactusers(0, $batchlimit) as $users) {
                 foreach ($users as $id => $user) {
-                    $userdetails = \user_get_user_details_courses($user);
-
-                    // Return the user only if the searched field is returned.
-                    // Otherwise it means that the $USER was not allowed to search the returned user.
-                    if (!empty($userdetails) and !empty($userdetails['fullname'])) {
+                    if (helper::can_view_user_details($user)) {
                         // We know we've matched, but only save the record if it's within the offset area we need.
                         if ($limitfrom == 0) {
                             // No offset specified, so just save.
