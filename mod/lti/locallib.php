@@ -102,7 +102,7 @@ define('LTI_JWT_CLAIM_PREFIX', 'https://purl.imsglobal.org/spec/lti');
  *
  * @return array
  */
-function lti_get_jwt_message_type_mapping() {
+function lti_get_jwt_message_type_mapping() : array {
     return array(
         'basic-lti-launch-request' => 'LtiResourceLinkRequest',
         'ContentItemSelectionRequest' => 'LtiDeepLinkingRequest',
@@ -115,7 +115,7 @@ function lti_get_jwt_message_type_mapping() {
  *
  * @return array
  */
-function lti_get_jwt_claim_mapping() {
+function lti_get_jwt_claim_mapping() : array {
     return array(
         'accept_copy_advice' => [
             'suffix' => 'dl',
@@ -945,14 +945,15 @@ function lti_build_standard_request($instance, $orgid, $islti2, $messagetype = '
 /**
  * This function builds the standard parameters for an LTI message that must be sent to the tool producer
  *
- * @param stdClass  $instance       Basic LTI instance object
- * @param string    $orgid          Organisation ID
- * @param boolean   $ltiversion     LTI version to be used for tool messages
- * @param string    $messagetype    The request message type. Defaults to basic-lti-launch-request if empty.
+ * @param stdClass|null  $instance       Basic LTI instance object
+ * @param string         $orgid          Organisation ID
+ * @param string         $ltiversion     LTI version to be used for tool messages
+ * @param string         $messagetype    The request message type. Defaults to basic-lti-launch-request if empty.
  *
  * @return array                    Message parameters
  */
-function lti_build_standard_message($instance, $orgid, $ltiversion, $messagetype = 'basic-lti-launch-request') {
+function lti_build_standard_message(stdClass $instance = null, string $orgid, string $ltiversion,
+        string $messagetype = 'basic-lti-launch-request') : array {
     global $CFG;
 
     $requestparams = array();
@@ -1260,7 +1261,7 @@ function lti_build_content_item_selection_request($id, $course, moodle_url $retu
  * @throws moodle_exception
  * @throws lti\OAuthException
  */
-function lti_verify_oauth_signature($typeid, $consumerkey) {
+function lti_verify_oauth_signature(int $typeid, string $consumerkey) : stdClass {
     $tool = lti_get_type($typeid);
     // Validate parameters.
     if (!$tool) {
@@ -1320,7 +1321,7 @@ function lti_verify_oauth_signature($typeid, $consumerkey) {
  * @throws BeforeValidException         Provided JWT is trying to be used before it's been created as defined by 'iat'
  * @throws ExpiredException             Provided JWT has since expired, as defined by the 'exp' claim
  */
-function lti_verify_jwt_signature($typeid, $consumerkey, $jwtparam) {
+function lti_verify_jwt_signature(int $typeid, string $consumerkey, string $jwtparam) : stdClass {
     $tool = lti_get_type($typeid);
     // Validate parameters.
     if (!$tool) {
@@ -1482,7 +1483,7 @@ function lti_tool_configuration_from_content_item($typeid, $messagetype, $ltiver
  * @param string $param JSON string representing new Deep-Linking format
  * @return string  JSON representation of content-items
  */
-function lti_convert_content_items($param) {
+function lti_convert_content_items(string $param) : string {
     $items = array();
     $json = json_decode($param);
     if (!empty($json) && is_array($json)) {
@@ -3017,7 +3018,7 @@ function lti_sign_parameters($oldparms, $endpoint, $method, $oauthconsumerkey, $
  * @param string $nonce        Nonce value to use
  * @return array|null
  */
-function lti_sign_jwt($parms, $endpoint, $oauthconsumerkey, $typeid = 0, $nonce = '') {
+function lti_sign_jwt(array $parms, string $endpoint, string $oauthconsumerkey, string $typeid = '', string $nonce = '') {
 
     if (empty($typeid)) {
         $typeid = 0;
@@ -3105,7 +3106,7 @@ function lti_sign_jwt($parms, $endpoint, $oauthconsumerkey, $typeid = 0, $nonce 
  * @return array  message parameters
  * @throws moodle_exception
  */
-function lti_convert_from_jwt($typeid, $jwtparam) {
+function lti_convert_from_jwt(int $typeid, string $jwtparam) {
 
     $params = array();
     $parts = explode('.', $jwtparam);
@@ -3613,12 +3614,12 @@ function lti_get_service_by_resource_id($services, $resourceid) {
 /**
  * Initializes an array with the scopes for services supported by the LTI module
  *
- * @param object $type  LTI tool type
- * @param object $typeconfig  LTI tool type configuration
+ * @param stdClass $type  LTI tool type
+ * @param array $typeconfig  LTI tool type configuration
  *
  * @return array List of scopes
  */
-function lti_get_permitted_service_scopes($type, $typeconfig) {
+function lti_get_permitted_service_scopes(stdClass $type, array $typeconfig) : array {
 
     $services = lti_get_services();
     $scopes = array();
@@ -3837,7 +3838,7 @@ function get_tool_type_state_info(stdClass $type) {
  *
  * @return array An array with configuration details
  */
-function get_tool_type_config($type) {
+function get_tool_type_config(stdClass $type) : array {
     $platformid = get_config('mod_lti', 'platformid');
     $clientid = $type->clientid;
     $deploymentid = $type->id;
@@ -4220,7 +4221,7 @@ function get_tag($tagname, $xpath, $attribute = null) {
  *
  * @return stdClass Access token
  */
-function lti_new_access_token($typeid, $scopes) {
+function lti_new_access_token(int $typeid, array $scopes) : stdClass {
     global $DB;
 
     // Make sure the token doesn't exist (even if it should be almost impossible with the random generation).
