@@ -3078,5 +3078,19 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2018120303.16);
     }
 
+    if ($oldversion < 2018120304.11) {
+        // Define index time_course (not unique) to be added to log.
+        $table = new xmldb_table('log');
+        $index = new xmldb_index('time-course', XMLDB_INDEX_NOTUNIQUE, array('time', 'course'));
+
+        // Conditionally launch add index.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2018120304.11);
+    }
+
     return true;
 }
