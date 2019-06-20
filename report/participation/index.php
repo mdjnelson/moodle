@@ -31,6 +31,9 @@ require_once($CFG->dirroot.'/report/participation/locallib.php');
 define('DEFAULT_PAGE_SIZE', 20);
 define('SHOW_ALL_PAGE_SIZE', 5000);
 
+// Release session lock.
+\core\session\manager::write_close();
+
 $id         = required_param('id', PARAM_INT); // course id.
 $roleid     = optional_param('roleid', 0, PARAM_INT); // which role to show
 $instanceid = optional_param('instanceid', 0, PARAM_INT); // instance we're looking at.
@@ -108,12 +111,21 @@ if ($onlyuselegacyreader) {
     $minlog = $DB->get_field_sql('SELECT min(time) FROM {log} WHERE course = ?', array($course->id));
 } else {
     $uselegacyreader = true;
-    $minlog = $DB->get_field_sql('SELECT min(time) FROM {log} WHERE course = ?', array($course->id));
-
     // If legacy reader is not logging then get data from new log table.
     // Get minimum log time for this course from preferred log reader.
     $minloginternalreader = $DB->get_field_sql('SELECT min(timecreated) FROM {' . $logtable . '}
-                                                 WHERE courseid = ?', array($course->id));
+                                                 WHERE courseid = ?
+                                                   AND anonymous = 0', array($course->id));
+
+    // Only try to get data from legacy log table if explicitly set in settings.
+    $uselegacydata = get_config('report_participation', 'legacydata');
+    if ($uselegacydata) {
+        $minlog = $DB->get_field_sql('SELECT min(time) FROM {log}
+                                       WHERE course = ?', array($course->id));
+    } else {
+        $minlog = false;
+    }
+
     // If new log store has oldest data then don't use old log table.
     if (empty($minlog) || ($minloginternalreader <= $minlog)) {
         $uselegacyreader = false;

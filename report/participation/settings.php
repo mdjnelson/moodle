@@ -15,20 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Lang strings
+ * Links and settings
  *
- * @package    report
- * @subpackage participation
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * Contains settings used by participatio report.
+ *
+ * @package    report_participation
+ * @copyright  2019 Matt Porritt <mattp@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['eventreportviewed'] = 'Participation report viewed';
-$string['legacydata'] = 'Use legacy log data';
-$string['legacydata_desc'] = 'When enabled if legacy log data is available it will be used in the report.';
-$string['nologreaderenabled'] = 'No log reader enabled';
-$string['participation:view'] = 'View course participation report';
-$string['page-report-participation-x'] = 'Any participation report';
-$string['page-report-participation-index'] = 'Course participation report';
-$string['pluginname'] = 'Course participation';
-$string['privacy:metadata'] = 'The Course participation plugin does not store any personal data.';
+defined('MOODLE_INTERNAL') || die;
+
+if ($hassiteconfig) {
+    // Report settings.
+    $settings = new admin_settingpage('report_participation_settings', new lang_string('pluginname', 'report_participation'));
+
+    $settings->add(new admin_setting_configcheckbox(
+            'report_participation/legacydata',
+            new lang_string('legacydata', 'report_participation'),
+            new lang_string('legacydata_desc', 'report_participation'),
+            '0'
+            ));
+}
