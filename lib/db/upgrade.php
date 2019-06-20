@@ -3378,5 +3378,19 @@ function xmldb_main_upgrade($oldversion) {
     // Automatically generated Moodle v3.7.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2019052000.08) {
+        // Define index time_course (not unique) to be added to log.
+        $table = new xmldb_table('log');
+        $index = new xmldb_index('time-course', XMLDB_INDEX_NOTUNIQUE, array('time', 'course'));
+
+        // Conditionally launch add index.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2019052000.08);
+    }
+
     return true;
 }

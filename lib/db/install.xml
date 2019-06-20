@@ -500,6 +500,7 @@
         <INDEX NAME="action" UNIQUE="false" FIELDS="action"/>
         <INDEX NAME="userid-course" UNIQUE="false" FIELDS="userid, course"/>
         <INDEX NAME="cmid" UNIQUE="false" FIELDS="cmid"/>
+        <INDEX NAME="time-course" UNIQUE="false" FIELDS="time, course"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="log_queries" COMMENT="Logged database queries.">
