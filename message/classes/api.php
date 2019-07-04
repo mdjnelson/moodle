@@ -1846,9 +1846,11 @@ class api {
      *
      * @param \stdClass $recipient The user object.
      * @param \stdClass|null $sender The user object.
+     * @param bool $evenifblocked This lets the user know, that even if the recipient has blocked the user
+     *        the user is still able to send a message.
      * @return bool true if user is permitted, false otherwise.
      */
-    public static function can_post_message($recipient, $sender = null) {
+    public static function can_post_message($recipient, $sender = null, bool $evenifblocked = false) {
         global $USER;
 
         if (is_null($sender)) {
@@ -1866,7 +1868,7 @@ class api {
         }
 
         // Check if the recipient can be messaged by the sender.
-        return (self::can_contact_user($recipient->id, $sender->id));
+        return (self::can_contact_user($recipient->id, $sender->id, $evenifblocked));
     }
 
     /**
@@ -2949,9 +2951,11 @@ class api {
      *
      * @param int $recipientid
      * @param int $senderid
+     * @param bool $evenifblocked This lets the user know, that even if the recipient has blocked the user
+     *        the user is still able to send a message.
      * @return bool true if recipient hasn't blocked sender and sender can contact to recipient, false otherwise.
      */
-    protected static function can_contact_user(int $recipientid, int $senderid) : bool {
+    protected static function can_contact_user(int $recipientid, int $senderid, bool $evenifblocked = false) : bool {
         if (has_capability('moodle/site:messageanyuser', \context_system::instance(), $senderid) ||
             $recipientid == $senderid) {
             // The sender has the ability to contact any user across the entire site or themselves.
@@ -2961,7 +2965,7 @@ class api {
         // The initial value of $cancontact is null to indicate that a value has not been determined.
         $cancontact = null;
 
-        if (self::is_blocked($recipientid, $senderid)) {
+        if (self::is_blocked($recipientid, $senderid) || $evenifblocked) {
             // The recipient has specifically blocked this sender.
             $cancontact = false;
         }
