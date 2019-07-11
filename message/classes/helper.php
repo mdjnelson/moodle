@@ -562,6 +562,13 @@ class helper {
             $data->id = $member->id;
             $data->fullname = fullname($member);
 
+            // Set the recipient and sender objects.
+            $recipient = new \stdClass();
+            $recipient->id = $member->id;
+
+            $sender = new \stdClass();
+            $sender->id = $referenceuserid;
+
             // Create the URL for their profile.
             $profileurl = new \moodle_url('/user/profile.php', ['id' => $member->id]);
             $data->profileurl = $profileurl->out(false);
@@ -583,7 +590,10 @@ class helper {
 
             // Set contact and blocked status indicators.
             $data->iscontact = ($member->contactid) ? true : false;
-            $data->isblocked = ($member->blockedid) ? true : false;
+
+            // We don't want that a user has been blocked if they can message the user anyways.
+            $canmessageifblocked = api::can_post_message($sender, $recipient, true);
+            $data->isblocked = ($member->blockedid && !$canmessageifblocked) ? true : false;
 
             $data->isdeleted = ($member->deleted) ? true : false;
 
@@ -594,15 +604,9 @@ class helper {
                 $privacysetting = api::get_user_privacy_messaging_preference($member->id);
                 $data->requirescontact = $privacysetting == api::MESSAGE_PRIVACY_ONLYCONTACTS;
 
-                $recipient = new \stdClass();
-                $recipient->id = $member->id;
-
-                $sender = new \stdClass();
-                $sender->id = $referenceuserid;
-
-                // Here we check that if the sender wanted to block the recipient, the recipient would
-                // still be able to message them regardless.
-                $data->canmessageevenifblocked = api::can_post_message($sender, $recipient, true);
+                // Here we check that if the sender wanted to block the recipient, the
+                // recipient would still be able to message them regardless.
+                $data->canmessageevenifblocked = !$data->isdeleted && $canmessageifblocked;
 
                 $data->canmessage = !$data->isdeleted && api::can_post_message($recipient, $sender);
             }
