@@ -127,24 +127,9 @@ class manager {
             self::prepare_cookies();
             $isnewsession = empty($_COOKIE[session_name()]);
 
-            if (defined('DEBUG_SESSION_TIMING_MIN_TIME')) {
-                $starttime = microtime(true);
-            }
-
             if (!self::$handler->start()) {
                 // Could not successfully start/recover session.
                 throw new \core\session\exception(get_string('servererror'));
-            }
-
-            // DEBUG_SESSION_TIMING_MIN_TIME if defined is a float, and we'll show a message for
-            // session aquisition that exceeds this amount in seconds.
-            if (defined('DEBUG_SESSION_TIMING_MIN_TIME')) {
-                $duration = microtime(true) - $starttime;
-                if ($duration > DEBUG_SESSION_TIMING_MIN_TIME) {
-                    /* don't log the raw session ID, since the session ID itself is a secret */
-                    error_log("slow_session_id:".hash('sha256', session_id())."|duration:".
-                        round($duration, 3)."s|session_url:".$_SERVER['PHP_SELF']."|write_lock:".($needslock ? '1' : '0'));
-                }
             }
 
             // Grab the time when session lock starts.
