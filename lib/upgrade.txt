@@ -28,6 +28,10 @@ information provided here is intended especially for developers.
   - Currently supported by:
     - mod_assign
     - mod_quiz
+* AJAX pages can be called without requiring a session lock if they set REQUIRE_SESSION_LOCK to false, eg.
+  define('REQUIRE_SESSION_LOCK', false); Note - this also requires $CFG->enable_read_only_sessions to be set to true.
+* External functions can be called without requiring a session lock if they define 'requiresessionlock' => false in
+  db/services.php. Note - this also requires $CFG->enable_read_only_sessions to be set to true.
 
 === 3.8 ===
 * Add CLI option to notify all cron tasks to stop: admin/cli/cron.php --stop
