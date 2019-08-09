@@ -36,6 +36,10 @@ information provided here is intended especially for developers.
 * grade_item::update_final_grade() can now take an optional parameter to set the grade->timemodified. If not present the current time will carry on being used.
 * lib/outputrequirementslib::get_jsrev now is public, it can be called from other classes.
 * H5P libraries have been moved from /lib/h5p to h5p/h5plib as an h5plib plugintype.
+* AJAX pages can be called without requiring a session lock if they set REQUIRE_SESSION_LOCK to false, eg.
+  define('REQUIRE_SESSION_LOCK', false); Note - this also requires $CFG->enable_read_only_sessions to be set to true.
+* External functions can be called without requiring a session lock if they define 'requiresessionlock' => false in
+  db/services.php. Note - this also requires $CFG->enable_read_only_sessions to be set to true.
 
 === 3.8 ===
 * Add CLI option to notify all cron tasks to stop: admin/cli/cron.php --stop
