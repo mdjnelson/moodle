@@ -104,7 +104,7 @@ class manager {
             return;
         }
 
-        if (defined('REQUIRE_SESSION_LOCK') && defined('ENABLE_READ_ONLY_SESSIONS') && ENABLE_READ_ONLY_SESSIONS) {
+        if (defined('REQUIRE_SESSION_LOCK') && !empty($CFG->enable_read_only_sessions)) {
             $needslock = REQUIRE_SESSION_LOCK;
         } else {
             $needslock = true; // For backwards compatibility, we default to assuming that a lock is needed.

@@ -65,6 +65,10 @@ validation against and defaults to null (so, no user needed) if not provided.
   This setting can be set via the UI or by defining $CFG->cachetemplates in your config.php file. It is a boolean
   and should be set to either false or true. Developers will probably want to set this to false.
 * The core_enrol_edit_user_enrolment webservice has been deprecated. Please use core_enrol_submit_user_enrolment_form instead.
+* AJAX pages can be called without requiring a session lock if they set REQUIRE_SESSION_LOCK to false, eg.
+  define('REQUIRE_SESSION_LOCK', false); Note - this also requires $CFG->enable_read_only_sessions to be set to true.
+* External functions can be called without requiring a session lock if they define 'requiresessionlock' => false in
+  db/services.php. Note - this also requires $CFG->enable_read_only_sessions to be set to true.
 
 === 3.7 ===
 
