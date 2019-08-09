@@ -50,7 +50,7 @@ $definitions = array(
     ),
 
     // Used to store database meta information.
-    // The database meta information includes information about tables and there columns.
+    // The database meta information includes information about tables and their columns.
     // Its keys are the table names.
     // When creating an instance of this definition you must provide the database family that is being used.
     'databasemeta' => array(
@@ -60,7 +60,8 @@ $definitions = array(
         ),
         'simpledata' => true, // This is a read only class, so leaving references in place is safe.
         'staticacceleration' => true,
-        'staticaccelerationsize' => 15
+        'staticaccelerationsize' => 15,
+        'canuselocalstore' => true
     ),
 
     // Event invalidation cache.
