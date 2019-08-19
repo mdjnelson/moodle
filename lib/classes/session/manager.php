@@ -68,13 +68,9 @@ class manager {
      * as practical across environments.
      */
     public static function restart_with_write_lock() {
-        if (self::$sessionactive) {
-            if (!self::$handler->has_writelock()) {
-                @self::$handler->abort();
-                self::$sessionactive = false;
-            }
-        }
-        if (!self::$sessionactive) {
+        if (self::$sessionactive && !self::$handler->has_writelock()) {
+            @self::$handler->abort();
+            self::$sessionactive = false;
             self::start_session(true);
         }
     }
