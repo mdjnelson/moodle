@@ -68,7 +68,7 @@ class manager {
      * as practical across environments.
      */
     public static function restart_with_write_lock() {
-        if (self::$sessionactive && !self::$handler->has_writelock()) {
+        if (self::$sessionactive && !self::$handler->requires_write_lock()) {
             @self::$handler->abort();
             self::$sessionactive = false;
             self::start_session(true);
@@ -101,25 +101,25 @@ class manager {
         }
 
         if (defined('REQUIRE_SESSION_LOCK') && !empty($CFG->enable_read_only_sessions)) {
-            $needslock = REQUIRE_SESSION_LOCK;
+            $requireslock = REQUIRE_SESSION_LOCK;
         } else {
-            $needslock = true; // For backwards compatibility, we default to assuming that a lock is needed.
+            $requireslock = true; // For backwards compatibility, we default to assuming that a lock is needed.
         }
-        self::start_session($needslock);
+        self::start_session($requireslock);
     }
 
     /**
      * Handles starting a session.
      *
-     * @param bool $needslock If this is false then no write lock will be acquired,
-     *                        and the session will be read-only.
+     * @param bool $requireslock If this is false then no write lock will be acquired,
+     *                           and the session will be read-only.
      */
-    private static function start_session(bool $needslock) {
+    private static function start_session(bool $requireslock) {
         global $PERF;
 
         try {
             self::$handler->init();
-            self::$handler->set_needslock($needslock);
+            self::$handler->set_requires_write_lock($requireslock);
             self::prepare_cookies();
             $isnewsession = empty($_COOKIE[session_name()]);
 
