@@ -255,11 +255,11 @@ class redis extends handler {
      */
     public function handler_read($id) {
         try {
-            if ($this->has_writelock()) {
+            if ($this->requires_write_lock()) {
                 $this->lock_session($id);
             }
             $sessiondata = $this->connection->get($id);
-            if ($sessiondata === false && $this->has_writelock()) {
+            if ($sessiondata === false && $this->requires_write_lock()) {
                 $this->unlock_session($id);
                 return '';
             }
