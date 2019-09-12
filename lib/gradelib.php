@@ -530,13 +530,13 @@ function grade_get_grades($courseid, $itemtype, $itemmodule, $iteminstance, $use
                             $grade->str_long_grade = $grade->str_grade;
 
                         } else {
-                            $grade->str_grade = grade_format_gradevalue($grade->grade, $grade_item);
+                            $grade->str_grade = grade_format_gradevalue($grade->grade, $grade_item, true, null, null, $userid);
                             if ($grade_item->gradetype == GRADE_TYPE_SCALE or $grade_item->get_displaytype() != GRADE_DISPLAY_TYPE_REAL) {
                                 $grade->str_long_grade = $grade->str_grade;
                             } else {
                                 $a = new stdClass();
                                 $a->grade = $grade->str_grade;
-                                $a->max   = grade_format_gradevalue($grade_item->grademax, $grade_item);
+                                $a->max   = grade_format_gradevalue($grade_item->grademax, $grade_item, true, null, null, $userid);
                                 $grade->str_long_grade = get_string('gradelong', 'grades', $a);
                             }
                         }
@@ -762,11 +762,13 @@ function grade_set_setting($courseid, $name, $value) {
  * @param float $value The grade value
  * @param object $grade_item Grade item object passed by reference to prevent scale reloading
  * @param bool $localized use localised decimal separator
- * @param int $displaytype type of display. For example GRADE_DISPLAY_TYPE_REAL, GRADE_DISPLAY_TYPE_PERCENTAGE, GRADE_DISPLAY_TYPE_LETTER
- * @param int $decimals The number of decimal places when displaying float values
+ * @param null $displaytype type of display. E.g GRADE_DISPLAY_TYPE_REAL, GRADE_DISPLAY_TYPE_PERCENTAGE, GRADE_DISPLAY_TYPE_LETTER
+ * @param null $decimals The number of decimal places when displaying float values
+ * @param null $userid The ID of the user this grade belongs to
+ *
  * @return string
  */
-function grade_format_gradevalue($value, &$grade_item, $localized=true, $displaytype=null, $decimals=null) {
+function grade_format_gradevalue($value, &$grade_item, $localized = true, $displaytype = null, $decimals = null, $userid = null) {
     if ($grade_item->gradetype == GRADE_TYPE_NONE or $grade_item->gradetype == GRADE_TYPE_TEXT) {
         return '';
     }
@@ -789,42 +791,86 @@ function grade_format_gradevalue($value, &$grade_item, $localized=true, $display
         $decimals = $grade_item->get_decimals();
     }
 
+    // Refactor this slightly to make it easier to manipulate.
+    $formatreal = grade_format_gradevalue_real($value, $grade_item, $decimals, $localized);
+    $formatpcnt = grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized);
+    $formatlttr = $grade_item->get_grade_symbol($value, $userid);
+
     switch ($displaytype) {
         case GRADE_DISPLAY_TYPE_REAL:
-            return grade_format_gradevalue_real($value, $grade_item, $decimals, $localized);
-
+            $formatted = $formatreal;
+            break;
         case GRADE_DISPLAY_TYPE_PERCENTAGE:
-            return grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized);
-
+            $formatted = $formatpcnt;
+            break;
         case GRADE_DISPLAY_TYPE_LETTER:
-            return grade_format_gradevalue_letter($value, $grade_item);
-
+            $formatted = $formatlttr;
+            break;
         case GRADE_DISPLAY_TYPE_REAL_PERCENTAGE:
-            return grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ' (' .
-                    grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized) . ')';
-
+            $formatted = $formatreal . ' (' . $formatpcnt . ')';
+            break;
         case GRADE_DISPLAY_TYPE_REAL_LETTER:
-            return grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ' (' .
-                    grade_format_gradevalue_letter($value, $grade_item) . ')';
-
+            $formatted = $formatreal . ' (' . $formatlttr . ')';
+            break;
         case GRADE_DISPLAY_TYPE_PERCENTAGE_REAL:
-            return grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized) . ' (' .
-                    grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ')';
-
+            $formatted = $formatpcnt . ' (' . $formatreal . ')';
+            break;
         case GRADE_DISPLAY_TYPE_LETTER_REAL:
-            return grade_format_gradevalue_letter($value, $grade_item) . ' (' .
-                    grade_format_gradevalue_real($value, $grade_item, $decimals, $localized) . ')';
-
+            $formatted = $formatlttr . ' (' . $formatreal . ')';
+            break;
         case GRADE_DISPLAY_TYPE_LETTER_PERCENTAGE:
-            return grade_format_gradevalue_letter($value, $grade_item) . ' (' .
-                    grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized) . ')';
-
+            $formatted = $formatlttr . ' (' . $formatpcnt . ')';
+            break;
         case GRADE_DISPLAY_TYPE_PERCENTAGE_LETTER:
-            return grade_format_gradevalue_percentage($value, $grade_item, $decimals, $localized) . ' (' .
-                    grade_format_gradevalue_letter($value, $grade_item) . ')';
+            $formatted = $formatpcnt . ' (' . $formatlttr . ')';
+            break;
         default:
-            return '';
+            $formatted = '';
     }
+
+    return $formatted;
+}
+
+/**
+ * Returns html string representation of icon with popover message if graderule is not met
+ *
+ * @param object $grade_item Grade item object passed by reference to prevent scale reloading
+ * @param int $userid The ID of the user this grade belongs to
+ * @return string
+ */
+function grade_format_gradevalue_status(&$grade_item, $userid) {
+    // Get the statuses that apply to this grade value.
+    $statuses = [];
+
+    if (!is_null($userid)) {
+        $statuses = $grade_item->get_statuses($userid);
+    }
+
+    $formatted = '';
+
+    if (count($statuses) > 0) {
+        $messages = '';
+
+        foreach ($statuses as $status) {
+            $messages .= html_writer::tag('p', $status->get_lang_string()->out());
+        }
+
+        $attributes = array(
+            'tabindex'       => 0,
+            'data-placement' => 'right',
+            'data-container' => 'body',
+            'data-trigger'   => 'hover',
+            'data-toggle'    => 'popover',
+            'data-html'      => 'true',
+            'title'          => get_string('graderule_appliedrulespopuptitle', 'core_grades'),
+            'data-content'   => $messages,
+        );
+
+        $bellicon = html_writer::empty_tag('i', ['class' => 'icon fa fa-bell fa-fw', 'aria-hidden' => 'true']);
+        $formatted = html_writer::tag('a', $bellicon, $attributes);
+    }
+
+    return $formatted;
 }
 
 /**

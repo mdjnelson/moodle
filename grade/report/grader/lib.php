@@ -1204,7 +1204,8 @@ class grade_report_grader extends grade_report {
                         }
 
                         $itemcell->text .= "<span class='gradevalue{$hidden}{$gradepass}'>" .
-                                grade_format_gradevalue($gradeval, $item, true, $gradedisplaytype, null) . "</span>";
+                                grade_format_gradevalue($gradeval, $item, true, $gradedisplaytype, null, $userid) . "</span>"
+                            . grade_format_gradevalue_status($item, $userid);
                         if ($showanalysisicon) {
                             $itemcell->text .= $this->gtree->get_grade_analysis_icon($grade);
                         }

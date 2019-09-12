@@ -1217,7 +1217,7 @@ class provider implements
             'gradeobject' => $gg,
             'item' => $gi->get_name(),
             'grade' => $gg->finalgrade,
-            'grade_formatted' => grade_format_gradevalue($gg->finalgrade, $gi),
+            'grade_formatted' => grade_format_gradevalue($gg->finalgrade, $gi, true, null, null, $gg->userid),
             'feedback' => format_text($gg->feedback, $gg->feedbackformat, ['context' => $context]),
             'information' => format_text($gg->information, $gg->informationformat, ['context' => $context]),
             'timecreated' => $timecreated,

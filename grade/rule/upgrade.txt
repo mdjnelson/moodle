@@ -1,0 +1,2 @@
+This file describes API changes in /grade/rule/* ;
+Information provided here is intended especially for developers.

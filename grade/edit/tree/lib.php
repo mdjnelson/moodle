@@ -683,6 +683,25 @@ class grade_edit_tree {
                 $gradeitem->grademin, $gradeitem->grademax, 'gradebook');
         }
 
+        // Process any rules for this grade category.
+        $context = context_system::instance();
+        $rules = \core\grade\rule::load_for_grade_item($gradeitem->id, $context);
+
+        if (!empty($rules)) {
+            foreach ($rules as $rule) {
+                $rule->process_form($data);
+                $rule->save($gradeitem);
+
+                // Regrade if necessary.
+                if ($rule->needs_update()) {
+                    $gradeitem->force_regrading();
+                }
+
+                // Process recursive rules.
+                $rule->recurse($gradeitem);
+            }
+        }
+
         // Update hiding flag.
         if ($hiddenuntil) {
             $gradeitem->set_hidden($hiddenuntil, false);

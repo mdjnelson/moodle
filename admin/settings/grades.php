@@ -201,7 +201,32 @@ if (has_capability('moodle/grade:manage', $systemcontext)
     $letters = new admin_externalpage('letters', new lang_string('letters', 'grades'), $CFG->wwwroot.'/grade/edit/letter/index.php', 'moodle/grade:manageletters');
     $ADMIN->add('grades', $letters);
 
+    // Grade rule order.
+    $temp = new admin_settingpage('graderule', new lang_string('graderule', 'grades'), 'moodle/grade:manage');
+    if ($ADMIN->fulltree) {
+        $temp->add(new admin_setting_configtext('graderule_sortorder', new lang_string('graderule_sortorder', 'grades'),
+            new lang_string('graderule_sortorder_help', 'grades'),
+            '0', PARAM_TEXT));
+    }
+    $ADMIN->add('grades', $temp);
+
     // The plugins must implement a settings.php file that adds their admin settings to the $settings object
+
+    // Grade rules.
+    $ADMIN->add('grades', new admin_category('graderules', new lang_string('graderulesettings', 'grades')));
+    foreach (core_component::get_plugin_list('graderule') as $plugin => $plugindir) {
+        // Include all the settings commands for this plugin if there are any.
+        if (file_exists($plugindir.'/settings.php')) {
+            $settings = new admin_settingpage('graderule'.$plugin,
+                new lang_string('pluginname', 'graderule_'.$plugin),
+                'moodle/grade:manage'
+            );
+            include($plugindir . '/settings.php');
+            if ($settings) {
+                $ADMIN->add('graderules', $settings);
+            }
+        }
+    }
 
     // Reports
     $ADMIN->add('grades', new admin_category('gradereports', new lang_string('reportsettings', 'grades')));

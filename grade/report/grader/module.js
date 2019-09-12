@@ -876,6 +876,7 @@ M.gradereport_grader.classes.textfield = function(report, node) {
     this.node = node;
     this.gradespan = node.one('.gradevalue');
     this.inputdiv = this.report.Y.Node.create('<div></div>');
+    this.inputdiv.setStyle('display', 'inline-block');
     this.editfeedback = this.report.ajax.showquickfeedback;
     this.grade = this.report.Y.Node.create('<input type="text" class="text" value="" name="ajaxgrade" />');
     this.gradetype = 'value';

@@ -306,6 +306,24 @@ class edit_category_form extends moodleform {
 
         $mform =& $this->_form;
 
+        // Assume course context.
+        $context = context_course::instance($COURSE->id);
+
+        // Process form hook rules for this grade category.
+        $gradeitemid = $mform->getElementValue('id');
+
+        if ($gradeitemid != 0) {
+            $gradeitemid = grade_category::fetch(['id' => $gradeitemid])->get_grade_item()->id;
+        }
+
+        $rules = \core\grade\rule::load_for_grade_item($gradeitemid, $context);
+
+        if (!empty($rules)) {
+            foreach ($rules as $rule) {
+                $rule->edit_form_hook($mform);
+            }
+        }
+
         $somecat = new grade_category();
 
         foreach ($somecat->forceable as $property) {

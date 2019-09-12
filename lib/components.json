@@ -21,6 +21,7 @@
         "gradeexport": "grade\/export",
         "gradeimport": "grade\/import",
         "gradereport": "grade\/report",
+        "graderule"  : "grade\/rule",
         "gradingform": "grade\/grading\/form",
         "mlbackend": "lib\/mlbackend",
         "mnetservice": "mnet\/service",

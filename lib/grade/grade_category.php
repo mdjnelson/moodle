@@ -776,6 +776,19 @@ class grade_category extends grade_object {
 
         // Recalculate the grade back to requested range.
         $finalgrade = grade_grade::standardise_score($agg_grade, 0, 1, $result['grademin'], $result['grademax']);
+
+        // Pass the grade item and the grade value through the installed
+        // grading rule plugins here.
+        $rules = $this->grade_item::get_rules($this->grade_item->id);
+
+        if (!empty($rules)) {
+            foreach ($rules as $rule) {
+                if ($rule->enabled()) {
+                    $finalgrade = $rule->final_grade_modifier($this->grade_item, $userid, $finalgrade);
+                }
+            }
+        }
+
         $grade->finalgrade = $this->grade_item->bounded_grade($finalgrade);
 
         $oldrawgrademin = $grade->rawgrademin;

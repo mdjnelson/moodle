@@ -3781,6 +3781,22 @@
         <INDEX NAME="cmidcompetencyid" UNIQUE="true" FIELDS="cmid, competencyid"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="grading_rules" COMMENT="No comment. Interview over!">
+        <FIELDS>
+            <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+            <FIELD NAME="gradeitem" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to the grade item that the rules applies to."/>
+            <FIELD NAME="plugin" TYPE="char" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="Plugin name, used for picking the correct factory (must be the plugin's name)."/>
+            <FIELD NAME="pluginid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ID number(PK) for the plugin to instantiate from."/>
+        </FIELDS>
+        <KEYS>
+            <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            <KEY NAME="gradeitemid" TYPE="foreign" FIELDS="gradeitem" REFTABLE="grade_items" REFFIELDS="id"/>
+        </KEYS>
+        <INDEXES>
+            <INDEX NAME="plugin" UNIQUE="false" FIELDS="plugin"/>
+            <INDEX NAME="pluginid" UNIQUE="false" FIELDS="pluginid"/>
+        </INDEXES>
+    </TABLE>
     <TABLE NAME="oauth2_endpoint" COMMENT="Describes the named endpoint for an oauth2 service.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

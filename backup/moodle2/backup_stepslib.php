@@ -1034,6 +1034,8 @@ class backup_gradebook_structure_step extends backup_structure_step {
             'needsupdate', 'timecreated', 'timemodified'));
 
         $this->add_plugin_structure('local', $grade_item, true);
+        $graderules = new backup_nested_element('grade_rules');
+        $graderule = new backup_nested_element('grade_rule', ['id'], ['plugin', 'pluginid']);
 
         $grade_grades = new backup_nested_element('grade_grades');
         $grade_grade = new backup_nested_element('grade_grade', array('id'), array(
@@ -1070,6 +1072,13 @@ class backup_gradebook_structure_step extends backup_structure_step {
 
         $gradebook->add_child($grade_items);
         $grade_items->add_child($grade_item);
+
+        $grade_item->add_child($graderules);
+        $graderules->add_child($graderule);
+
+        // Attach graderule plugin stucture to $graderule element, multiple not allowed (per graderule record).
+        $this->add_plugin_structure('graderule', $graderule, false);
+
         $grade_item->add_child($grade_grades);
         $grade_grades->add_child($grade_grade);
 
@@ -1095,6 +1104,8 @@ class backup_gradebook_structure_step extends backup_structure_step {
                            AND (itemtype='manual' OR itemtype='course' OR itemtype='category')";
         $grade_items_params = array('courseid'=>backup::VAR_COURSEID);
         $grade_item->set_source_sql($grade_items_sql, $grade_items_params);
+
+        $graderule->set_source_table('grading_rules', array('gradeitem' => backup::VAR_PARENTID));
 
         if ($userinfo) {
             $grade_grade->set_source_table('grade_grades', array('itemid' => backup::VAR_PARENTID));
@@ -2576,6 +2587,9 @@ class backup_activity_grades_structure_step extends backup_structure_step {
             'sortorder', 'display', 'decimals', 'hidden', 'locked', 'locktime',
             'needsupdate', 'timecreated', 'timemodified'));
 
+        $rules = new backup_nested_element('activity_grade_rules');
+        $rule = new backup_nested_element('activity_grade_rule', ['id'], ['plugin', 'pluginid']);
+
         $grades = new backup_nested_element('grade_grades');
 
         $grade = new backup_nested_element('grade_grade', array('id'), array(
@@ -2596,6 +2610,12 @@ class backup_activity_grades_structure_step extends backup_structure_step {
         $book->add_child($items);
         $items->add_child($item);
 
+        $item->add_child($rules);
+        $rules->add_child($rule);
+
+        // Attach graderule plugin structure to $rule element, multiple not allowed (per graderule record).
+        $this->add_plugin_structure('graderule', $rule, false);
+
         $item->add_child($grades);
         $grades->add_child($grade);
 
@@ -2609,6 +2629,8 @@ class backup_activity_grades_structure_step extends backup_structure_step {
                                JOIN {backup_ids_temp} bi ON gi.id = bi.itemid
                                WHERE bi.backupid = ?
                                AND bi.itemname = 'grade_item'", array(backup::VAR_BACKUPID));
+
+        $rule->set_source_table('grading_rules', array('gradeitem' => backup::VAR_PARENTID));
 
         // This only happens if we are including user info
         if ($userinfo) {

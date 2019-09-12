@@ -102,13 +102,13 @@ function grade_get_course_grades($courseid, $userid_or_ids=null) {
                 $grade->str_long_grade = $grade->str_grade;
 
             } else {
-                $grade->str_grade = grade_format_gradevalue($grade->grade, $grade_item);
+                $grade->str_grade = grade_format_gradevalue($grade->grade, $grade_item, true, null, null, $userid);
                 if ($grade_item->gradetype == GRADE_TYPE_SCALE or $grade_item->get_displaytype() != GRADE_DISPLAY_TYPE_REAL) {
                     $grade->str_long_grade = $grade->str_grade;
                 } else {
                     $a = new stdClass();
                     $a->grade = $grade->str_grade;
-                    $a->max   = grade_format_gradevalue($grade_item->grademax, $grade_item);
+                    $a->max   = grade_format_gradevalue($grade_item->grademax, $grade_item, true, null, null, $userid);
                     $grade->str_long_grade = get_string('gradelong', 'grades', $a);
                 }
             }
@@ -216,13 +216,13 @@ function grade_get_course_grade($userid, $courseid_or_ids=null) {
             $grade->str_long_grade = $grade->str_grade;
 
         } else {
-            $grade->str_grade = grade_format_gradevalue($grade->grade, $grade_item);
+            $grade->str_grade = grade_format_gradevalue($grade->grade, $grade_item, true, null, null, $userid);
             if ($grade_item->gradetype == GRADE_TYPE_SCALE or $grade_item->get_displaytype() != GRADE_DISPLAY_TYPE_REAL) {
                 $grade->str_long_grade = $grade->str_grade;
             } else {
                 $a = new stdClass();
                 $a->grade = $grade->str_grade;
-                $a->max   = grade_format_gradevalue($grade_item->grademax, $grade_item);
+                $a->max   = grade_format_gradevalue($grade_item->grademax, $grade_item, true, null, null, $userid);
                 $grade->str_long_grade = get_string('gradelong', 'grades', $a);
             }
         }

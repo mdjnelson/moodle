@@ -2650,6 +2650,7 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2021052500.90);
     }
 
+
     if ($oldversion < 2021060200.00) {
 
         // Define index name (not unique) to be added to user_preferences.
@@ -2673,6 +2674,33 @@ function xmldb_main_upgrade($oldversion) {
 
         // Main savepoint reached.
         upgrade_main_savepoint(true, 2021060900.00);
+    }
+
+    if ($oldversion < 2021062900.00) {
+        // Define table grading_rules to be created.
+        $table = new xmldb_table('grading_rules');
+
+        // Adding fields to table grading_rules.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('gradeitem', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('plugin', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('pluginid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table grading_rules.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('gradeitemid', XMLDB_KEY_FOREIGN, array('gradeitem'), 'grade_items', array('id'));
+
+        // Adding indexes to table grading_rules.
+        $table->add_index('plugin', XMLDB_INDEX_NOTUNIQUE, array('plugin'));
+        $table->add_index('pluginid', XMLDB_INDEX_NOTUNIQUE, array('pluginid'));
+
+        // Conditionally launch create table for grading_rules.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021062900.00);
     }
 
     return true;

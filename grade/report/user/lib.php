@@ -572,15 +572,25 @@ class grade_report_user extends grade_report {
 
                         if ($this->canviewhidden) {
                             $gradeitemdata['graderaw'] = $gradeval;
-                            $data['grade']['content'] = grade_format_gradevalue($gradeval,
-                                                                                $grade_grade->grade_item,
-                                                                                true);
+                            $data['grade']['content'] = grade_format_gradevalue(
+                                $gradeval,
+                                $grade_grade->grade_item,
+                                true,
+                                null,
+                                null,
+                                $grade_grade->userid
+                            );
                         }
                     } else {
                         $data['grade']['class'] = $class;
-                        $data['grade']['content'] = grade_format_gradevalue($gradeval,
-                                                                            $grade_grade->grade_item,
-                                                                            true);
+                        $data['grade']['content'] = grade_format_gradevalue(
+                            $gradeval,
+                            $grade_grade->grade_item,
+                            true,
+                            null,
+                            null,
+                            $grade_grade->userid
+                        );
                         $gradeitemdata['graderaw'] = $gradeval;
                     }
                     $data['grade']['headers'] = "$header_cat $header_row grade";
@@ -607,11 +617,15 @@ class grade_report_user extends grade_report {
                         $data['percentage']['class'] = $class.' dimmed_text';
                         $data['percentage']['content'] = '-';
                         if ($this->canviewhidden) {
-                            $data['percentage']['content'] = grade_format_gradevalue($gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_PERCENTAGE);
+                            $data['percentage']['content'] = grade_format_gradevalue(
+                                $gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_PERCENTAGE, null, $grade_grade->userid
+                            );
                         }
                     } else {
                         $data['percentage']['class'] = $class;
-                        $data['percentage']['content'] = grade_format_gradevalue($gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_PERCENTAGE);
+                        $data['percentage']['content'] = grade_format_gradevalue(
+                            $gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_PERCENTAGE, null, $grade_grade->userid
+                        );
                     }
                     $data['percentage']['headers'] = "$header_cat $header_row percentage";
                     $gradeitemdata['percentageformatted'] = $data['percentage']['content'];
@@ -627,11 +641,15 @@ class grade_report_user extends grade_report {
                         if (!$this->canviewhidden) {
                             $data['lettergrade']['content'] = '-';
                         } else {
-                            $data['lettergrade']['content'] = grade_format_gradevalue($gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_LETTER);
+                            $data['lettergrade']['content'] = grade_format_gradevalue(
+                                $gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_LETTER, null, $grade_grade->userid
+                            );
                         }
                     } else {
                         $data['lettergrade']['class'] = $class;
-                        $data['lettergrade']['content'] = grade_format_gradevalue($gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_LETTER);
+                        $data['lettergrade']['content'] = grade_format_gradevalue(
+                            $gradeval, $grade_grade->grade_item, true, GRADE_DISPLAY_TYPE_LETTER, null, $grade_grade->userid
+                        );
                     }
                     $data['lettergrade']['headers'] = "$header_cat $header_row lettergrade";
                     $gradeitemdata['lettergradeformatted'] = $data['lettergrade']['content'];
