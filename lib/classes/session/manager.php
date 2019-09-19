@@ -128,12 +128,27 @@ class manager {
                 throw new \core\session\exception(get_string('servererror'));
             }
 
+            if ($requireslock) {
+                // Let's hash the $_SESSION data.
+                $seshhash = md5(serialize($_SESSION));
+            }
+
             // Grab the time when session lock starts.
             $PERF->sessionlock['gained'] = microtime(true);
             $PERF->sessionlock['wait'] = $PERF->sessionlock['gained'] - $PERF->sessionlock['start'];
             self::initialise_user_session($isnewsession);
             self::$sessionactive = true; // Set here, so the session can be cleared if the security check fails.
             self::check_security();
+
+            if ($requireslock) {
+                // Compare the hash of the earlier session data with the hash now, if
+                // there is a difference then a lock is required.
+                $newseshhash = md5(serialize($_SESSION));
+
+                if ($seshhash != $newseshhash) {
+                    error_log('This session was started as a read-only session but writes have been detected');
+                }
+            }
 
             // Link global $USER and $SESSION,
             // this is tricky because PHP does not allow references to references
