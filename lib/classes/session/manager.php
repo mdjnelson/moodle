@@ -57,6 +57,9 @@ class manager {
     /** @var string $logintokenkey Key used to get and store request protection for login form. */
     protected static $logintokenkey = 'core_auth_login';
 
+    /** @var string Stores the hash of the SESSION before a request is performed, used to check incorrect read-only modes */
+    private static $seshhash = '';
+
     /**
      * If the current session is not writeable, abort it, and re-open it
      * requesting (and blocking) until a write lock is acquired.
@@ -134,6 +137,10 @@ class manager {
             self::initialise_user_session($isnewsession);
             self::$sessionactive = true; // Set here, so the session can be cleared if the security check fails.
             self::check_security();
+
+            if (!$requireslock) {
+                self::$seshhash = md5(serialize($_SESSION));
+            }
 
             // Link global $USER and $SESSION,
             // this is tricky because PHP does not allow references to references
@@ -689,6 +696,16 @@ class manager {
             $PERF->sessionlock['url'] = me();
             self::update_recent_session_locks($PERF->sessionlock);
             self::sessionlock_debugging();
+
+            if (!self::$handler->requires_write_lock()) {
+                // Compare the hash of the earlier session data with the hash now, if
+                // there is a difference then a lock is required.
+                $newseshhash = md5(serialize($_SESSION));
+
+                if ($newseshhash != self::$seshhash) {
+                    error_log('This session was started as a read-only session but writes have been detected');
+                }
+            }
         }
 
         // More control over whether session data
