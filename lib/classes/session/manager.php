@@ -57,6 +57,9 @@ class manager {
     /** @var string $logintokenkey Key used to get and store request protection for login form. */
     protected static $logintokenkey = 'core_auth_login';
 
+    /** @var array Stores the the SESSION before a request is performed, used to check incorrect read-only modes */
+    private static $priorsession = [];
+
     /**
      * If the current session is not writeable, abort it, and re-open it
      * requesting (and blocking) until a write lock is acquired.
@@ -134,6 +137,10 @@ class manager {
             self::initialise_user_session($isnewsession);
             self::$sessionactive = true; // Set here, so the session can be cleared if the security check fails.
             self::check_security();
+
+            if (!$requireslock) {
+                self::$priorsession = (array) $_SESSION['SESSION'];
+            }
 
             // Link global $USER and $SESSION,
             // this is tricky because PHP does not allow references to references
@@ -689,6 +696,28 @@ class manager {
             $PERF->sessionlock['url'] = me();
             self::update_recent_session_locks($PERF->sessionlock);
             self::sessionlock_debugging();
+
+            if (!self::$handler->requires_write_lock()) {
+                // Compare the array of the earlier session data with the array now, if
+                // there is a difference then a lock is required.
+                $arraydiff = self::array_session_diff(
+                    self::$priorsession,
+                    (array) $_SESSION['SESSION']
+                );
+
+                if ($arraydiff) {
+                    if (isset($arraydiff['cachestore_session'])) {
+                        throw new \moodle_exception('The session store can not be in the session when '
+                            . 'enable_read_only_sessions is enabled');
+                    }
+
+                    error_log('This session was started as a read-only session but writes have been detected.');
+                    error_log('The following SESSION params were either added, or were updated.');
+                    foreach ($arraydiff as $key => $value) {
+                        error_log('SESSION key: ' . $key);
+                    }
+                }
+            }
         }
 
         // More control over whether session data
@@ -1343,5 +1372,28 @@ class manager {
                 debugging($output, DEBUG_DEVELOPER);
             }
         }
+    }
+
+    /**
+     * Compares two arrays outputs the difference.
+     *
+     * Note this does not use array_diff_assoc due to
+     * the use of stdClasses in Moodle sessions.
+     *
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    private static function array_session_diff(array $array1, array $array2) : array {
+        $difference = [];
+        foreach ($array1 as $key => $value) {
+            if (!isset($array2[$key])) {
+                $difference[$key] = $value;
+            } else if ($array2[$key] !== $value) {
+                $difference[$key] = $value;
+            }
+        }
+
+        return $difference;
     }
 }
