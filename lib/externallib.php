@@ -190,7 +190,7 @@ class external_api {
         $externalfunctioninfo = self::external_function_info($function);
 
         // Eventually this should shift into the various handlers and not be handled via config.
-        if ($externalfunctioninfo->requiresessionlock) {
+        if ($externalfunctioninfo->requiresessionlock || empty($CFG->enable_read_only_sessions)) {
             \core\session\manager::restart_with_write_lock();
         }
 
