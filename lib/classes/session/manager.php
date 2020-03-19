@@ -126,6 +126,8 @@ class manager {
             self::prepare_cookies();
             $isnewsession = empty($_COOKIE[session_name()]);
 
+            $starttime = microtime(true);
+
             if (!self::$handler->start()) {
                 // Could not successfully start/recover session.
                 throw new \core\session\exception(get_string('servererror'));
@@ -140,6 +142,12 @@ class manager {
 
             if (!$requireslock) {
                 self::$priorsession = (array) $_SESSION['SESSION'];
+            }
+
+            $duration = microtime(true) - $starttime;
+            if ($duration > 0) {
+                error_log("duration: " . round($duration, 3) . "s|session_url: " .
+                    $_SERVER['PHP_SELF'] . " | write_lock: " . ($requireslock ? '1' : '0'));
             }
 
             // Link global $USER and $SESSION,
