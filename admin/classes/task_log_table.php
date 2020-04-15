@@ -40,13 +40,14 @@ class task_log_table extends \table_sql {
      * Constructor for the task_log table.
      *
      * @param   string      $filter
-     * @param   int         $resultfilter
+     * @param   int         $status
+     * @param   int         $duration
      */
-    public function __construct(string $filter = '', int $resultfilter = null) {
+    public function __construct(string $filter = '', int $status = null, int $duration = null) {
         global $DB;
 
-        if (-1 === $resultfilter) {
-            $resultfilter = null;
+        if (-1 === $status) {
+            $status = null;
         }
 
         parent::__construct('tasklogs');
@@ -96,9 +97,14 @@ class task_log_table extends \table_sql {
             $where[] = "(" . implode(' OR ', $orwhere) . ")";
         }
 
-        if (null !== $resultfilter) {
+        if (null !== $status) {
             $where[] = 'tl.result = :result';
-            $params['result'] = $resultfilter;
+            $params['result'] = $status;
+        }
+
+        if (null !== $duration) {
+            $where[] = 'tl.timeend - tl.timestart >= :minduration';
+            $params['minduration'] = $duration;
         }
 
         $where = implode(' AND ', $where);

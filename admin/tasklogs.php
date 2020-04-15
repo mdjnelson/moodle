@@ -22,16 +22,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core_admin\form\task_log;
+
 require_once(__DIR__ . '/../config.php');
 require_once("{$CFG->libdir}/adminlib.php");
 require_once("{$CFG->libdir}/tablelib.php");
 require_once("{$CFG->libdir}/filelib.php");
 
-$filter = optional_param('filter', '', PARAM_RAW);
-$result = optional_param('result', null, PARAM_INT);
-
 $pageurl = new \moodle_url('/admin/tasklogs.php');
-$pageurl->param('filter', $filter);
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context(context_system::instance());
@@ -61,33 +59,25 @@ if (null !== $logid) {
 
 $renderer = $PAGE->get_renderer('tool_task');
 
+$form = new task_log();
+
+$filter = '';
+$filterstatus = null;
+$filterminduration = null;
+
+if ($data = $form->get_data()) {
+    $filter = $data->text;
+    $filterstatus = $data->status;
+    $filterminduration = $data->minduration ?: null;
+}
+
 echo $OUTPUT->header();
 
 // Output the search form.
-echo $OUTPUT->render_from_template('core_admin/tasklogs', (object) [
-    'action' => $pageurl->out(),
-    'filter' => $filter,
-    'resultfilteroptions' => [
-        (object) [
-            'value' => -1,
-            'title' => get_string('all'),
-            'selected' => (-1 === $result),
-        ],
-        (object) [
-            'value' => 0,
-            'title' => get_string('success'),
-            'selected' => (0 === $result),
-        ],
-        (object) [
-            'value' => 1,
-            'title' => get_string('task_result:failed', 'admin'),
-            'selected' => (1 === $result),
-        ],
-    ],
-]);
+$form->display();
 
 // Output any matching logs.
-$table = new \core_admin\task_log_table($filter, $result);
+$table = new \core_admin\task_log_table($filter, $filterstatus, $filterminduration);
 $table->baseurl = $pageurl;
 $table->out(100, false);
 
