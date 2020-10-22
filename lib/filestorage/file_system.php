@@ -637,4 +637,68 @@ abstract class file_system {
      */
     public function cron() {
     }
+
+    /**
+     * Returns readable path for a given stored file.
+     * Checks remote path first.
+     *
+     * @param stored_file $file Stored file object
+     * @return string Readable path
+     */
+    public function get_readable_path_by_storedfile(stored_file $file) {
+        if ($this->is_file_readable_remotely_by_storedfile($file)) {
+            $path = $this->get_remote_path_from_storedfile($file);
+        } else {
+            if ($this->is_file_readable_locally_by_storedfile($file, false)) {
+                $path = $this->get_local_path_from_storedfile($file, false);
+            }
+        }
+        if (empty($path)) {
+            throw new file_exception('storedfilecannotreadfile', $file->get_filename());
+        }
+        return $path;
+    }
+
+    /**
+     * Returns true if filesystem supports zip stream.
+     *
+     * @return bool
+     */
+    public function supports_zipstream() {
+        return true;
+    }
+
+    /**
+     * Zips files and streams the archive without saving on the disk.
+     *
+     * @param string $archivename Zip file to be named to
+     * @param array $files The list of stored_file objects to zip and stream
+     * @return void
+     */
+    public function stream_zipped_files(string $archivename, array $files): void {
+        // Close session first.
+        \core\session\manager::write_close();
+
+        $options = new \ZipStream\Option\Archive();
+        $options->setSendHttpHeaders(true);
+        $options->setContentDisposition('attachment');
+        $options->setContentType('application/x-zip');
+
+        $archive = new \ZipStream\ZipStream($archivename, $options);
+
+        foreach ($files as $filename => $file) {
+            $path = $this->get_readable_path_by_storedfile($file);
+            $archive->addFileFromPath($filename, $path);
+        }
+
+        // Finish the zip stream.
+        $archive->finish();
+
+        // Don't die in unit tests as we need to test served files.
+        if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
+            return;
+        }
+
+        die();
+    }
 }

@@ -3660,11 +3660,23 @@ class assign {
                                                                     'action'=>'grading'));
             $result .= $this->get_renderer()->continue_button($url);
             $result .= $this->view_footer();
-        } else if ($zipfile = $this->pack_files($filesforzipping)) {
-            \mod_assign\event\all_submissions_downloaded::create_from_assign($this)->trigger();
-            // Send file and delete after sending.
-            send_temp_file($zipfile, $filename);
-            // We will not get here - send_temp_file calls exit.
+        } else {
+            // Get the file storage.
+            $fs = get_file_storage();
+            if ($fs->supports_zipstream()) {
+                // File system supports zip stream.
+                \mod_assign\event\all_submissions_downloaded::create_from_assign($this)->trigger();
+                $fs->stream_zipped_files($filename, $filesforzipping);
+                // We will not get here - stream_zipped_files calls exit.
+            } else {
+                // Use old method which creates local zip files and then sends it to the user.
+                if ($zipfile = $this->pack_files($filesforzipping)) {
+                    \mod_assign\event\all_submissions_downloaded::create_from_assign($this)->trigger();
+                    // Send file and delete after sending.
+                    send_temp_file($zipfile, $filename);
+                    // We will not get here - send_temp_file calls exit.
+                }
+            }
         }
         return $result;
     }

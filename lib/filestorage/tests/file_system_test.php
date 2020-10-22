@@ -1166,5 +1166,57 @@ class core_files_file_system_testcase extends advanced_testcase {
             ],
         ];
     }
+
+    /**
+     * Test that stream_zipped_files() method zips files and streams the archive.
+     * As stream_zipped_files() sets headers, runInSeparateProcess annotation is used.
+     *
+     * @runInSeparateProcess
+     */
+    public function test_stream_zipped_files() {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $filerecordbase = array(
+            'contextid' => context_system::instance()->id,
+            'component' => 'core',
+            'filearea'  => 'unittest',
+            'itemid'    => 0,
+            'filepath'  => '/',
+        );
+
+        $filerecord1 = $filerecordbase + ['filename' => 'file1.txt'];
+        $filerecord2 = $filerecordbase + ['filename' => 'file2.txt'];
+
+        $fs = get_file_storage();
+        $file1 = $fs->create_file_from_string($filerecord1, 'example content 1');
+        $file2 = $fs->create_file_from_string($filerecord2, 'example content 2');
+        $files = [$file1->get_filename() => $file1, $file2->get_filename() => $file2];
+
+        // Stream zipped files and catch the content.
+        ob_start();
+        $fs->stream_zipped_files('archive.zip', $files);
+        $streamcontent = ob_get_contents();
+        ob_end_clean();
+
+        // Convert the content into Moodle file.
+        $archiverecord = $filerecordbase + ['filename' => 'archive.zip'];
+        $archivefile = $fs->create_file_from_string($archiverecord, $streamcontent);
+
+        // Unzip the archive.
+        $packer = get_file_packer('application/zip');
+        $unzipresults = $packer->extract_to_pathname($archivefile, $CFG->tempdir);
+
+        // Assert the stuff.
+        $this->assertEquals('application/zip', $archivefile->get_mimetype());
+        $this->assertCount(2, $unzipresults);
+        foreach ($unzipresults as $filename => $status) {
+            $this->assertTrue($status);
+        }
+        $this->assertFileExists($CFG->tempdir . '/file1.txt');
+        $this->assertFileExists($CFG->tempdir . '/file2.txt');
+        $this->assertStringEqualsFile($CFG->tempdir . '/file1.txt', 'example content 1');
+        $this->assertStringEqualsFile($CFG->tempdir . '/file2.txt', 'example content 2');
+    }
 }
 

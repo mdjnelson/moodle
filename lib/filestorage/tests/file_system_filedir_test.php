@@ -1124,4 +1124,57 @@ class core_files_file_system_filedir_testcase extends advanced_testcase {
             ),
         );
     }
+
+    /**
+     * Test that get_readable_path_by_storedfile() returns readable path for a file.
+     */
+    public function test_get_readable_path_by_storedfile() {
+        $this->resetAfterTest();
+
+        // Create a file.
+        $filestorage = get_file_storage();
+        $filesystem = new file_system_filedir();
+        $filerecord = array(
+            'contextid' => context_system::instance()->id,
+            'component' => 'core',
+            'filearea'  => 'unittest',
+            'itemid'    => 0,
+            'filepath'  => '/',
+            'filename' => 'file.txt'
+        );
+        $file = $filestorage->create_file_from_string($filerecord, 'example content');
+
+        // Call the method.
+        $path = $filesystem->get_readable_path_by_storedfile($file);
+
+        $this->assertFileExists($path);
+        $this->assertFileIsReadable($path);
+    }
+
+    /**
+     * Test that get_readable_path_by_storedfile() throws an exception on fake/missing file.
+     */
+    public function test_get_readable_path_by_storedfile_exception() {
+        $this->resetAfterTest();
+
+        // Create a file.
+        $filestorage = get_file_storage();
+        $filesystem = new file_system_filedir();
+        $filerecord = array(
+            'contextid' => context_system::instance()->id,
+            'component' => 'core',
+            'filearea'  => 'unittest',
+            'itemid'    => 0,
+            'filepath'  => '/',
+            'filename' => 'file.txt'
+        );
+        $file = $filestorage->create_file_from_string($filerecord, 'example content');
+
+        // Remove the the file from the disk.
+        unlink($filesystem->get_local_path_from_storedfile($file));
+
+        // This should generate an exception.
+        $this->expectException('file_exception');
+        $filesystem->get_readable_path_by_storedfile($file);
+    }
 }

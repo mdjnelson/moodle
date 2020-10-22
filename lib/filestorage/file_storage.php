@@ -2419,4 +2419,24 @@ class file_storage {
     public static function hash_from_string($content) {
         return sha1($content);
     }
+
+    /**
+     * Returns true if filesystem supports zip stream.
+     *
+     * @return bool
+     */
+    public function supports_zipstream() {
+        return $this->filesystem->supports_zipstream();
+    }
+
+    /**
+     * Zips files and streams the archive without saving on the disk.
+     *
+     * @param string $archivename Zip file to be named to
+     * @param array $files The list of stored_file to zip and stream
+     * @return void
+     */
+    public function stream_zipped_files(string $archivename, array $files): void {
+        $this->filesystem->stream_zipped_files($archivename, $files);
+    }
 }
