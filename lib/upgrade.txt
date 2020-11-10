@@ -1,6 +1,11 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 4.0 ===
+* File packers (ie. 'lib/filestorage/zip_packer.php') that extend the class 'file_packer' need to implement the
+  new method 'archive_to_stream(string $archivename, array $files)'. For a description of the method view the
+  PHPDocs in 'lib/filestorage/file_packer.php'.
+
 === 3.10 ===
 * PHPUnit has been upgraded to 8.5. That comes with a few changes:
   - Breaking change: All the "template methods" (setUp(), tearDown()...) now require to return void. This implies

@@ -730,6 +730,17 @@ class tgz_packer extends file_packer {
     public static function has_required_extension() {
         return extension_loaded('zlib');
     }
+
+    /**
+     * Zips files and streams the archive without saving on the disk.
+     *
+     * @param string $archivename
+     * @param array $files
+     * @throws coding_exception
+     */
+    public function archive_to_stream(string $archivename, array $files): void {
+        throw new \coding_exception('Not implemented');
+    }
 }
 
 

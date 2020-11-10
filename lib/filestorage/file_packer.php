@@ -125,4 +125,13 @@ abstract class file_packer {
      * @return array of file infos
      */
     public abstract function list_files($archivefile);
+
+    /**
+     * Zips files and streams the archive without saving on the disk.
+     *
+     * @param string $archivename Zip file to be named to
+     * @param array $files The list of stored_file to zip and stream
+     * @return void
+     */
+    abstract public function archive_to_stream(string $archivename, array $files): void;
 }

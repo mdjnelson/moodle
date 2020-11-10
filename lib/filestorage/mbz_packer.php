@@ -139,6 +139,17 @@ class mbz_packer extends file_packer {
     }
 
     /**
+     * Zips files and streams the archive without saving on the disk.
+     *
+     * @param string $archivename
+     * @param array $files
+     * @throws coding_exception
+     */
+    public function archive_to_stream(string $archivename, array $files): void {
+        throw new \coding_exception('Not implemented');
+    }
+
+    /**
      * Selects appropriate packer for new archive depending on system option
      * and whether required extension is available.
      *

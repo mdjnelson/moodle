@@ -623,6 +623,87 @@ class core_files_zip_packer_testcase extends advanced_testcase implements file_p
     }
 
     /**
+     * Test that archive_to_stream() method zips files and streams the archive.
+     * As archive_to_stream() sets headers, runInSeparateProcess annotation is used.
+     *
+     * @runInSeparateProcess
+     */
+    public function test_stream_zipped_files() {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $filerecordbase = [
+            'contextid' => context_system::instance()->id,
+            'component' => 'core',
+            'filearea'  => 'unittest',
+            'itemid'    => 0,
+            'filepath'  => '/',
+        ];
+
+        $filerecord1 = $filerecordbase + ['filename' => 'file1.txt'];
+        $filerecord2 = $filerecordbase + ['filename' => 'file2.txt'];
+
+        $fs = get_file_storage();
+        $file1 = $fs->create_file_from_string($filerecord1, 'example content 1');
+        $file2 = $fs->create_file_from_string($filerecord2, 'example content 2');
+        $files = [$file1->get_filename() => $file1, $file2->get_filename() => $file2];
+
+        // Stream zipped files and catch the content.
+        ob_start();
+        $zippacker = new zip_packer();
+        $zippacker->archive_to_stream('archive.zip', $files, true);
+        $streamcontent = ob_get_contents();
+        ob_end_clean();
+
+        // Convert the content into Moodle file.
+        $archiverecord = $filerecordbase + ['filename' => 'archive.zip'];
+        $archivefile = $fs->create_file_from_string($archiverecord, $streamcontent);
+
+        // Unzip the archive.
+        $packer = get_file_packer('application/zip');
+        $unzipresults = $packer->extract_to_pathname($archivefile, $CFG->tempdir);
+
+        // Assert the stuff.
+        $this->assertEquals('application/zip', $archivefile->get_mimetype());
+        $this->assertCount(2, $unzipresults);
+        foreach ($unzipresults as $filename => $status) {
+            $this->assertTrue($status);
+        }
+        $this->assertFileExists($CFG->tempdir . '/file1.txt');
+        $this->assertFileExists($CFG->tempdir . '/file2.txt');
+        $this->assertStringEqualsFile($CFG->tempdir . '/file1.txt', 'example content 1');
+        $this->assertStringEqualsFile($CFG->tempdir . '/file2.txt', 'example content 2');
+    }
+
+    /**
+     * Test that archive_to_stream() throws an exception on fake/missing file.
+     */
+    public function test_archive_to_stream_exception() {
+        $this->resetAfterTest();
+
+        // Create a file.
+        $filestorage = get_file_storage();
+        $filesystem = new file_system_filedir();
+        $filerecord = [
+            'contextid' => context_system::instance()->id,
+            'component' => 'core',
+            'filearea'  => 'unittest',
+            'itemid'    => 0,
+            'filepath'  => '/',
+            'filename' => 'file.txt'
+        ];
+        $file = $filestorage->create_file_from_string($filerecord, 'example content');
+
+        // Remove the the file from the disk.
+        unlink($filesystem->get_local_path_from_storedfile($file));
+
+        // This should generate an exception.
+        $zippacker = new zip_packer();
+        $this->expectException('file_exception');
+        $zippacker->archive_to_stream('zipname.zip', [$file], true);
+    }
+
+    /**
      * Checks that progress reported is numeric rather than indeterminate,
      * and follows the progress reporting rules.
      */

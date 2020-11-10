@@ -563,4 +563,51 @@ class zip_packer extends file_packer {
         return $list;
     }
 
+    /**
+     * Zips files and streams the archive without saving on the disk.
+     *
+     * @param string $archivename Zip file to be named to
+     * @param array $files The list of files to zip and stream
+     * @param bool $dontdie If true returns control to caller afterwards.
+     *                      Note - this is not recommended and only used for cleanup tasks.
+     * @return void
+     */
+    public function archive_to_stream(string $archivename, array $files, bool $dontdie = false): void {
+        // Close session first.
+        \core\session\manager::write_close();
+
+        $options = new \ZipStream\Option\Archive();
+        $options->setSendHttpHeaders(true);
+        $options->setContentDisposition('attachment');
+        $options->setContentType('application/x-zip');
+
+        $archive = new \ZipStream\ZipStream($archivename, $options);
+
+        $filestorage = get_file_storage();
+        $filesystem = $filestorage->get_file_system();
+        foreach ($files as $filename => $file) {
+            $path = null;
+            if ($filesystem->is_file_readable_locally_by_storedfile($file, false)) {
+                $path = $filesystem->get_local_path_from_storedfile($file, false);
+            } else if ($filesystem->is_file_readable_remotely_by_storedfile($file)) {
+                $path = $filesystem->get_remote_path_from_storedfile($file);
+            }
+
+            if ($path === null) {
+                throw new file_exception('storedfilecannotreadfile', $file->get_filename());
+            }
+
+            $archive->addFileFromPath($filename, $path);
+        }
+
+        // Finish the zip stream.
+        $archive->finish();
+
+        // Don't die in unit tests as we need to test served files.
+        if ($dontdie) {
+            return;
+        }
+
+        die();
+    }
 }
