@@ -50,12 +50,11 @@ class rule {
     /**
      * Load the rules for a grade item by ID and context.
      *
-     * @param int      $itemid
-     * @param \context $context
+     * @param int $itemid
      *
      * @return rule_interface[]
      */
-    public static function load_for_grade_item($itemid, $context) {
+    public static function load_for_grade_item($itemid) {
         global $DB;
 
         if ($itemid === 0) {
@@ -86,7 +85,7 @@ class rule {
         }
 
         $rules = array_merge($rules, self::load_blank_instances($alreadyloaded));
-        self::sort_rules($rules, $context);
+        self::sort_rules($rules);
 
         return $rules;
     }
@@ -183,27 +182,14 @@ class rule {
      * Sort the rule.
      *
      * @param rule_interface[] $rules
-     * @param \context         $context
-     *
      * return void
      */
-    private static function sort_rules(&$rules, $context) {
-        // Check to see if sortorder is set.
-        $configorder = get_config('moodle', 'graderule_sortorder');
-
-        // If it's not set then just get a list of installed grade rule plugins,
-        // and sort by whatever gets returned.
-        if (empty($configorder)) {
-            $order = self::get_installed_rules();
-        } else {
-            $order = array_flip(
-                explode(',',  $configorder)
-            );
-        }
+    private static function sort_rules(&$rules) {
+        $order = self::get_installed_rules();
 
         $comparator = function(rule_interface $a, rule_interface $b) use ($order) {
-            $valuea = $order[$a->get_type()];
-            $valueb = $order[$b->get_type()];
+            $valuea = array_search($a->get_type(), array_keys($order));
+            $valueb = array_search($b->get_type(), array_keys($order));
 
             if ($valuea < $valueb) {
                 return -1;

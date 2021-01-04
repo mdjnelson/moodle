@@ -8693,6 +8693,153 @@ class admin_setting_managecontentbankcontenttypes extends admin_setting {
 }
 
 /**
+ * Grading rules manager. Allow reorder and to enable/disable rules and jump to settings
+ *
+ * @copyright  2021 Dmitrii Metelkin <dmitriim@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class admin_setting_managegraderules extends admin_setting {
+
+    /**
+     * Calls parent::__construct with specific arguments
+     */
+    public function __construct() {
+        $this->nosave = true;
+        parent::__construct('graderules', new lang_string('managegraderules', 'grades'), '', '');
+    }
+
+    /**
+     * Always returns true
+     *
+     * @return true
+     */
+    public function get_setting() {
+        return true;
+    }
+
+    /**
+     * Always returns true
+     *
+     * @return true
+     */
+    public function get_defaultsetting() {
+        return true;
+    }
+
+    /**
+     * Always returns '' and doesn't write anything
+     *
+     * @param mixed $data string or array, must not be NULL
+     * @return string Always returns ''
+     */
+    public function write_setting($data) {
+        // Do not write any setting.
+        return '';
+    }
+
+    /**
+     * Search to find if Query is related to grade rule plugin
+     *
+     * @param string $query The string to search for
+     * @return bool true for related false for not
+     */
+    public function is_related($query) {
+        if (parent::is_related($query)) {
+            return true;
+        }
+        $types = core_plugin_manager::instance()->get_plugins_of_type('graderule');
+        foreach ($types as $type) {
+            if (strpos($type->component, $query) !== false ||
+                strpos(core_text::strtolower($type->displayname), $query) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return XHTML to display control
+     *
+     * @param mixed $data Unused
+     * @param string $query
+     * @return string highlight
+     */
+    public function output_html($data, $query='') {
+        global $OUTPUT;
+        $return = '';
+
+        $types = core_plugin_manager::instance()->get_plugins_of_type('graderule');
+        $txt = get_strings(array('settings', 'name', 'enable', 'disable', 'order', 'up', 'down', 'default'));
+        $txt->uninstall = get_string('uninstallplugin', 'core_admin');
+
+        $table = new html_table();
+        $table->head  = array($txt->name, $txt->enable, $txt->order, $txt->settings, $txt->uninstall);
+        $table->align = array('left', 'center', 'center', 'center', 'center');
+        $table->attributes['class'] = 'managegraderulestable generaltable admintable';
+        $table->data  = array();
+        $spacer = $OUTPUT->pix_icon('spacer', '', 'moodle', array('class' => 'iconsmall'));
+
+        $totalenabled = 0;
+        $count = 0;
+        foreach ($types as $type) {
+            if ($type->is_enabled() && $type->is_installed_and_upgraded()) {
+                $totalenabled++;
+            }
+        }
+
+        foreach ($types as $type) {
+            $url = new moodle_url('/admin/graderules.php',
+                array('sesskey' => sesskey(), 'name' => $type->name));
+
+            $class = '';
+            $strtypename = $type->displayname;
+            if ($type->is_enabled()) {
+                $hideshow = html_writer::link($url->out(false, array('action' => 'disable')),
+                    $OUTPUT->pix_icon('t/hide', $txt->disable, 'moodle', array('class' => 'iconsmall')));
+            } else {
+                $class = 'dimmed_text';
+                $hideshow = html_writer::link($url->out(false, array('action' => 'enable')),
+                    $OUTPUT->pix_icon('t/show', $txt->enable, 'moodle', array('class' => 'iconsmall')));
+            }
+
+            $updown = '';
+            if ($count) {
+                $updown .= html_writer::link($url->out(false, array('action' => 'up')),
+                        $OUTPUT->pix_icon('t/up', $txt->up, 'moodle', array('class' => 'iconsmall'))). '';
+            } else {
+                $updown .= $spacer;
+            }
+            if ($count < count($types) - 1) {
+                $updown .= '&nbsp;'.html_writer::link($url->out(false, array('action' => 'down')),
+                        $OUTPUT->pix_icon('t/down', $txt->down, 'moodle', array('class' => 'iconsmall')));
+            } else {
+                $updown .= $spacer;
+            }
+
+            $settings = '';
+            if ($type->get_settings_url()) {
+                $settings = html_writer::link($type->get_settings_url(), $txt->settings);
+            }
+
+            $uninstall = '';
+            if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('graderule_'.$type->name, 'manage')) {
+                $uninstall = html_writer::link($uninstallurl, $txt->uninstall);
+            }
+
+            $row = new html_table_row(array($strtypename, $hideshow, $updown, $settings, $uninstall));
+            if ($class) {
+                $row->attributes['class'] = $class;
+            }
+            $table->data[] = $row;
+            $count++;
+        }
+        $return .= html_writer::table($table);
+
+        return highlight($query, $return);
+    }
+}
+
+/**
  * Initialise admin page - this function does require login and permission
  * checks specified in page definition.
  *

@@ -684,8 +684,7 @@ class grade_edit_tree {
         }
 
         // Process any rules for this grade category.
-        $context = context_system::instance();
-        $rules = \core\grade\rule::load_for_grade_item($gradeitem->id, $context);
+        $rules = \core\grade\rule::load_for_grade_item($gradeitem->id);
 
         if (!empty($rules)) {
             foreach ($rules as $rule) {
