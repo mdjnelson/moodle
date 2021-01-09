@@ -963,7 +963,7 @@ class grade_item extends grade_object {
             // Set this object in the item so it doesn't re-fetch it.
             $grade->grade_item = $this;
 
-            if (!$this->is_category_item() || ($this->is_category_item() && $grade->is_overridden())) {
+            if (!$this->is_category_item() && $grade->is_overridden()) {
                 // Updating the raw grade automatically updates the min/max.
                 if ($this->is_raw_used()) {
                     $rawgrade = (($grade->rawgrade - $oldgrademin) * $scale) + $newgrademin;
