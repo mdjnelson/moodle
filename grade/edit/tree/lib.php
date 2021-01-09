@@ -676,9 +676,10 @@ class grade_edit_tree {
 
         $gradeitem->outcomeid = null;
 
+        // This means we want to rescale overridden grades as well.
         if (!empty($data->grade_item_rescalegrades) && $data->grade_item_rescalegrades == 'yes') {
             $gradeitem->rescale_grades_keep_percentage($gradeitemcopy->grademin, $gradeitemcopy->grademax,
-                $gradeitem->grademin, $gradeitem->grademax, 'gradebook');
+                $gradeitem->grademin, $gradeitem->grademax, 'gradebook', false);
         }
 
         // Update hiding flag.

@@ -936,9 +936,11 @@ class grade_item extends grade_object {
      * @param float $newgrademin The new grade min value
      * @param float $newgrademax The new grade max value
      * @param string $source from where was the object inserted (mod/forum, manual, etc.)
+     * @param bool $markasoverridden Do we want to flag the grade as overridden as well?
      * @return bool True on success
      */
-    public function rescale_grades_keep_percentage($oldgrademin, $oldgrademax, $newgrademin, $newgrademax, $source = null) {
+    public function rescale_grades_keep_percentage($oldgrademin, $oldgrademax, $newgrademin, $newgrademax, $source = null,
+            bool $markasoverridden = true) {
         global $DB;
 
         if (empty($this->id)) {
@@ -970,7 +972,8 @@ class grade_item extends grade_object {
                     $this->update_raw_grade(false, $rawgrade, $source, false, FORMAT_MOODLE, null, null, null, $grade);
                 } else {
                     $finalgrade = (($grade->finalgrade - $oldgrademin) * $scale) + $newgrademin;
-                    $this->update_final_grade($grade->userid, $finalgrade, $source);
+                    $this->update_final_grade($grade->userid, $finalgrade, $source, false, FORMAT_MOODLE,
+                        null, null, $markasoverridden);
                 }
             }
         }
@@ -1785,12 +1788,14 @@ class grade_item extends grade_object {
      * @param int $feedbackformat A format like FORMAT_PLAIN or FORMAT_HTML
      * @param int $usermodified The ID of the user making the modification
      * @param int $timemodified Optional parameter to set the time modified, if not present current time.
+     * @param bool $markasoverridden Do we want to flag the grade as overridden as well?
      * @return bool success
      */
     public function update_final_grade($userid, $finalgrade = false,
                                        $source = null, $feedback = false,
                                        $feedbackformat = FORMAT_MOODLE,
-                                       $usermodified = null, $timemodified = null) {
+                                       $usermodified = null, $timemodified = null,
+                                       bool $markasoverridden = true) {
         global $USER, $CFG;
 
         $result = true;
@@ -1836,7 +1841,7 @@ class grade_item extends grade_object {
 
         // changed grade?
         if ($finalgrade !== false) {
-            if ($this->is_overridable_item()) {
+            if ($this->is_overridable_item() && $markasoverridden) {
                 $grade->overridden = time();
             }
 
