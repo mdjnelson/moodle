@@ -3781,7 +3781,7 @@
         <INDEX NAME="cmidcompetencyid" UNIQUE="true" FIELDS="cmid, competencyid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="grading_rules" COMMENT="No comment. Interview over!">
+    <TABLE NAME="grading_rules" COMMENT="Stores the grading rules.">
         <FIELDS>
             <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
             <FIELD NAME="gradeitem" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Link to the grade item that the rules applies to."/>
