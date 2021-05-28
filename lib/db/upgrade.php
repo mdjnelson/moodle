@@ -2682,17 +2682,17 @@ function xmldb_main_upgrade($oldversion) {
 
         // Adding fields to table grading_rules.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('gradeitem', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('plugin', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('pluginid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('gradeitemid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
+        $table->add_field('rulename', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, null, 'gradeitemid');
+        $table->add_field('instanceid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'rulename');
 
         // Adding keys to table grading_rules.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('gradeitemid', XMLDB_KEY_FOREIGN, array('gradeitem'), 'grade_items', array('id'));
+        $table->add_key('gradeitemid', XMLDB_KEY_FOREIGN, array('gradeitemid'), 'grade_items', array('id'));
 
         // Adding indexes to table grading_rules.
-        $table->add_index('plugin', XMLDB_INDEX_NOTUNIQUE, array('plugin'));
-        $table->add_index('pluginid', XMLDB_INDEX_NOTUNIQUE, array('pluginid'));
+        $table->add_index('rulename', XMLDB_INDEX_NOTUNIQUE, array('rulename'));
+        $table->add_index('instanceid', XMLDB_INDEX_NOTUNIQUE, array('instanceid'));
 
         // Conditionally launch create table for grading_rules.
         if (!$dbman->table_exists($table)) {

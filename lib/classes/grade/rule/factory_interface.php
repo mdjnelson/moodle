@@ -36,10 +36,9 @@ interface factory_interface {
     /**
      * Create rule_interface.
      *
-     * @param string $plugin
-     * @param int    $instanceid
-     *
+     * @param string $rulename
+     * @param int $instanceid
      * @return rule_interface
      */
-    public static function create($plugin, $instanceid);
+    public static function create(string $rulename, int $instanceid): rule_interface;
 }

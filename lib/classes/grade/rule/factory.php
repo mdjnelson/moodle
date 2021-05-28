@@ -36,13 +36,12 @@ class factory implements factory_interface {
     /**
      * Create a new rule_interface.
      *
-     * @param string $plugin
-     * @param int    $instanceid
-     *
+     * @param string $rulename
+     * @param int $instanceid
      * @return rule_interface
      */
-    public static function create($plugin, $instanceid) {
-        $class = "\\graderule_$plugin\\factory";
+    public static function create(string $rulename, int $instanceid): rule_interface {
+        $class = "\\graderule_$rulename\\factory";
 
         // Check to see if class exists.
         if (!class_exists($class)) {
@@ -52,6 +51,6 @@ class factory implements factory_interface {
         // TODO: Fix the check to see if the class is a factory_interface.
         $method = new \ReflectionMethod($class, "create");
 
-        return $method->invokeArgs(null, [$plugin, $instanceid]);
+        return $method->invokeArgs(null, [$rulename, $instanceid]);
     }
 }
