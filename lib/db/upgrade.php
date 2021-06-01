@@ -2687,12 +2687,12 @@ function xmldb_main_upgrade($oldversion) {
         $table->add_field('instanceid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'rulename');
 
         // Adding keys to table grading_rules.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('gradeitemid', XMLDB_KEY_FOREIGN, array('gradeitemid'), 'grade_items', array('id'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('gradeitemid', XMLDB_KEY_FOREIGN, ['gradeitemid'], 'grade_items', ['id']);
 
         // Adding indexes to table grading_rules.
-        $table->add_index('rulename', XMLDB_INDEX_NOTUNIQUE, array('rulename'));
-        $table->add_index('instanceid', XMLDB_INDEX_NOTUNIQUE, array('instanceid'));
+        $table->add_index('rulename', XMLDB_INDEX_NOTUNIQUE, ['rulename']);
+        $table->add_index('instanceid', XMLDB_INDEX_NOTUNIQUE, ['instanceid']);
 
         // Conditionally launch create table for grading_rules.
         if (!$dbman->table_exists($table)) {
