@@ -1010,7 +1010,7 @@ class cache implements cache_loader {
      *
      * @return cache_store
      */
-    protected function get_store() {
+    public function get_store() {
         return $this->store;
     }
 

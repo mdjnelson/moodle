@@ -493,4 +493,12 @@ $definitions = array(
         'staticacceleration' => true,
         'datasource' => '\core_course\cache\course_image',
     ],
+
+    // Backup temporary cache.
+    'backup' => [
+        'mode' => cache_store::MODE_REQUEST,
+        'simplekeys' => true,
+        'simpledata' => true,
+        'requireidentifiers' => ['backupid', 'itemname'],
+    ],
 );
