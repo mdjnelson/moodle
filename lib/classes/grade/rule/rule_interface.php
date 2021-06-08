@@ -39,48 +39,47 @@ interface rule_interface {
 
     /**
      * Whether or not this rule is enabled.
+     *
+     * @return bool
      */
-    public function enabled();
+    public function is_enabled(): bool;
 
     /**
      * Modify final grade.
      *
-     * @param \grade_item  $item
-     * @param int          $userid
-     * @param float        $currentvalue
-     *
+     * @param \grade_item $item
+     * @param int $userid
+     * @param float $currentvalue
      * @return float
      */
-    public function final_grade_modifier(&$item, $userid, $currentvalue);
+    public function final_grade_modifier(\grade_item &$item, int $userid, float $currentvalue): float;
 
     /**
      * Modify symbol.
      *
-     * @param \grade_item  $item
-     * @param float        $value
-     * @param int          $userid
-     * @param string       $currentsymbol
-     *
+     * @param \grade_item $item
+     * @param float $value
+     * @param int $userid
+     * @param string $currentsymbol
      * @return string
      */
-    public function symbol_modifier(&$item, $value, $userid, $currentsymbol);
+    public function symbol_modifier(\grade_item &$item, float $value, int $userid, string $currentsymbol): string;
 
     /**
      * Get the status message.
      *
      * @param \grade_item $item
-     * @param int         $userid
-     *
+     * @param int $userid
      * @return string
      */
-    public function get_status_message(&$item, $userid);
+    public function get_status_message(\grade_item &$item, int $userid);
 
     /**
      * Edit the grade item edit form.
      *
      * @param MoodleQuickForm $mform
      */
-    public function edit_form_hook(&$mform);
+    public function edit_form_hook(MoodleQuickForm &$mform);
 
     /**
      * Process the form.
@@ -93,52 +92,50 @@ interface rule_interface {
      * Save the grade item.
      *
      * @param \grade_item $gradeitem
-     *
      * @return mixed
      */
-    public function save(&$gradeitem);
+    public function save(\grade_item &$gradeitem);
 
     /**
      * Delete the grade item.
      *
      * @param \grade_item $gradeitem
      */
-    public function delete(&$gradeitem);
+    public function delete(\grade_item &$gradeitem);
 
     /**
      * Process the grade item recursively.
      *
      * @param \grade_item $currentgradeitem
      */
-    public function recurse(&$currentgradeitem);
+    public function recurse(\grade_item &$currentgradeitem);
 
     /**
      * Get the type.
      *
      * @return string
      */
-    public function get_type();
+    public function get_type(): string;
 
     /**
      * Get the ID
      *
      * @return int
      */
-    public function get_id();
+    public function get_id(): int;
 
     /**
      * Is the grading rule owned by grade item.
      *
      * @param int $itemid
-     *
-     * @return boolean
+     * @return bool
      */
-    public function owned_by($itemid);
+    public function owned_by(int $itemid): bool;
 
     /**
      * Whether or not grade item needs updating.
      *
-     * @return boolean
+     * @return bool
      */
-    public function needs_update();
+    public function needs_update(): bool;
 }
