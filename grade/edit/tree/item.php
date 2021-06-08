@@ -22,6 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\grade\rule\rule_helper;
 
 require_once '../../../config.php';
 require_once $CFG->dirroot.'/grade/lib.php';
@@ -189,7 +190,7 @@ if ($mform->is_cancelled()) {
     }
 
     // Process hooks for the grade item.
-    $rules = \core\grade\rule::load_for_grade_item($gradeitem->id);
+    $rules = rule_helper::load_for_grade_item($gradeitem->id);
 
     if (!empty($rules)) {
         foreach ($rules as $rule) {

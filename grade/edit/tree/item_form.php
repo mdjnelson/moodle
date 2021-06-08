@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\grade\rule\rule_helper;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
@@ -265,7 +267,7 @@ class edit_item_form extends moodleform {
         $mform =& $this->_form;
 
         // Process form hook rules for grade item.
-        $rules = \core\grade\rule::load_for_grade_item($mform->getElementValue('id'));
+        $rules = rule_helper::load_for_grade_item($mform->getElementValue('id'));
 
         if (!empty($rules)) {
             foreach ($rules as $rule) {

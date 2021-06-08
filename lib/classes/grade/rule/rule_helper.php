@@ -15,68 +15,64 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grading rules engine.
+ * Class containing grading rule helper functions that handle the 'grading_rules' table read/writes.
  *
  * @package     core
  * @copyright   2019 Monash University (http://www.monash.edu)
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace core\grade;
+namespace core\grade\rule;
 
 defined('MOODLE_INTERNAL') || die();
 
-use core\grade\rule\factory;
-use core\grade\rule\rule_interface;
+use core\plugininfo\graderule;
 
 /**
- * Grading rules engine.
+ * Contains grading rule helper functions that handle the 'grading_rules' table read/writes.
  *
  * @package     core
  * @copyright   2019 Monash University (http://www.monash.edu)
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class rule {
+class rule_helper {
 
     /**
-     * Get all installed rules.
+     * Get all enabled rules.
      *
      * @return string[]
      */
-    public static function get_installed_rules() {
-        return \core\plugininfo\graderule::get_enabled_plugins();
+    public static function get_enabled_rules(): array {
+        return graderule::get_enabled_plugins();
     }
 
     /**
-     * Load the rules for a grade item by ID and context.
+     * Load the rules for a grade item by ID.
      *
-     * @param int $itemid
-     *
+     * @param int $gradeitemid
      * @return rule_interface[]
      */
-    public static function load_for_grade_item($itemid) {
+    public static function load_for_grade_item(int $gradeitemid): array {
         global $DB;
 
-        if ($itemid === 0) {
+        if ($gradeitemid === 0) {
             return self::load_blank_instances();
         }
 
-        $rawrules = $DB->get_records('grading_rules', ['gradeitem' => $itemid]);
+        $rawrules = $DB->get_records('grading_rules', ['gradeitemid' => $gradeitemid]);
         $rules = [];
         $alreadyloaded = [];
 
         if (!empty($rawrules)) {
             foreach ($rawrules as $rawrule) {
-
                 // Only do this if the graderule plugin is installed.
-                if (array_key_exists($rawrule->rulename, self::get_installed_rules())) {
+                if (array_key_exists($rawrule->rulename, self::get_enabled_rules())) {
                     $rule = factory::create($rawrule->rulename, $rawrule->instanceid);
 
-                    // Handle clean-up issues where we delete the plugin but it does not
-                    // clear the gradingrules table.
+                    // Handle clean-up issues where we delete the plugin but it does not clear the gradingrules table.
                     if (!empty($rule)) {
                         $rules[] = $rule;
-                        if ($rule->owned_by($itemid)) {
+                        if ($rule->owned_by($gradeitemid)) {
                             $alreadyloaded[] = $rawrule->rulename;
                         }
                     }
@@ -93,16 +89,15 @@ class rule {
     /**
      * Load rules for grade item by type.
      *
-     * @param int    $itemid
+     * @param int $gradeitemid
      * @param string $rulename
-     *
      * @return rule_interface[]
      */
-    public static function load_for_grade_item_by_type($itemid, $rulename) {
+    public static function load_for_grade_item_by_type(int $gradeitemid, string $rulename): array {
         global $DB;
 
         $rules = [];
-        $rawrules = $DB->get_records('grading_rules', ['gradeitem' => $itemid, 'rulename' => $rulename]);
+        $rawrules = $DB->get_records('grading_rules', ['gradeitemid' => $gradeitemid, 'rulename' => $rulename]);
 
         if (!empty($rawrules)) {
             foreach ($rawrules as $rawrule) {
@@ -120,11 +115,10 @@ class rule {
      * Load blank rule.
      *
      * @param string[] $modulesloaded
-     *
      * @return rule_interface[]
      */
-    private static function load_blank_instances($modulesloaded = []) {
-        $unloaded = array_diff(array_keys(self::get_installed_rules()), $modulesloaded);
+    private static function load_blank_instances(array $modulesloaded = []): array {
+        $unloaded = array_diff(array_keys(self::get_enabled_rules()), $modulesloaded);
 
         $blankmodules = [];
 
@@ -140,24 +134,22 @@ class rule {
     /**
      * Save a rule association.
      *
-     * @param int    $itemid
+     * @param int $gradeitemid
      * @param string $rulename
-     * @param int    $instanceid
-     *
+     * @param int $instanceid
      * @return void
      */
-    public static function save_rule_association($itemid, $rulename, $instanceid) {
+    public static function save_rule_association(int $gradeitemid, string $rulename, int $instanceid): void {
         global $DB;
 
         $ruleexists = $DB->record_exists(
             'grading_rules',
-            ['gradeitem' => $itemid, 'rulename' => $rulename, 'instanceid' => $instanceid]
+            ['gradeitemid' => $gradeitemid, 'rulename' => $rulename, 'instanceid' => $instanceid]
         );
 
         if (!$ruleexists) {
-
             $record = new \stdClass();
-            $record->gradeitem = $itemid;
+            $record->gradeitemid = $gradeitemid;
             $record->rulename = $rulename;
             $record->instanceid  = $instanceid;
             $DB->insert_record('grading_rules', $record);
@@ -168,11 +160,10 @@ class rule {
      * Delete a rule association.
      *
      * @param string $rulename
-     * @param int    $instanceid
-     *
+     * @param int $instanceid
      * @return void
      */
-    public static function delete_rule_association($rulename, $instanceid) {
+    public static function delete_rule_association($rulename, $instanceid): void {
         global $DB;
 
         $DB->delete_records('grading_rules', ['rulename' => $rulename, 'instanceid' => $instanceid]);
@@ -184,8 +175,8 @@ class rule {
      * @param rule_interface[] $rules
      * return void
      */
-    private static function sort_rules(&$rules) {
-        $order = self::get_installed_rules();
+    private static function sort_rules(array &$rules): void {
+        $order = self::get_enabled_rules();
 
         $comparator = function(rule_interface $a, rule_interface $b) use ($order) {
             $valuea = array_search($a->get_type(), array_keys($order));

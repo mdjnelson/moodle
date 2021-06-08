@@ -23,7 +23,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\grade\rule\factory;
 use core\grade\rule\rule_interface;
+use core\grade\rule\rule_helper;
 
 defined('MOODLE_INTERNAL') || die();
 require_once('grade_object.php');
@@ -441,11 +443,11 @@ class grade_item extends grade_object {
         $this->delete_all_grades($source);
 
         // Process installed rules here.
-        $installedrules = \core\grade\rule::get_installed_rules();
+        $installedrules = rule_helper::get_enabled_rules();
 
         if (!empty($installedrules)) {
             foreach ($installedrules as $installedrule) {
-                $rule = \core\grade\rule\factory::create($installedrule, -1);
+                $rule = factory::create($installedrule, -1);
                 $rule->delete($this);
             }
         }
@@ -2681,12 +2683,12 @@ class grade_item extends grade_object {
      */
     public static function get_rules($id) {
         // Return an empty array if there are no grade rule plugin installed.
-        if (count(core\grade\rule::get_installed_rules()) === 0) {
+        if (count(rule_helper::get_enabled_rules()) === 0) {
             return [];
         }
 
         // The context here is used to get the sortorder config, which is at the site level.
-        return core\grade\rule::load_for_grade_item($id);
+        return rule_helper::load_for_grade_item($id);
     }
 
     /**

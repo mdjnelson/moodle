@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use core\grade\rule\rule_helper;
+
 /**
  * A library of classes used by the grade edit pages
  *
@@ -684,7 +686,7 @@ class grade_edit_tree {
         }
 
         // Process any rules for this grade category.
-        $rules = \core\grade\rule::load_for_grade_item($gradeitem->id);
+        $rules = rule_helper::load_for_grade_item($gradeitem->id);
 
         if (!empty($rules)) {
             foreach ($rules as $rule) {

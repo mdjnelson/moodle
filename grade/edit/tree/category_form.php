@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\grade\rule\rule_helper;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
@@ -313,7 +315,7 @@ class edit_category_form extends moodleform {
             $gradeitemid = grade_category::fetch(['id' => $gradeitemid])->get_grade_item()->id;
         }
 
-        $rules = \core\grade\rule::load_for_grade_item($gradeitemid);
+        $rules = rule_helper::load_for_grade_item($gradeitemid);
 
         if (!empty($rules)) {
             foreach ($rules as $rule) {

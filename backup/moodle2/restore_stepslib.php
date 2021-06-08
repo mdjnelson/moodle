@@ -25,6 +25,8 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\grade\rule\rule_helper;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -276,7 +278,7 @@ class restore_gradebook_structure_step extends restore_structure_step {
         $data->gradeitem = $this->get_new_parentid('grade_item');
 
         // Get the installed rules.
-        $installedrules = \core\grade\rule::get_installed_rules();
+        $installedrules = rule_helper::get_enabled_rules();
 
         // Only restore the grading rules if the specific plugin is installed.
         if (isset($installedrules[$data->plugin])) {
@@ -4033,7 +4035,7 @@ class restore_activity_grades_structure_step extends restore_structure_step {
         $data->gradeitem = $this->get_new_parentid('grade_item');
 
         // Get the installed rules.
-        $installedrules = \core\grade\rule::get_installed_rules();
+        $installedrules = rule_helper::get_enabled_rules();
 
         // Only restore the grading rules if the specific plugin is installed.
         if (isset($installedrules[$data->plugin])) {
