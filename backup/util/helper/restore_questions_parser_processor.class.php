@@ -59,9 +59,9 @@ class restore_questions_parser_processor extends grouped_parser_processor {
 
         // Prepare question record
         } else if ($data['path'] == '/question_categories/question_category/questions/question') {
-            $info = (object)$data['tags'];
+            $info = array_intersect_key($data['tags'], array_flip(['stamp', 'version', 'qtype']));
             $itemname = 'question';
-            $itemid   = $info->id;
+            $itemid   = $data['tags']['id'];
             $parentitemid = $this->lastcatid;
 
         // Not question_category nor question, impossible. Throw exception.
@@ -70,7 +70,7 @@ class restore_questions_parser_processor extends grouped_parser_processor {
         }
 
         // Only load it if needed (exist same question_categoryref itemid in table)
-        if (restore_dbops::get_backup_ids_record($this->restoreid, 'question_categoryref', $this->lastcatid)) {
+        if (restore_dbops::get_backup_ids_record($this->restoreid, 'question_categoryref', $this->lastcatid, false)) {
             restore_dbops::set_backup_ids_record($this->restoreid, $itemname, $itemid, 0, $parentitemid, $info);
         }
     }

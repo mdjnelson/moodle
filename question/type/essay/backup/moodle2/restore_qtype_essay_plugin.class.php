@@ -100,32 +100,38 @@ class restore_qtype_essay_plugin extends restore_qtype_plugin {
     protected function after_execute_question() {
         global $DB;
 
-        $essayswithoutoptions = $DB->get_records_sql("
+        $sqlparams = $this->get_sql_and_params_from_cache();
+
+        if (empty($sqlparams)) {
+            return;
+        }
+
+        foreach ($sqlparams as $sqlparam) {
+            list($sql, $params) = $sqlparam;
+            $essayswithoutoptions = $DB->get_records_sql("
                     SELECT q.*
                       FROM {question} q
-                      JOIN {backup_ids_temp} bi ON bi.newitemid = q.id
                  LEFT JOIN {qtype_essay_options} qeo ON qeo.questionid = q.id
-                     WHERE q.qtype = ?
+                     WHERE q.qtype = 'essay'
                        AND qeo.id IS NULL
-                       AND bi.backupid = ?
-                       AND bi.itemname = ?
-                ", array('essay', $this->get_restoreid(), 'question_created'));
+                       AND q.id $sql", $params);
 
-        foreach ($essayswithoutoptions as $q) {
-            $defaultoptions = new stdClass();
-            $defaultoptions->questionid = $q->id;
-            $defaultoptions->responseformat = 'editor';
-            $defaultoptions->responserequired = 1;
-            $defaultoptions->responsefieldlines = 15;
-            $defaultoptions->minwordlimit = null;
-            $defaultoptions->maxwordlimit = null;
-            $defaultoptions->attachments = 0;
-            $defaultoptions->attachmentsrequired = 0;
-            $defaultoptions->graderinfo = '';
-            $defaultoptions->graderinfoformat = FORMAT_HTML;
-            $defaultoptions->responsetemplate = '';
-            $defaultoptions->responsetemplateformat = FORMAT_HTML;
-            $DB->insert_record('qtype_essay_options', $defaultoptions);
+            $insertrecords = array();
+            foreach ($essayswithoutoptions as $q) {
+                $defaultoptions = new stdClass();
+                $defaultoptions->questionid = $q->id;
+                $defaultoptions->responseformat = 'editor';
+                $defaultoptions->responserequired = 1;
+                $defaultoptions->responsefieldlines = 15;
+                $defaultoptions->attachments = 0;
+                $defaultoptions->attachmentsrequired = 0;
+                $defaultoptions->graderinfo = '';
+                $defaultoptions->graderinfoformat = FORMAT_HTML;
+                $defaultoptions->responsetemplate = '';
+                $defaultoptions->responsetemplateformat = FORMAT_HTML;
+                $insertrecords[] = $defaultoptions;
+            }
+            $DB->insert_records('qtype_essay_options', $insertrecords);
         }
     }
 }

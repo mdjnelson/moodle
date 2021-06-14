@@ -77,7 +77,7 @@ class restore_activity_results_block_task extends restore_block_task {
             if (!empty($config->activityparentid)) {
                 // Get the mapping and replace it in config.
                 if ($mapping = restore_dbops::get_backup_ids_record($this->get_restoreid(),
-                    $config->activityparent, $config->activityparentid)) {
+                    $config->activityparent, $config->activityparentid, false)) {
 
                     // Update the parent module id (the id from mdl_quiz etc...)
                     $config->activityparentid = $mapping->newitemid;

@@ -270,7 +270,7 @@ class condition extends \core_availability\condition {
 
     public function update_after_restore($restoreid, $courseid, \base_logger $logger, $name) {
         global $DB;
-        $rec = \restore_dbops::get_backup_ids_record($restoreid, 'grade_item', $this->gradeitemid);
+        $rec = \restore_dbops::get_backup_ids_record($restoreid, 'grade_item', $this->gradeitemid, false);
         if (!$rec || !$rec->newitemid) {
             // If we are on the same course (e.g. duplicate) then we can just
             // use the existing one.

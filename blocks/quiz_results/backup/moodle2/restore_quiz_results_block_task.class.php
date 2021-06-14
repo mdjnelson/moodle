@@ -73,7 +73,7 @@ class restore_quiz_results_block_task extends restore_block_task {
             $config->gradeformat = isset($config->gradeformat) ? $config->gradeformat : 1;
 
             if (!empty($config->quizid)
-                    && $quizmap = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'quiz', $config->quizid)) {
+                    && $quizmap = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'quiz', $config->quizid, false)) {
                 $config->activityparentid = $quizmap->newitemid;
             }
 

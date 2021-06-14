@@ -136,7 +136,7 @@ class restore_lesson_activity_task extends restore_activity_task {
 
         if (!empty($lesson->dependency)) {
             $updaterequired = true;
-            if ($newitem = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'lesson', $lesson->dependency)) {
+            if ($newitem = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'lesson', $lesson->dependency, false)) {
                 $lesson->dependency = $newitem->newitemid;
             }
             if (!$DB->record_exists('lesson', array('id' => $lesson->dependency, 'course' => $lesson->course))) {
@@ -146,7 +146,8 @@ class restore_lesson_activity_task extends restore_activity_task {
 
         if (!empty($lesson->activitylink)) {
             $updaterequired = true;
-            if ($newitem = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'course_module', $lesson->activitylink)) {
+            $newitem = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'course_module', $lesson->activitylink, false);
+            if ($newitem) {
                 $lesson->activitylink = $newitem->newitemid;
             }
             if (!$DB->record_exists('course_modules', array('id' => $lesson->activitylink, 'course' => $lesson->course))) {

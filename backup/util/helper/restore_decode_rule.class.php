@@ -112,7 +112,7 @@ class restore_decode_rule {
         if (!$this->restoreid) {
             throw new restore_decode_rule_exception('decode_rule_restoreid_not_set');
         }
-        if (!$found = restore_dbops::get_backup_ids_record($this->restoreid, $itemname, $itemid)) {
+        if (!$found = restore_dbops::get_backup_ids_record($this->restoreid, $itemname, $itemid, false)) {
             return false;
         }
         return $found->newitemid;

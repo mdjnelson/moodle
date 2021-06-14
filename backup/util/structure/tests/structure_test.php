@@ -294,9 +294,6 @@ class backup_structure_testcase extends advanced_testcase {
         $rating->annotate_ids('user2', 'userid');
         $rating->annotate_ids('forum_post', 'itemid');
 
-        // Create the backup_ids_temp table
-        backup_controller_dbops::create_backup_ids_temp_table($backupid);
-
         // Instantiate in memory xml output
         $xo = new memory_xml_output();
 
@@ -428,30 +425,32 @@ class backup_structure_testcase extends advanced_testcase {
 
         // Check annotations information against DB
         // Count records in original tables
-        $c_postsid    = $DB->count_records_sql('SELECT COUNT(DISTINCT id) FROM {forum_posts}');
-        $c_dissuserid = $DB->count_records_sql('SELECT COUNT(DISTINCT userid) FROM {forum_discussions}');
-        $c_ratuserid  = $DB->count_records_sql('SELECT COUNT(DISTINCT userid) FROM {rating}');
-        // Count records in backup_ids_table
-        $f_forumpost = $DB->count_records('backup_ids_temp', array('backupid' => $backupid, 'itemname' => 'forum_post'));
-        $f_user1     = $DB->count_records('backup_ids_temp', array('backupid' => $backupid, 'itemname' => 'user1'));
-        $f_user2     = $DB->count_records('backup_ids_temp', array('backupid' => $backupid, 'itemname' => 'user2'));
-        $c_notbackupid = $DB->count_records_select('backup_ids_temp', 'backupid != ?', array($backupid));
+        $dbcountpost = $DB->count_records_sql('SELECT COUNT(DISTINCT id) FROM {forum_posts}');
+        $dbcountdiscuss = $DB->count_records_sql('SELECT COUNT(DISTINCT userid) FROM {forum_discussions}');
+        $dbcountrating = $DB->count_records_sql('SELECT COUNT(DISTINCT userid) FROM {rating}');
+        // Count records in backup ids cache.
+        $cache = backup_muc_manager::get($backupid, 'forum_post');
+        $cachepost = count($cache->get_store()->find_all());
+        $cache = backup_muc_manager::get($backupid, 'user1');
+        $cacheuser1 = count($cache->get_store()->find_all());
+        $cache = backup_muc_manager::get($backupid, 'user2');
+        $cacheuser2 = count($cache->get_store()->find_all());
         // Peform tests by comparing counts
-        $this->assertEquals($c_notbackupid, 0); // there isn't any record with incorrect backupid
-        $this->assertEquals($c_postsid, $f_forumpost); // All posts have been registered
-        $this->assertEquals($c_dissuserid, $f_user1); // All users coming from discussions have been registered
-        $this->assertEquals($c_ratuserid, $f_user2); // All users coming from ratings have been registered
+        $this->assertEquals($dbcountpost, $cachepost); // All posts have been registered.
+        $this->assertEquals($dbcountdiscuss, $cacheuser1); // All users coming from discussions have been registered.
+        $this->assertEquals($dbcountrating, $cacheuser2); // All users coming from ratings have been registered.
 
         // Check file annotations against DB
-        $fannotations = $DB->get_records('backup_ids_temp', array('backupid' => $backupid, 'itemname' => 'file'));
+        $cache = backup_muc_manager::get($backupid, 'file');
+        $fannotations = $cache->get_store()->find_all();
         $ffiles       = $DB->get_records('files', array('contextid' => $this->contextid));
-        $this->assertEquals(count($fannotations), count($ffiles)); // Same number of recs in both (all files have been annotated)
-        foreach ($fannotations as $annotation) { // Check ids annotated
-            $this->assertTrue($DB->record_exists('files', array('id' => $annotation->itemid)));
+        $this->assertEquals(count($fannotations), count($ffiles)); // Same number of recs in both (all files have been annotated).
+        foreach ($fannotations as $annotationid) { // Check ids annotated.
+            $this->assertTrue($DB->record_exists('files', array('id' => $annotationid)));
         }
 
-        // Drop the backup_ids_temp table
-        backup_controller_dbops::drop_backup_ids_temp_table('testingid');
+        // Purge the backup ids cache.
+        backup_controller_dbops::purge_temp_caches();
     }
 
     /**

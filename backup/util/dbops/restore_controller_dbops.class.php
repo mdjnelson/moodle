@@ -131,8 +131,14 @@ abstract class restore_controller_dbops extends restore_dbops {
             $table = new xmldb_table($targettablename);
             $dbman->drop_table($table); // And drop it
         }
-        // Invalidate the backup_ids caches.
-        restore_dbops::reset_backup_ids_cached();
+        self::purge_temp_caches();
+    }
+
+    /**
+     * Purge temporary cache.
+     */
+    public static function purge_temp_caches() {
+        backup_muc_manager::reset();
     }
 
     /**

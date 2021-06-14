@@ -71,14 +71,27 @@ class restore_html_block_decode_content extends restore_decode_content {
 
         // Build the SQL dynamically here
         $fieldslist = 't.' . implode(', t.', $this->fields);
+        $cache = backup_muc_manager::get($this->restoreid, $this->mapping);
+        $cacheids = $cache->get_store()->find_all();
+
+        if (empty($cacheids)) {
+            $sql = "< 0";
+            $params = array();
+        } else {
+            $newitemids = array();
+            foreach ($cacheids as $id) {
+                $data = $cache->get($id);
+                $newitemids[$data['newitemid']] = $data['newitemid'];
+            }
+            list($sql, $params) = $DB->get_in_or_equal($newitemids);
+        }
+
         $sql = "SELECT t.id, $fieldslist
                   FROM {" . $this->tablename . "} t
-                  JOIN {backup_ids_temp} b ON b.newitemid = t.id
-                 WHERE b.backupid = ?
-                   AND b.itemname = ?
-                   AND t.blockname = 'html'";
-        $params = array($this->restoreid, $this->mapping);
-        return ($DB->get_recordset_sql($sql, $params));
+                 WHERE t.blockname = 'html'
+                   AND t.id $sql";
+        $rs = ($DB->get_recordset_sql($sql, $params));
+        return $rs;
     }
 
     protected function preprocess_field($field) {

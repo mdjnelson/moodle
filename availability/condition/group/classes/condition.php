@@ -149,7 +149,7 @@ class condition extends \core_availability\condition {
         if (!$this->groupid) {
             return false;
         }
-        $rec = \restore_dbops::get_backup_ids_record($restoreid, 'group', $this->groupid);
+        $rec = \restore_dbops::get_backup_ids_record($restoreid, 'group', $this->groupid, false);
         if (!$rec || !$rec->newitemid) {
             // If we are on the same course (e.g. duplicate) then we can just
             // use the existing one.

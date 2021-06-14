@@ -192,6 +192,7 @@ abstract class restore_prechecks_helper {
         // Warnings/errors detected or want to do so explicitly, drop temp tables
         if (!empty($results) || $droptemptablesafter) {
             restore_controller_dbops::drop_restore_temp_tables($controller->get_restoreid());
+            backup_muc_manager::reset();
         }
 
         // Finish progress and check we got the initial number of steps right.

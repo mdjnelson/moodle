@@ -61,7 +61,7 @@ class restore_users_parser_processor extends grouped_parser_processor {
         $parentitemid = $data['tags']['contextid'];
         $info = $data['tags'];
         // Only load it if needed (exist same userref itemid in table)
-        if (restore_dbops::get_backup_ids_record($this->restoreid, 'userref', $itemid)) {
+        if (restore_dbops::get_backup_ids_record($this->restoreid, 'userref', $itemid, false)) {
             restore_dbops::set_backup_ids_record($this->restoreid, $itemname, $itemid, 0, $parentitemid, $info);
         }
     }

@@ -268,18 +268,26 @@ abstract class backup_plan_dbops extends backup_dbops {
     public static function require_gradebook_backup($courseid, $backupid) {
         global $DB;
 
+        $cache = backup_muc_manager::get($backupid, 'grade_itemfinal');
+
+        $itemids = [];
+        foreach ($cache->get_store()->find_all() as $id) {
+            $itemids[$id] = $id;
+        }
+
+        if (empty($itemids)) {
+            $sql = '< 0';
+            $params = [];
+        } else {
+            list($sql, $params) = $DB->get_in_or_equal($itemids, SQL_PARAMS_QM, 'param', false);
+        }
+        $params[] = $courseid;
+
         $sql = "SELECT count(id)
                   FROM {grade_items}
-                 WHERE courseid=:courseid
-                   AND itemtype = 'mod'
-                   AND id NOT IN (
-                       SELECT bi.itemid
-                         FROM {backup_ids_temp} bi
-                        WHERE bi.itemname = 'grade_itemfinal'
-                          AND bi.backupid = :backupid)";
-        $params = array('courseid'=>$courseid, 'backupid'=>$backupid);
-
-
+                 WHERE itemtype = 'mod'
+                   AND id $sql
+                   AND courseid= ?";
         $count = $DB->count_records_sql($sql, $params);
 
         //if there are 0 activity grade items not already included in the backup

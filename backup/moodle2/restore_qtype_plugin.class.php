@@ -130,7 +130,7 @@ abstract class restore_qtype_plugin extends restore_plugin {
         // Detect if the question is created or mapped
         $oldquestionid   = $this->get_old_parentid('question');
         $newquestionid   = $this->get_new_parentid('question');
-        $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ? true : false;
+        $questioncreated = $this->get_mappingid('question_created', $oldquestionid, false, false) ? true : false;
 
         // In the past, there were some sloppily rounded fractions around. Fix them up.
         $changes = array(
@@ -218,7 +218,7 @@ abstract class restore_qtype_plugin extends restore_plugin {
         // Detect if the question is created or mapped
         $oldquestionid   = $this->get_old_parentid('question');
         $newquestionid   = $this->get_new_parentid('question');
-        $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ? true : false;
+        $questioncreated = $this->get_mappingid('question_created', $oldquestionid, false, false) ? true : false;
 
         // If the question has been created by restore, we need to create its question_numerical_units too
         if ($questioncreated) {
@@ -243,7 +243,7 @@ abstract class restore_qtype_plugin extends restore_plugin {
         // Detect if the question is created or mapped
         $oldquestionid   = $this->get_old_parentid('question');
         $newquestionid   = $this->get_new_parentid('question');
-        $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ? true : false;
+        $questioncreated = $this->get_mappingid('question_created', $oldquestionid, false, false) ? true : false;
 
         // If the question has been created by restore, we need to create its question_numerical_options too
         if ($questioncreated) {
@@ -270,7 +270,7 @@ abstract class restore_qtype_plugin extends restore_plugin {
         // Detect if the question is created or mapped
         $oldquestionid   = $this->get_old_parentid('question');
         $newquestionid   = $this->get_new_parentid('question');
-        $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ? true : false;
+        $questioncreated = $this->get_mappingid('question_created', $oldquestionid, false, false) ? true : false;
 
         // If the question is mapped, nothing to do
         if (!$questioncreated) {
@@ -280,7 +280,7 @@ abstract class restore_qtype_plugin extends restore_plugin {
         // Arrived here, let's see if the question_dataset_definition already exists in category or no
         // (by category, name, type and enough items). Only for "shared" definitions (category != 0).
         // If exists, reuse it, else, create it as "not shared" (category = 0)
-        $data->category = $this->get_mappingid('question_category', $data->category);
+        $data->category = $this->get_mappingid('question_category', $data->category, false, false);
         // If category is shared, look for definitions
         $founddefid = null;
         if ($data->category) {
@@ -334,7 +334,7 @@ abstract class restore_qtype_plugin extends restore_plugin {
         // Detect if the question is created or mapped
         $oldquestionid   = $this->get_old_parentid('question');
         $newquestionid   = $this->get_new_parentid('question');
-        $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ? true : false;
+        $questioncreated = $this->get_mappingid('question_created', $oldquestionid, false, false) ? true : false;
 
         // If the question is mapped, nothing to do
         if (!$questioncreated) {
@@ -392,5 +392,37 @@ abstract class restore_qtype_plugin extends restore_plugin {
         $contents[] = new restore_decode_content('question_answers', array('answer', 'feedback'), 'question_answer');
 
         return $contents;
+    }
+
+    /**
+     * Return chunked sqlparams array from question_created ids.
+     *
+     * @return array|void
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    protected function get_sql_and_params_from_cache() {
+        global $DB;
+
+        $idcache = backup_muc_manager::get($this->get_restoreid(), 'question_created');
+        $cacheitems = $idcache->get_store()->find_all();
+
+        if (empty($cacheitems)) {
+            return;
+        }
+
+        $newitemids = array();
+        foreach ($cacheitems as $itemid) {
+            $record = $idcache->get($itemid);
+            $newitemids[] = $record['newitemid'];
+        }
+
+        $sqlparams = array();
+        $chunkedarray = array_chunk($newitemids, 8192);
+        foreach ($chunkedarray as $chunkedids) {
+            $sqlparams[] = $DB->get_in_or_equal($chunkedids);
+        }
+
+        return $sqlparams;
     }
 }

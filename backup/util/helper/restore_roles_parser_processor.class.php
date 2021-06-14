@@ -50,7 +50,7 @@ class restore_roles_parser_processor extends grouped_parser_processor {
         $itemid   = $data['tags']['id'];
         $info = $data['tags'];
         // Only load it if needed (exist same roleref itemid in table)
-        if (restore_dbops::get_backup_ids_record($this->restoreid, 'roleref', $itemid)) {
+        if (restore_dbops::get_backup_ids_record($this->restoreid, 'roleref', $itemid, false)) {
             restore_dbops::set_backup_ids_record($this->restoreid, $itemname, $itemid, 0, null, $info);
         }
     }

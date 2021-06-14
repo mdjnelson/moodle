@@ -43,6 +43,12 @@ abstract class restore_structure_step extends restore_step {
     const SKIP_ALL_CHILDREN = -991399; // To instruct the dispatcher about to ignore
                                        // all children below path processor returning it
 
+    /** @var array Array of mappingid. */
+    protected $mappingidcache;
+
+    /** @var integer Remaining space for mappingidcache.  */
+    protected $mappingidcacheavailablesize = 2048;
+
     /**
      * Constructor - instantiates one object of this class
      */
@@ -56,6 +62,7 @@ abstract class restore_structure_step extends restore_step {
         $this->elementsoldid = array();
         $this->elementsnewid = array();
         $this->pathlock = null;
+        $this->mappingidcache = [];
         parent::__construct($name, $task);
     }
 
@@ -159,7 +166,7 @@ abstract class restore_structure_step extends restore_step {
      * To send ids pairs to backup_ids_table and to store them into paths
      *
      * This method will send the given itemname and old/new ids to the
-     * backup_ids_temp table, and, at the same time, will save the new id
+     * backup ids cache, and, at the same time, will save the new id
      * into the corresponding restore_path_element for easier access
      * by children. Also will inject the known old context id for the task
      * in case it's going to be used for restoring files later
@@ -208,15 +215,25 @@ abstract class restore_structure_step extends restore_step {
      * @param mixed $ifnotfound what to return if $oldid wasnt found. Defaults to false
      */
     public function get_mappingid($itemname, $oldid, $ifnotfound = false) {
-        $mapping = $this->get_mapping($itemname, $oldid);
-        return $mapping ? $mapping->newitemid : $ifnotfound;
+        $key = $itemname . '-' . $oldid;
+        if (!array_key_exists($key, $this->mappingidcache)) {
+            $mapping = $this->get_mapping($itemname, $oldid, false);
+            $this->mappingidcache[$key] = $mapping ? $mapping->newitemid : $ifnotfound;
+            $this->mappingidcacheavailablesize--;
+            if ($this->mappingidcacheavailablesize < 0) {
+                $this->mappingidcache = array_slice($this->mappingidcache, 200, null, true);
+                $this->mappingidcacheavailablesize += 200;
+            }
+        }
+
+        return $this->mappingidcache[$key];
     }
 
     /**
      * Return the complete mapping from the given itemname, itemid
      */
-    public function get_mapping($itemname, $oldid) {
-        return restore_dbops::get_backup_ids_record($this->get_restoreid(), $itemname, $oldid);
+    public function get_mapping($itemname, $oldid, $retrieveinfo = true) {
+        return restore_dbops::get_backup_ids_record($this->get_restoreid(), $itemname, $oldid, $retrieveinfo);
     }
 
     /**

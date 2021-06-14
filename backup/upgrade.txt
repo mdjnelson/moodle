@@ -1,6 +1,13 @@
 This files describes API changes in /backup/*,
 information provided here is intended especially for developers.
 
+=== 4.0 ===
+
+ * Backup id mapping table is now using MUC static cache. To save memory usage, additional info
+   records are still in temporary table, and need to use $retrieveinfo = true in
+   restore_dbops::get_backup_ids_record function. The default value for $retrieveinfo is true
+   for keeping backward compatible.
+
 === 3.11 ===
 
  * New setting called "Include permission overrides" has been implemented. The default

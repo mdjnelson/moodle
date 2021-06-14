@@ -340,10 +340,10 @@ class restore_quiz_activity_structure_step extends restore_questions_activity_st
 
         if (isset($data->questioncategoryid)) {
             $data->questioncategoryid = $this->get_mappingid('question_category', $data->questioncategoryid);
-        } else if ($questionmapping && $questionmapping->info->qtype == 'random') {
+        } else if ($questionmapping && $questionmapping->info["qtype"] == 'random') {
             // Backward compatibility for backups created using Moodle 3.4 or earlier.
             $data->questioncategoryid = $this->get_mappingid('question_category', $questionmapping->parentitemid);
-            $data->includingsubcategories = $questionmapping->info->questiontext ? 1 : 0;
+            $data->includingsubcategories = $questionmapping->info["questiontext"] ? 1 : 0;
         }
 
         $newitemid = $DB->insert_record('quiz_slots', $data);

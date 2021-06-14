@@ -61,6 +61,7 @@ require_once($CFG->dirroot . '/backup/util/helper/backup_null_iterator.class.php
 require_once($CFG->dirroot . '/backup/util/helper/backup_array_iterator.class.php');
 require_once($CFG->dirroot . '/backup/util/helper/backup_anonymizer_helper.class.php');
 require_once($CFG->dirroot . '/backup/util/helper/backup_file_manager.class.php');
+require_once($CFG->dirroot . '/backup/util/helper/muc_helper.class.php');
 require_once($CFG->dirroot . '/backup/util/helper/restore_moodlexml_parser_processor.class.php'); // Required by backup_general_helper::get_backup_information().
 require_once($CFG->dirroot . '/backup/util/xml/xml_writer.class.php');
 require_once($CFG->dirroot . '/backup/util/xml/output/xml_output.class.php');

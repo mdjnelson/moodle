@@ -110,18 +110,26 @@ class restore_qtype_random_plugin extends restore_qtype_plugin {
         // Note, we cannot just do this in one DB query, because MySQL is useless.
         // The expected case is that the SELECT returns 0 rows, so loading all the
         // ids should not be a problem.
-        $problemquestions = $DB->get_records_sql_menu("
+        $sqlparams = $this->get_sql_and_params_from_cache();
+        if (empty($sqlparams)) {
+            return;
+        }
+        $params[] = '';
+
+        foreach ($sqlparams as $sqlparam) {
+            list($sql, $params) = $sqlparam;
+            $problemquestions = $DB->get_records_sql_menu("
                 SELECT q.id, 1
                   FROM {question} q
-                  JOIN {backup_ids_temp} bi ON q.id = bi.newitemid
                  WHERE q.qtype = 'random'
-                   AND " . $DB->sql_compare_text('q.questiontext') . " = ?
-                   AND bi.backupid = ?
-                   AND bi.itemname = 'question_created'
-                ", array('', $this->get_restoreid()));
+                   AND id $sql
+                   AND " . $DB->sql_compare_text('q.questiontext') . " = ''", $params);
 
-        if (!$problemquestions) {
-            return; // Nothing to do.
+            if (!$problemquestions) {
+                return; // Nothing to do.
+            }
+            list($idtest, $params) = $DB->get_in_or_equal(array_keys($problemquestions));
+            $DB->set_field_select('question', 'questiontext', '0', "id $idtest", $params);
         }
 
         list($idtest, $params) = $DB->get_in_or_equal(array_keys($problemquestions));

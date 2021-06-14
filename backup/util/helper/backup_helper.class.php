@@ -99,7 +99,7 @@ abstract class backup_helper {
         $slash = "/";
 
         // Create arrays to store files and directories
-        $dir_files      = array();
+        $dirfiles      = array();
         $dir_subdirs    = array();
 
         // Make sure we can delete it
@@ -116,15 +116,17 @@ abstract class backup_helper {
                 $dir_subdirs[] = $dir. $slash .$entry;
 
             } else if ($entry != ".." && $entry != "." && $entry != $excludeddir) {
-                $dir_files[] = $dir. $slash .$entry;
+                $dirfiles[] = $dir. $slash .$entry;
             }
         }
 
-        // Delete all files in the curent directory return false and halt if a file cannot be removed
-        for ($i=0; $i<count($dir_files); $i++) {
-            chmod($dir_files[$i], $CFG->directorypermissions);
-            if (((unlink($dir_files[$i]))) == false) {
-                return false;
+        // Delete all files in the current directory return false and halt if a file cannot be removed.
+        for ($i = 0; $i < count($dirfiles); $i++) {
+            if (is_file($dirfiles[$i])) {
+                chmod($dirfiles[$i], $CFG->directorypermissions);
+                if (((unlink($dirfiles[$i]))) === false) {
+                    return false;
+                }
             }
         }
 

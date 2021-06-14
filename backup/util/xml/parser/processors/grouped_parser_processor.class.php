@@ -191,7 +191,7 @@ abstract class grouped_parser_processor extends simplified_parser_processor {
     protected function grouped_parent_exists($path) {
         // Search the tree structure to find out if one of the paths
         // above the $path is a grouped path.
-        $patharray = explode('/', $this->get_parent_path($path));
+        $patharray = $this->get_parent_path($path);
         $groupedpath = '';
         $currentpos = &$this->groupedparentprefixtree;
         foreach ($patharray as $item) {
@@ -224,7 +224,7 @@ abstract class grouped_parser_processor extends simplified_parser_processor {
      */
     protected function get_parent_path($path) {
         if (!isset($this->parentcache[$path])) {
-            $this->parentcache[$path] = progressive_parser::dirname($path);
+            $this->parentcache[$path] = explode('/', progressive_parser::dirname($path));
             $this->parentcacheavailablesize--;
             if ($this->parentcacheavailablesize < 0) {
                 // Older first is cheaper than LRU.  We use 10% as items are grouped together and the large quiz

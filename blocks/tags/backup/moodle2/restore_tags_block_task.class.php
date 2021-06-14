@@ -64,7 +64,7 @@ class restore_tags_block_task extends restore_block_task {
                 $changed = true;
             }
             if (!empty($config->ctx)) {
-                if ($ctxmap = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'context', $config->ctx)) {
+                if ($ctxmap = restore_dbops::get_backup_ids_record($this->get_restoreid(), 'context', $config->ctx, false)) {
                     $config->ctx = $ctxmap->newitemid;
                 } else {
                     $config->ctx = 0;

@@ -94,46 +94,55 @@ class restore_qtype_multianswer_plugin extends restore_qtype_plugin {
         global $DB;
         // Now that all the questions have been restored, let's process
         // the created question_multianswer sequences (list of question ids).
-        $rs = $DB->get_recordset_sql("
+        $sqlparams = $this->get_sql_and_params_from_cache();
+        if (empty($sqlparams)) {
+            return;
+        }
+
+        foreach ($sqlparams as $sqlparam) {
+            list($sql, $params) = $sqlparam;
+
+            $rs = $DB->get_recordset_sql("
                 SELECT qma.id, qma.sequence
                   FROM {question_multianswer} qma
-                  JOIN {backup_ids_temp} bi ON bi.newitemid = qma.question
-                 WHERE bi.backupid = ?
-                   AND bi.itemname = 'question_created'",
-                array($this->get_restoreid()));
-        foreach ($rs as $rec) {
-            $sequencearr = preg_split('/,/', $rec->sequence, -1, PREG_SPLIT_NO_EMPTY);
-            if (substr_count($rec->sequence, ',') + 1 != count($sequencearr)) {
-                $this->task->log('Invalid sequence found in restored multianswer question ' . $rec->id, backup::LOG_WARNING);
-            }
+                 WHERE qma.question $sql", $params);
+            foreach ($rs as $rec) {
+                $sequencearr = preg_split('/,/', $rec->sequence, -1, PREG_SPLIT_NO_EMPTY);
+                if (substr_count($rec->sequence, ',') + 1 != count($sequencearr)) {
+                    $this->task->log('Invalid sequence found in restored multianswer question ' . $rec->id, backup::LOG_WARNING);
+                }
 
-            foreach ($sequencearr as $key => $question) {
-                $sequencearr[$key] = $this->get_mappingid('question', $question);
-            }
-            $sequence = implode(',', $sequencearr);
-            $DB->set_field('question_multianswer', 'sequence', $sequence,
-                    array('id' => $rec->id));
-            if (!empty($sequence)) {
-                // Get relevant data indexed by positionkey from the multianswers table.
-                $wrappedquestions = $DB->get_records_list('question', 'id',
-                    explode(',', $sequence), 'id ASC');
-                foreach ($wrappedquestions as $wrapped) {
-                    if ($wrapped->qtype == 'multichoice') {
-                        question_bank::get_qtype($wrapped->qtype)->get_question_options($wrapped);
-                        if (isset($wrapped->options->shuffleanswers)) {
-                            preg_match('/'.ANSWER_REGEX.'/s', $wrapped->questiontext, $answerregs);
-                            if (isset($answerregs[ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE]) &&
+                foreach ($sequencearr as $key => $question) {
+                    $questionmappingid = $this->get_mappingid('question', $question);
+                    if (!empty($questionmappingid)) {
+                        $sequencearr[$key] = $questionmappingid;
+                    }
+                }
+                $sequence = implode(',', $sequencearr);
+                $DB->set_field('question_multianswer', 'sequence', $sequence,
+                        array('id' => $rec->id));
+                if (!empty($sequence)) {
+                    // Get relevant data indexed by positionkey from the multianswers table.
+                    $wrappedquestions = $DB->get_records_list('question', 'id',
+                        explode(',', $sequence), 'id ASC');
+                    foreach ($wrappedquestions as $wrapped) {
+                        if ($wrapped->qtype == 'multichoice') {
+                            question_bank::get_qtype($wrapped->qtype)->get_question_options($wrapped);
+                            if (isset($wrapped->options->shuffleanswers)) {
+                                preg_match('/'.ANSWER_REGEX.'/s', $wrapped->questiontext, $answerregs);
+                                if (isset($answerregs[ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE]) &&
                                     $answerregs[ANSWER_REGEX_ANSWER_TYPE_MULTICHOICE] !== '') {
-                                $wrapped->options->shuffleanswers = 0;
-                                $DB->set_field_select('qtype_multichoice_options', 'shuffleanswers', '0', "id =:select",
-                                    array('select' => $wrapped->options->id) );
+                                    $wrapped->options->shuffleanswers = 0;
+                                    $DB->set_field_select('qtype_multichoice_options', 'shuffleanswers', '0', "id =:select",
+                                        ['select' => $wrapped->options->id]);
+                                }
                             }
                         }
                     }
                 }
             }
+            $rs->close();
         }
-        $rs->close();
     }
 
     public function recode_response($questionid, $sequencenumber, array $response) {

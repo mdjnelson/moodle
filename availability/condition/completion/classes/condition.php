@@ -428,7 +428,7 @@ class condition extends \core_availability\condition {
         if ($this->cmid == self::OPTION_PREVIOUS) {
             return $res;
         }
-        $rec = \restore_dbops::get_backup_ids_record($restoreid, 'course_module', $this->cmid);
+        $rec = \restore_dbops::get_backup_ids_record($restoreid, 'course_module', $this->cmid, false);
         if (!$rec || !$rec->newitemid) {
             // If we are on the same course (e.g. duplicate) then we can just
             // use the existing one.

@@ -112,6 +112,7 @@ class core_backup_moodle1_converter_testcase extends advanced_testcase {
             $converter->drop_stash_storage();
             throw new moodle1_convert_empty_storage_exception('rethrowing');
         }
+        $converter->drop_stash_storage();
     }
 
     public function test_stash_storage() {
