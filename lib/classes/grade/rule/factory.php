@@ -41,16 +41,19 @@ class factory implements factory_interface {
      * @return rule_interface
      */
     public static function create(string $rulename, int $instanceid): rule_interface {
-        $class = "\\graderule_$rulename\\factory";
+        $class = "\\graderule_$rulename\\rule";
 
         // Check to see if class exists.
         if (!class_exists($class)) {
-            throw new \coding_exception('The factory class does not exist');
+            throw new \coding_exception('The rule class does not exist');
         }
 
-        // TODO: Fix the check to see if the class is a factory_interface.
-        $method = new \ReflectionMethod($class, "create");
+        $rule = new $class($instanceid);
 
-        return $method->invokeArgs(null, [$rulename, $instanceid]);
+        if (!$rule instanceof rule_interface) {
+            throw new \coding_exception($class . ' must be of type rule_interface');
+        }
+
+        return $rule;
     }
 }
